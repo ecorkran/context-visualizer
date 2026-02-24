@@ -4604,7 +4604,7 @@ const FutureSlicesGroup = ({ items }) => {
       </div>
       {expanded && (
         <div style={{ marginTop: THEME.sp.sm, paddingLeft: THEME.sp.md }}>
-          {items.map((fs, i) => <FutureBlock key={i} item={fs} colorSet={colorSet} />)}
+          {[...items].sort((a, b) => parseInt(a.index) - parseInt(b.index)).map((fs, i) => <FutureBlock key={i} item={fs} colorSet={colorSet} />)}
         </div>
       )}
     </div>
