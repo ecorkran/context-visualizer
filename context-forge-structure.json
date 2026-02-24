@@ -1,0 +1,4024 @@
+{
+  "context-forge": {
+    "name": "Context Forge",
+    "description": "",
+    "foundation": [
+      {
+        "index": "000",
+        "name": "context-builder",
+        "status": "not-started",
+        "dateCreated": "20250910",
+        "dateUpdated": "20250910",
+        "type": "concept"
+      },
+      {
+        "index": "001",
+        "name": "context-builder",
+        "status": "not-started",
+        "dateCreated": "20250910",
+        "dateUpdated": "20250910",
+        "type": "concept"
+      },
+      {
+        "index": "002",
+        "name": "context-builder",
+        "status": "not-started",
+        "dateCreated": "20250910",
+        "dateUpdated": "20250910",
+        "type": "spec"
+      },
+      {
+        "index": "003",
+        "name": "context-builder",
+        "status": "not-started",
+        "dateCreated": "20250910",
+        "dateUpdated": "20250910",
+        "type": "hld"
+      },
+      {
+        "index": "003",
+        "name": "context-builder",
+        "status": "not-started",
+        "dateCreated": "20250910",
+        "dateUpdated": "20250910",
+        "type": "slices"
+      }
+    ],
+    "projectArchitecture": [
+      {
+        "index": "050",
+        "name": "prompt-system-decoupling",
+        "status": "not-started",
+        "dateCreated": "20260207",
+        "dateUpdated": "20260214",
+        "type": "arch"
+      }
+    ],
+    "initiatives": {
+      "140": {
+        "name": "Context Forge Restructure",
+        "slices": [
+          {
+            "index": "140",
+            "name": "monorepo-scaffolding",
+            "status": "complete",
+            "dateCreated": "20260215",
+            "dateUpdated": "20260217",
+            "tasks": {
+              "index": "140",
+              "name": "tasks.monorepo-scaffolding",
+              "status": "in-progress",
+              "taskCount": 175,
+              "completedTasks": 174,
+              "dateCreated": "20260215",
+              "dateUpdated": "20260217",
+              "items": [
+                {
+                  "name": "Create directory `packages/core/src/`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/index.ts` with an empty barrel export:",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/package.json` per the slice design (name: `@context-forge/core`, type: module, private: true, v...",
+                  "done": true
+                },
+                {
+                  "name": "Include scripts: `build`, `dev`, `test`, `typecheck`",
+                  "done": true
+                },
+                {
+                  "name": "Include devDependencies: `typescript ~5.8.3`, `vitest ^3.2.1`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/tsconfig.json` per the slice design (target: ES2023, module: nodenext, moduleResolution: nodenext)",
+                  "done": true
+                },
+                {
+                  "name": "Include: declaration, declarationMap, sourceMap, strict, outDir: ./dist, rootDir: ./src",
+                  "done": true
+                },
+                {
+                  "name": "`packages/core/` directory exists with package.json, tsconfig.json, and src/index.ts",
+                  "done": true
+                },
+                {
+                  "name": "Configuration matches the slice design specifications exactly",
+                  "done": true
+                },
+                {
+                  "name": "Create directory `packages/mcp-server/src/`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/src/index.ts` with an empty barrel export:",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/package.json` per the slice design (name: `context-forge-mcp`, type: module, private: tru...",
+                  "done": true
+                },
+                {
+                  "name": "Include `bin` entry: `\"context-forge-mcp\": \"./dist/index.js\"`",
+                  "done": true
+                },
+                {
+                  "name": "Include `start` script: `node dist/index.js`",
+                  "done": true
+                },
+                {
+                  "name": "Include dependency: `\"@context-forge/core\": \"workspace:*\"`",
+                  "done": true
+                },
+                {
+                  "name": "Include devDependencies: `typescript ~5.8.3`, `vitest ^3.2.1`",
+                  "done": true
+                },
+                {
+                  "name": "Do NOT include MCP SDK dependencies yet (added in a later slice)",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/tsconfig.json` per the slice design (same as core: ES2023, nodenext)",
+                  "done": true
+                },
+                {
+                  "name": "`packages/mcp-server/` directory exists with package.json, tsconfig.json, and src/index.ts",
+                  "done": true
+                },
+                {
+                  "name": "`@context-forge/core` listed as workspace dependency",
+                  "done": true
+                },
+                {
+                  "name": "Configuration matches the slice design specifications exactly",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/` directory",
+                  "done": true
+                },
+                {
+                  "name": "Move source code: `git mv src/ packages/electron/src/`",
+                  "done": true
+                },
+                {
+                  "name": "Move build config: `git mv electron.vite.config.ts packages/electron/`",
+                  "done": true
+                },
+                {
+                  "name": "Move HTML entry: `git mv index.html packages/electron/`",
+                  "done": true
+                },
+                {
+                  "name": "Move test config: `git mv vitest.config.ts packages/electron/`",
+                  "done": true
+                },
+                {
+                  "name": "Evaluate and move `public/`:",
+                  "done": true
+                },
+                {
+                  "name": "Check if `public/` is referenced by electron-vite renderer build",
+                  "done": true
+                },
+                {
+                  "name": "If yes, `git mv public/ packages/electron/public/`",
+                  "done": true
+                },
+                {
+                  "name": "If no, leave at root",
+                  "done": true
+                },
+                {
+                  "name": "Evaluate and move `tests/`:",
+                  "done": true
+                },
+                {
+                  "name": "Check what tests exist in root `tests/` directory",
+                  "done": true
+                },
+                {
+                  "name": "Move them with the Electron app: `git mv tests/ packages/electron/tests/`",
+                  "done": true
+                },
+                {
+                  "name": "Evaluate `default-statements.md`:",
+                  "done": true
+                },
+                {
+                  "name": "Check if referenced from `src/` code",
+                  "done": true
+                },
+                {
+                  "name": "If yes, `git mv default-statements.md packages/electron/`",
+                  "done": true
+                },
+                {
+                  "name": "Verify no stale source files remain at root that should have moved",
+                  "done": true
+                },
+                {
+                  "name": "`packages/electron/src/` contains all previous `src/` contents",
+                  "done": true
+                },
+                {
+                  "name": "`electron.vite.config.ts`, `index.html`, `vitest.config.ts` are in `packages/electron/`",
+                  "done": true
+                },
+                {
+                  "name": "All moved files show as renames in `git status` (not delete + add)",
+                  "done": true
+                },
+                {
+                  "name": "No orphaned source or config files remain at root",
+                  "done": true
+                },
+                {
+                  "name": "Read the current root `package.json` to capture all fields",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/package.json` with:",
+                  "done": true
+                },
+                {
+                  "name": "`\"name\": \"@context-forge/electron\"`",
+                  "done": true
+                },
+                {
+                  "name": "All existing `dependencies` moved from root",
+                  "done": true
+                },
+                {
+                  "name": "All existing `devDependencies` moved from root",
+                  "done": true
+                },
+                {
+                  "name": "Add `\"@context-forge/core\": \"workspace:*\"` to dependencies",
+                  "done": true
+                },
+                {
+                  "name": "All existing build/dev/test scripts preserved",
+                  "done": true
+                },
+                {
+                  "name": "`main` entry updated for the package-relative path (`./out/main/main.js`)",
+                  "done": true
+                },
+                {
+                  "name": "Any electron-builder or packaging config preserved",
+                  "done": true
+                },
+                {
+                  "name": "Retain `packageManager` field if appropriate, or let root handle it",
+                  "done": true
+                },
+                {
+                  "name": "Include the ai-support scripts from `snippets/npm-scripts.ai-support.json.md` (setup-guides, update-guides, etc.) in ...",
+                  "done": true
+                },
+                {
+                  "name": "Verify the scripts reference correct relative paths from `packages/electron/`",
+                  "done": true
+                },
+                {
+                  "name": "`packages/electron/package.json` contains all dependencies from the original root",
+                  "done": true
+                },
+                {
+                  "name": "`@context-forge/core` is declared as a workspace dependency",
+                  "done": true
+                },
+                {
+                  "name": "Build scripts (`dev`, `build`, `test`, `lint`) are present and point to correct locations",
+                  "done": true
+                },
+                {
+                  "name": "Read the current root `tsconfig.json` to capture all compiler options",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/tsconfig.json` preserving existing settings",
+                  "done": true
+                },
+                {
+                  "name": "Update path aliases to be package-relative:",
+                  "done": true
+                },
+                {
+                  "name": "`\"@/*\"` → `[\"./src/*\"]`",
+                  "done": true
+                },
+                {
+                  "name": "`\"@main/*\"` → `[\"./src/main/*\"]`",
+                  "done": true
+                },
+                {
+                  "name": "`\"@renderer/*\"` → `[\"./src/renderer/*\"]`",
+                  "done": true
+                },
+                {
+                  "name": "`\"@preload/*\"` → `[\"./src/preload/*\"]`",
+                  "done": true
+                },
+                {
+                  "name": "Do NOT change target/module/lib settings — keep existing values (electron-vite manages these)",
+                  "done": true
+                },
+                {
+                  "name": "`packages/electron/tsconfig.json` exists with correct path aliases",
+                  "done": true
+                },
+                {
+                  "name": "Compiler options match the original root tsconfig (except paths)",
+                  "done": true
+                },
+                {
+                  "name": "No references to monorepo root paths remain",
+                  "done": true
+                },
+                {
+                  "name": "Update `pnpm-workspace.yaml`:",
+                  "done": true
+                },
+                {
+                  "name": "Add `packages: ['packages/*']`",
+                  "done": true
+                },
+                {
+                  "name": "Preserve existing `onlyBuiltDependencies` list",
+                  "done": true
+                },
+                {
+                  "name": "Update root `package.json`:",
+                  "done": true
+                },
+                {
+                  "name": "Set `\"private\": true`",
+                  "done": true
+                },
+                {
+                  "name": "Retain `\"packageManager\": \"pnpm@10.14.0\"`",
+                  "done": true
+                },
+                {
+                  "name": "Remove all `dependencies` and `devDependencies` (moved to electron)",
+                  "done": true
+                },
+                {
+                  "name": "Replace scripts with workspace delegation:",
+                  "done": true
+                },
+                {
+                  "name": "`\"dev\": \"pnpm --filter @context-forge/electron dev\"`",
+                  "done": true
+                },
+                {
+                  "name": "`\"build\": \"pnpm --filter @context-forge/electron build\"`",
+                  "done": true
+                },
+                {
+                  "name": "`\"test\": \"pnpm -r test\"`",
+                  "done": true
+                },
+                {
+                  "name": "`\"lint\": \"pnpm -r lint\"`",
+                  "done": true
+                },
+                {
+                  "name": "`\"typecheck\": \"pnpm -r typecheck\"`",
+                  "done": true
+                },
+                {
+                  "name": "Preserve ai-support scripts (`setup-guides`, `update-guides`, etc.) in root",
+                  "done": true
+                },
+                {
+                  "name": "Remove `main` entry (no longer applicable to root)",
+                  "done": true
+                },
+                {
+                  "name": "Remove or repurpose root `tsconfig.json`:",
+                  "done": true
+                },
+                {
+                  "name": "If electron-vite or other tools reference it, convert to a project-references config pointing to `packages/*/tsconfig...",
+                  "done": true
+                },
+                {
+                  "name": "If nothing references it, remove it",
+                  "done": true
+                },
+                {
+                  "name": "Update `.gitignore`:",
+                  "done": true
+                },
+                {
+                  "name": "Add `packages/*/dist/` for core and mcp-server build output",
+                  "done": true
+                },
+                {
+                  "name": "Verify `packages/electron/out/` is covered (was previously `out/`)",
+                  "done": true
+                },
+                {
+                  "name": "Root package.json has no direct dependencies",
+                  "done": true
+                },
+                {
+                  "name": "Root package.json scripts delegate to workspace packages",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm-workspace.yaml` declares `packages/*`",
+                  "done": true
+                },
+                {
+                  "name": "`.gitignore` covers all package build output directories",
+                  "done": true
+                },
+                {
+                  "name": "Review `packages/electron/electron.vite.config.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "Verify entry points resolve correctly (main, preload, renderer)",
+                  "done": true
+                },
+                {
+                  "name": "Verify output directories resolve correctly (`out/` relative to package)",
+                  "done": true
+                },
+                {
+                  "name": "Verify alias resolution (e.g., `@/` prefix) points to `packages/electron/src/`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `externalizeDepsPlugin()` and any custom plugins still work",
+                  "done": true
+                },
+                {
+                  "name": "Fix any broken path references",
+                  "done": true
+                },
+                {
+                  "name": "Review `packages/electron/vitest.config.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "Verify test glob patterns resolve correctly from new location",
+                  "done": true
+                },
+                {
+                  "name": "Verify setup file path (`src/test/setup.ts`) resolves correctly",
+                  "done": true
+                },
+                {
+                  "name": "Fix any broken path references",
+                  "done": true
+                },
+                {
+                  "name": "Check `scripts/` directory at root:",
+                  "done": true
+                },
+                {
+                  "name": "Identify any scripts that reference `src/` directly",
+                  "done": true
+                },
+                {
+                  "name": "Update paths or document needed changes",
+                  "done": true
+                },
+                {
+                  "name": "`electron.vite.config.ts` has no broken path references",
+                  "done": true
+                },
+                {
+                  "name": "`vitest.config.ts` has no broken path references",
+                  "done": true
+                },
+                {
+                  "name": "All paths resolve relative to `packages/electron/`",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm install` from repo root",
+                  "done": true
+                },
+                {
+                  "name": "Verify workspace packages are linked (check `node_modules/@context-forge/`)",
+                  "done": true
+                },
+                {
+                  "name": "Resolve any dependency resolution errors",
+                  "done": true
+                },
+                {
+                  "name": "Build `@context-forge/core`:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `packages/core/dist/index.js` and `packages/core/dist/index.d.ts` are produced",
+                  "done": true
+                },
+                {
+                  "name": "Build `context-forge-mcp`:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp build`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `packages/mcp-server/dist/index.js` is produced",
+                  "done": true
+                },
+                {
+                  "name": "Build `@context-forge/electron`:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron build`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `packages/electron/out/` contains main, preload, and renderer output",
+                  "done": true
+                },
+                {
+                  "name": "Fix any build errors (most likely path resolution issues)",
+                  "done": true
+                },
+                {
+                  "name": "Run full workspace build:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm -r build`",
+                  "done": true
+                },
+                {
+                  "name": "Verify topological build order: core → mcp-server → electron",
+                  "done": true
+                },
+                {
+                  "name": "All three packages build without errors",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm -r build` completes successfully with correct ordering",
+                  "done": true
+                },
+                {
+                  "name": "Workspace symlinks are correctly established",
+                  "done": true
+                },
+                {
+                  "name": "Run tests:",
+                  "done": true
+                },
+                {
+                  "name": "Execute `pnpm --filter @context-forge/electron test`",
+                  "done": true
+                },
+                {
+                  "name": "All existing tests must pass — 157 of 163 tests pass. 6 failures are pre-existing (not caused by restructure). Docume...",
+                  "done": true
+                },
+                {
+                  "name": "Fix any test failures caused by path changes",
+                  "done": true
+                },
+                {
+                  "name": "Run typecheck:",
+                  "done": true
+                },
+                {
+                  "name": "Execute `pnpm -r typecheck`",
+                  "done": true
+                },
+                {
+                  "name": "No type errors in any package — Core and mcp-server pass. Electron typecheck failures are pre-existing (Issue #27 com...",
+                  "done": true
+                },
+                {
+                  "name": "Verify Electron app launches:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm dev` (or `pnpm --filter @context-forge/electron dev`)",
+                  "done": true
+                },
+                {
+                  "name": "App window opens without errors",
+                  "done": true
+                },
+                {
+                  "name": "Dev console shows no new errors or warnings",
+                  "done": true
+                },
+                {
+                  "name": "Verify core app functionality:",
+                  "done": false
+                },
+                {
+                  "name": "Can load existing projects",
+                  "done": true
+                },
+                {
+                  "name": "Can edit project configuration",
+                  "done": true
+                },
+                {
+                  "name": "Can generate context output",
+                  "done": true
+                },
+                {
+                  "name": "Can copy generated context to clipboard",
+                  "done": true
+                },
+                {
+                  "name": "IPC communication between main and renderer works",
+                  "done": true
+                },
+                {
+                  "name": "All existing tests pass — 157 of 163 pass; 6 pre-existing failures are unrelated to restructure",
+                  "done": true
+                },
+                {
+                  "name": "Typecheck passes across all packages — Core and mcp-server pass; electron typecheck has pre-existing errors (Issue #27)",
+                  "done": true
+                },
+                {
+                  "name": "Electron app launches and all core features work",
+                  "done": true
+                },
+                {
+                  "name": "No new warnings or errors in dev console",
+                  "done": true
+                },
+                {
+                  "name": "Verify `@context-forge/core` is resolvable from `packages/electron/`:",
+                  "done": true
+                },
+                {
+                  "name": "Add a temporary test import in a test file or scratch file",
+                  "done": true
+                },
+                {
+                  "name": "Confirm TypeScript resolves the import without errors",
+                  "done": true
+                },
+                {
+                  "name": "Remove the temporary import",
+                  "done": true
+                },
+                {
+                  "name": "Verify `@context-forge/core` is resolvable from `packages/mcp-server/`:",
+                  "done": true
+                },
+                {
+                  "name": "Add a temporary test import in `packages/mcp-server/src/index.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Confirm TypeScript resolves the import without errors",
+                  "done": true
+                },
+                {
+                  "name": "Remove the temporary import (restore empty export)",
+                  "done": true
+                },
+                {
+                  "name": "Verify `pnpm -r build` still succeeds after resolution check",
+                  "done": true
+                },
+                {
+                  "name": "Both `electron` and `mcp-server` can resolve `@context-forge/core` imports",
+                  "done": true
+                },
+                {
+                  "name": "TypeScript path aliases in `packages/electron/` work correctly (`@/`, `@main/`, etc.)",
+                  "done": true
+                },
+                {
+                  "name": "Clean build after verification",
+                  "done": true
+                },
+                {
+                  "name": "Run final checks:",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm -r build` — passes",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm -r typecheck` — passes",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm --filter @context-forge/electron test` — passes",
+                  "done": true
+                },
+                {
+                  "name": "`git status` — no untracked files that should be tracked",
+                  "done": true
+                },
+                {
+                  "name": "Verify no stale configuration remains:",
+                  "done": true
+                },
+                {
+                  "name": "Root has no `dependencies` or `devDependencies` in package.json",
+                  "done": true
+                },
+                {
+                  "name": "No orphaned `src/` directory at root",
+                  "done": true
+                },
+                {
+                  "name": "No orphaned `tsconfig.json` at root (unless repurposed as project-references)",
+                  "done": true
+                },
+                {
+                  "name": "`.gitignore` covers `packages/*/dist/` and `packages/electron/out/`",
+                  "done": true
+                },
+                {
+                  "name": "Commit all changes with a descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "Log any discovered issues to `project-documents/user/maintenance/maintenance-tasks.md`",
+                  "done": true
+                },
+                {
+                  "name": "All builds, tests, and typechecks pass (with noted pre-existing exceptions)",
+                  "done": true
+                },
+                {
+                  "name": "Working tree is clean after commit",
+                  "done": true
+                },
+                {
+                  "name": "Monorepo structure matches the slice design's target repository layout",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "141",
+            "name": "core-types-extraction",
+            "status": "complete",
+            "dateCreated": "20260217",
+            "dateUpdated": "20260217",
+            "tasks": {
+              "index": "141",
+              "name": "tasks.core-types-extraction",
+              "status": "complete",
+              "taskCount": 45,
+              "completedTasks": 45,
+              "dateCreated": "20260217",
+              "dateUpdated": "20260217",
+              "items": [
+                {
+                  "name": "**1.1: Create `packages/core/src/types/context.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**1.2: Create `packages/core/src/types/sections.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**1.3: Create `packages/core/src/types/statements.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**1.4: Create `packages/core/src/types/prompts.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**1.5: Create `packages/core/src/types/project.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**1.6: Create `packages/core/src/types/paths.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**2.1: Create `packages/core/src/types/index.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**2.2: Update `packages/core/src/index.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**3.1: Run `pnpm --filter @context-forge/core build`**",
+                  "done": true
+                },
+                {
+                  "name": "**3.2: Spot-check the generated `.d.ts` files**",
+                  "done": true
+                },
+                {
+                  "name": "**4.1**: `src/services/project/ProjectValidator.ts` — `ProjectData`, `CreateProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.2**: `src/services/project/ProjectManager.ts` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.3**: `src/services/project/__tests__/ProjectManager.test.ts` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.4**: `src/services/context/ContextIntegrator.ts` — `ProjectData` (also imports context types — handle in Task 5)",
+                  "done": true
+                },
+                {
+                  "name": "**4.5**: `src/services/context/ContextGenerator.ts` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.6**: `src/services/context/__tests__/ContextIntegrator.test.ts` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.7**: `src/services/context/__tests__/ContextGenerator.test.ts` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.8**: `src/hooks/useContextGeneration.ts` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.9**: `src/components/settings/SettingsButton.tsx` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.10**: `src/components/settings/SettingsDialog.tsx` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.11**: `src/components/project/ProjectSelector.tsx` — `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.12**: `src/components/ContextBuilderApp.tsx` — `CreateProjectData`, `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.13**: `src/components/forms/ProjectConfigForm.tsx` — `CreateProjectData`, `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "**4.14**: `src/components/forms/__tests__/ProjectConfigForm.integration.test.ts` — `ProjectData`, `CreateProjectData`...",
+                  "done": true
+                },
+                {
+                  "name": "**5.1**: `src/services/context/ContextIntegrator.ts` — `ContextData`, `EnhancedContextData` (merge with ProjectData i...",
+                  "done": true
+                },
+                {
+                  "name": "**5.2**: `src/services/context/ContextTemplateEngine.ts` — `EnhancedContextData`, `ContextSection`, `ContextTemplate`",
+                  "done": true
+                },
+                {
+                  "name": "**5.3**: `src/services/context/TemplateProcessor.ts` — `ContextData`",
+                  "done": true
+                },
+                {
+                  "name": "**5.4**: `src/services/context/SectionBuilder.ts` — `ContextSection`, `EnhancedContextData`, `SectionBuilderConfig`",
+                  "done": true
+                },
+                {
+                  "name": "**5.5**: `src/services/context/StatementManagerIPC.ts` — `TemplateStatement`",
+                  "done": true
+                },
+                {
+                  "name": "**5.6**: `src/services/context/__tests__/TemplateProcessor.test.ts` — `ContextData`",
+                  "done": true
+                },
+                {
+                  "name": "**6.1**: `src/main/services/context/SystemPromptParser.ts` — `SystemPrompt`, `ParsedPromptFile`, `PromptCacheEntry`, ...",
+                  "done": true
+                },
+                {
+                  "name": "**6.2**: `src/main/services/context/StatementManager.ts` — `TemplateStatement`, `ParsedStatement`",
+                  "done": true
+                },
+                {
+                  "name": "**6.3**: `src/main/ipc/contextServices.ts` — `TemplateStatement`",
+                  "done": true
+                },
+                {
+                  "name": "**6.4**: `src/components/settings/ProjectPathSection.tsx` — `PathValidationResult`",
+                  "done": true
+                },
+                {
+                  "name": "**7.1: Update `src/services/context/index.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**7.2: Update `src/main/services/context/index.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**8.1: Delete renderer context type files**",
+                  "done": true
+                },
+                {
+                  "name": "**8.2: Delete main-process context type files**",
+                  "done": true
+                },
+                {
+                  "name": "**8.3: Delete project/storage type files**",
+                  "done": true
+                },
+                {
+                  "name": "**9.1: Run `pnpm --filter @context-forge/core build`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.2: Run `pnpm --filter @context-forge/electron build`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.3: Run `pnpm --filter @context-forge/electron test:run`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.4: Run `pnpm -r build`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.5: Verify no stale imports remain**",
+                  "done": true
+                },
+                {
+                  "name": "**10.1: Stage and commit all changes**",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "142",
+            "name": "core-services-extraction",
+            "status": "complete",
+            "dateCreated": "20260218",
+            "dateUpdated": "20260218",
+            "tasks": {
+              "index": "142",
+              "name": "tasks.core-services-extraction",
+              "status": "complete",
+              "taskCount": 34,
+              "completedTasks": 34,
+              "dateCreated": "20260218",
+              "dateUpdated": "20260218",
+              "items": [
+                {
+                  "name": "**1.1: Create `packages/core/src/services/constants.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**1.2: Create `packages/core/src/services/interfaces.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**1.3: Commit — supporting files**",
+                  "done": true
+                },
+                {
+                  "name": "**2.1: Copy and update `TemplateProcessor.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**3.1: Copy and update `SystemPromptParser.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**4.1: Copy and update `StatementManager.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**5.1: Copy and update `ProjectPathService.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**6.1: Copy and update `SectionBuilder.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**7.1: Create `packages/core/src/services/index.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**7.2: Update `packages/core/src/index.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**7.3: Commit — services extracted, core self-contained**",
+                  "done": true
+                },
+                {
+                  "name": "**8.1: Run `pnpm --filter @context-forge/core build`**",
+                  "done": true
+                },
+                {
+                  "name": "**8.2: Spot-check dist output**",
+                  "done": true
+                },
+                {
+                  "name": "**8.3: Commit — core build verified**",
+                  "done": true
+                },
+                {
+                  "name": "**9.1: Update `src/services/context/ContextIntegrator.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.2: Update `src/services/context/ContextTemplateEngine.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.3: Update `src/services/context/__tests__/TemplateProcessor.test.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.4: Update `src/main/ipc/contextServices.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.5: Update `src/main/ipc/projectPathHandlers.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.6: Update `src/main/services/project/__tests__/ProjectPathService.test.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.7: Update `src/services/context/index.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.8: Update `src/main/services/context/index.ts`**",
+                  "done": true
+                },
+                {
+                  "name": "**9.9: Commit — consumers updated**",
+                  "done": true
+                },
+                {
+                  "name": "**10.1: Run `pnpm -r build`**",
+                  "done": true
+                },
+                {
+                  "name": "**10.2: Verify no stale imports remain**",
+                  "done": true
+                },
+                {
+                  "name": "**11.1: Delete renderer service files**",
+                  "done": true
+                },
+                {
+                  "name": "**11.2: Delete main-process service files**",
+                  "done": true
+                },
+                {
+                  "name": "**11.3: Check for empty directories**",
+                  "done": true
+                },
+                {
+                  "name": "**12.1: Run `pnpm --filter @context-forge/core build`**",
+                  "done": true
+                },
+                {
+                  "name": "**12.2: Run `pnpm --filter @context-forge/electron build`**",
+                  "done": true
+                },
+                {
+                  "name": "**12.3: Run `pnpm --filter @context-forge/electron test:run`**",
+                  "done": true
+                },
+                {
+                  "name": "**12.4: Run `pnpm -r build`**",
+                  "done": true
+                },
+                {
+                  "name": "**12.5: Commit — deletion and verification complete**",
+                  "done": true
+                },
+                {
+                  "name": "**13.1: Interactive rebase to squash slice 142 commits**",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "143",
+            "name": "core-orchestration-extraction",
+            "status": "complete",
+            "dateCreated": "20260218",
+            "dateUpdated": "20260218",
+            "tasks": {
+              "index": "143",
+              "name": "tasks.core-orchestration-extraction",
+              "status": "complete",
+              "taskCount": 68,
+              "completedTasks": 68,
+              "dateCreated": "20260218",
+              "dateUpdated": "20260218",
+              "items": [
+                {
+                  "name": "Add `getContextInitializationPrompt(isMonorepo?: boolean): Promise<SystemPrompt | null>` to `IPromptReader`",
+                  "done": true
+                },
+                {
+                  "name": "Create `IStatementService extends IStatementReader` with `loadStatements(): Promise<void>` and `setFilePath(path: str...",
+                  "done": true
+                },
+                {
+                  "name": "Create `IPromptService extends IPromptReader` with `setFilePath(path: string): void`",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: `pnpm --filter @context-forge/core build` succeeds; `IStatementReader` unchanged; new interfaces exporte...",
+                  "done": true
+                },
+                {
+                  "name": "Add `setFilePath(path: string): void` method to `packages/core/src/services/SystemPromptParser.ts`",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Method exists; `SystemPromptParser` structurally satisfies `IPromptService`; core builds clean",
+                  "done": true
+                },
+                {
+                  "name": "Add `setFilePath(path: string): void` method to `packages/core/src/services/StatementManager.ts`",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Method exists; `StatementManager` structurally satisfies `IStatementService`; core builds clean",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Verify `dist/` contains updated `.d.ts` for interfaces, SystemPromptParser, StatementManager",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: interfaces + setFilePath changes",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Core builds clean; commit created",
+                  "done": true
+                },
+                {
+                  "name": "Copy `packages/electron/src/services/context/ContextGenerator.ts` to `packages/core/src/services/ContextGenerator.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Update `ProjectData` import to relative path `../types/project.js`",
+                  "done": true
+                },
+                {
+                  "name": "No other changes needed — this file has zero Electron dependencies",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: File exists in core with correct import; no `@context-forge/core` self-import; no Electron imports",
+                  "done": true
+                },
+                {
+                  "name": "Copy `packages/electron/src/services/context/ContextTemplateEngine.ts` to `packages/core/src/services/ContextTemplate...",
+                  "done": true
+                },
+                {
+                  "name": "Replace imports:",
+                  "done": true
+                },
+                {
+                  "name": "Update constructor: require `promptParser: IPromptService` and `statementManager: IStatementService` (no optional/def...",
+                  "done": true
+                },
+                {
+                  "name": "Update private field types: `promptParser: IPromptService`, `statementManager: IStatementService`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `updateServicePaths()` calls `this.promptParser.setFilePath()` and `this.statementManager.setFilePath()` — wor...",
+                  "done": true
+                },
+                {
+                  "name": "Ensure all relative imports use `.js` extensions",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: File compiles with no Electron imports; constructor requires explicit deps; `updateServicePaths()` prese...",
+                  "done": true
+                },
+                {
+                  "name": "Copy `packages/electron/src/services/context/ContextIntegrator.ts` to `packages/core/src/services/ContextIntegrator.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Replace imports:",
+                  "done": true
+                },
+                {
+                  "name": "Change constructor to: `constructor(engine: ContextTemplateEngine, enableNewEngine: boolean = true)`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `generateWithTemplateEngine()` uses `this.templateEngine.updateServicePaths()` as before",
+                  "done": true
+                },
+                {
+                  "name": "Retain: `DEFAULT_TEMPLATE`, legacy path, `mapProjectToContext`, `mapProjectToEnhancedContext`, `validateProject`, err...",
+                  "done": true
+                },
+                {
+                  "name": "Ensure all relative imports use `.js` extensions",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: File compiles with no Electron imports; constructor requires `ContextTemplateEngine`; path resolution un...",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/services/CoreServiceFactory.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Implement `createContextPipeline(projectPath: string)` as specified in slice design",
+                  "done": true
+                },
+                {
+                  "name": "Ensure all relative imports use `.js` extensions",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Function exported; builds clean; returns typed `{ engine: ContextTemplateEngine; integrator: ContextInte...",
+                  "done": true
+                },
+                {
+                  "name": "Update `packages/core/src/services/index.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "`packages/core/src/index.ts` needs no change (already re-exports `services/index.js`)",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `dist/` contains `.js` and `.d.ts` for all 4 new files",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: orchestration extraction to core",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Core builds; all new files in `dist/`; commit created",
+                  "done": true
+                },
+                {
+                  "name": "In `packages/electron/src/hooks/useContextGeneration.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Hook constructs orchestrators explicitly with IPC services; no direct local orchestrator imports",
+                  "done": true
+                },
+                {
+                  "name": "In `packages/electron/src/services/context/index.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Barrel re-exports orchestrators from core; IPC wrappers remain local",
+                  "done": true
+                },
+                {
+                  "name": "Update `packages/electron/src/services/context/__tests__/ContextGenerator.test.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "Update `packages/electron/src/services/context/__tests__/ContextIntegrator.test.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Both test files compile; import paths point to `@context-forge/core`; structural interface compatibility...",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron test` — verify same pass/fail as pre-extraction (155/163)",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: Electron consumer updates for orchestration extraction",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Electron builds clean; test results unchanged; commit created",
+                  "done": true
+                },
+                {
+                  "name": "Delete `packages/electron/src/services/context/ContextGenerator.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Delete `packages/electron/src/services/context/ContextTemplateEngine.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Delete `packages/electron/src/services/context/ContextIntegrator.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `ServiceFactory.ts` remains in Electron (still needed for IPC wrapper creation)",
+                  "done": true
+                },
+                {
+                  "name": "Verify IPC wrappers (`SystemPromptParserIPC.ts`, `StatementManagerIPC.ts`) are unmodified (`git diff` shows no changes)",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: 3 files deleted; `ServiceFactory.ts` and IPC wrappers still present and unchanged; no dangling imports",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm -r build` — full workspace builds in correct order",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron test` — verify same pass/fail (155/163)",
+                  "done": true
+                },
+                {
+                  "name": "Grep `packages/core/src/` for any Electron-specific imports (`window.electronAPI`, `SystemPromptParserIPC`, `Statemen...",
+                  "done": true
+                },
+                {
+                  "name": "Verify `createContextPipeline` is importable from `packages/mcp-server/` (workspace link resolution)",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: delete old orchestrator files, final verification",
+                  "done": true
+                },
+                {
+                  "name": "Update slice design success criteria checkboxes",
+                  "done": true
+                },
+                {
+                  "name": "Update DEVLOG with implementation summary and commit hashes",
+                  "done": true
+                },
+                {
+                  "name": "**Note**: Manual verification recommended — launch Electron app, generate context for a test project, verify output m...",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Full workspace builds; tests unchanged; no Electron imports in core; DEVLOG updated",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "144",
+            "name": "storage-migration",
+            "status": "not-started",
+            "dateCreated": "20260218",
+            "dateUpdated": "20260218",
+            "tasks": {
+              "index": "144",
+              "name": "tasks.storage-migration",
+              "status": "complete",
+              "taskCount": 110,
+              "completedTasks": 110,
+              "dateCreated": "20260219",
+              "dateUpdated": "20260219",
+              "items": [
+                {
+                  "name": "Run `pnpm --filter @context-forge/core add env-paths` (v3.x, ESM)",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/storage/storagePaths.ts`",
+                  "done": true
+                },
+                {
+                  "name": "All relative imports use `.js` extensions",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: File compiles; `getStoragePath()` returns a string; `CONTEXT_FORGE_DATA_DIR` override works when set",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/storage/interfaces.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Types only — no runtime dependencies",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: File compiles; all interfaces importable; no `any` types",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: storage interfaces and storage path module",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Core builds clean; commit created",
+                  "done": true
+                },
+                {
+                  "name": "Copy `packages/electron/src/main/services/storage/backupService.ts` to `packages/core/src/storage/backupService.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Update imports to core-relative paths (only `fs/promises`, `fs`, `path` — no Electron deps)",
+                  "done": true
+                },
+                {
+                  "name": "Preserve all exports unchanged: `BackupFsDeps`, `MAX_VERSIONED_BACKUPS`, `createVersionedBackup`, `pruneOldBackups`, ...",
+                  "done": true
+                },
+                {
+                  "name": "Ensure `.js` extensions on any relative imports",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: File compiles in core; no Electron imports; function signatures identical to source",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/storage/__tests__/backupService.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Port tests from `packages/electron/tests/unit/services/storage/backupService.test.ts`, updating import paths to `../b...",
+                  "done": true
+                },
+                {
+                  "name": "Tests cover: `createVersionedBackup` (skip if missing, timestamped filename, unique timestamps, filename pattern), `p...",
+                  "done": true
+                },
+                {
+                  "name": "All tests use injectable `BackupFsDeps` mocks (same pattern as Electron tests)",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: All backup service tests pass via `pnpm --filter @context-forge/core test`",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: backup service extraction with tests",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Core builds clean; backup tests pass; commit created",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/storage/FileStorageService.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Implement `IStorageService` with constructor taking `storagePath: string`",
+                  "done": true
+                },
+                {
+                  "name": "`read(filename)`: validate filename (reject `..`, `/`, `\\`); try main file + JSON parse; on failure try `{filename}.b...",
+                  "done": true
+                },
+                {
+                  "name": "`write(filename, data)`: validate filename; ensure directory exists; backup existing to `{filename}.backup`; call `ch...",
+                  "done": true
+                },
+                {
+                  "name": "`createBackup(filename)`: validate; copy main file to `{filename}.backup` if it exists",
+                  "done": true
+                },
+                {
+                  "name": "`exists(filename)`: validate; check file existence",
+                  "done": true
+                },
+                {
+                  "name": "Reference: Electron's `main.ts` IPC handlers (lines 63-228) contain the logic being extracted",
+                  "done": true
+                },
+                {
+                  "name": "All relative imports use `.js` extensions",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: File compiles; implements `IStorageService`; no `any` types; no Electron imports",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/storage/__tests__/FileStorageService.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Test write + read round-trip: write JSON data, read it back, verify content match",
+                  "done": true
+                },
+                {
+                  "name": "Test atomic write: verify no `.tmp` file remains after successful write",
+                  "done": true
+                },
+                {
+                  "name": "Test backup on write: verify `{filename}.backup` exists after write",
+                  "done": true
+                },
+                {
+                  "name": "Test recovery from corrupted main file: write valid data, corrupt main file, read again, verify backup recovery and `...",
+                  "done": true
+                },
+                {
+                  "name": "Test filename validation: reject `..`, `/`, `\\` in filenames for read, write, createBackup, exists",
+                  "done": true
+                },
+                {
+                  "name": "Test read non-existent file: verify appropriate error thrown",
+                  "done": true
+                },
+                {
+                  "name": "Test write creates storage directory if missing",
+                  "done": true
+                },
+                {
+                  "name": "All tests use temp directories (`mkdtemp` + cleanup in `afterEach`)",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: All FileStorageService tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: FileStorageService implementation and tests",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Core builds; all storage tests pass; commit created",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/storage/FileProjectStore.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Implement `IProjectStore`, composing `FileStorageService` internally",
+                  "done": true
+                },
+                {
+                  "name": "Constructor: create `FileStorageService` using `getStoragePath()`",
+                  "done": true
+                },
+                {
+                  "name": "Lazy initialization (`ensureInitialized()`): on first access, check if `projects.json` exists; if not, call `migrateF...",
+                  "done": true
+                },
+                {
+                  "name": "`getAll()`: call `ensureInitialized()`; read + parse `projects.json`; apply field migration (defaults: `taskFile: ''`...",
+                  "done": true
+                },
+                {
+                  "name": "`getById(id)`: call `getAll()`, find by id, return match or `undefined`",
+                  "done": true
+                },
+                {
+                  "name": "`create(data)`: generate ID (`project_{timestamp}_{random}`), construct full `ProjectData` with timestamps, append to...",
+                  "done": true
+                },
+                {
+                  "name": "`update(id, updates)`: load all, find by id (throw if not found), merge updates, set `updatedAt`, write",
+                  "done": true
+                },
+                {
+                  "name": "`delete(id)`: load all, verify exists (throw if not found), filter out, write",
+                  "done": true
+                },
+                {
+                  "name": "Implement `migrateFromLegacyLocation()` — see slice design §Data Migration Strategy: copy `projects.json` and `projec...",
+                  "done": true
+                },
+                {
+                  "name": "All relative imports use `.js` extensions",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: File compiles; implements `IProjectStore`; no `any` types; no Electron imports",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/storage/__tests__/FileProjectStore.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Test CRUD round-trip: create → getAll (length 1) → getById → update → verify changes → delete → getAll (length 0)",
+                  "done": true
+                },
+                {
+                  "name": "Test ID generation: verify `project_` prefix format via regex match",
+                  "done": true
+                },
+                {
+                  "name": "Test field migration on read: manually write projects.json missing `taskFile`/`instruction`/`isMonorepo`/`customData`...",
+                  "done": true
+                },
+                {
+                  "name": "Test create sets `createdAt` and `updatedAt` as ISO timestamps",
+                  "done": true
+                },
+                {
+                  "name": "Test update modifies `updatedAt` but not `createdAt`",
+                  "done": true
+                },
+                {
+                  "name": "Test update non-existent ID throws",
+                  "done": true
+                },
+                {
+                  "name": "Test delete non-existent ID throws",
+                  "done": true
+                },
+                {
+                  "name": "Test getAll on empty store returns `[]`",
+                  "done": true
+                },
+                {
+                  "name": "Test migration from legacy location: seed projects.json in mock legacy path, verify first `getAll()` copies to new lo...",
+                  "done": true
+                },
+                {
+                  "name": "Test migration skipped when new location already has data",
+                  "done": true
+                },
+                {
+                  "name": "All tests use temp directories via `CONTEXT_FORGE_DATA_DIR` env var override + cleanup",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: All FileProjectStore tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/storage/index.ts` barrel:",
+                  "done": true
+                },
+                {
+                  "name": "Update `packages/core/src/node.ts`: add `export * from './storage/index.js'`",
+                  "done": true
+                },
+                {
+                  "name": "Update `packages/core/src/index.ts`: add type-only re-exports for `IProjectStore`, `IStorageService`, `StorageReadRes...",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Verify `dist/` contains storage `.js` and `.d.ts` files",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: FileProjectStore, barrel exports, core integration",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Core builds; `IProjectStore` importable from `@context-forge/core`; `FileProjectStore` importable from `...",
+                  "done": true
+                },
+                {
+                  "name": "In `packages/electron/src/main/main.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "Preserve IPC return contract: `{ success: boolean, data?: string, error?: string, recovered?: boolean, message?: stri...",
+                  "done": true
+                },
+                {
+                  "name": "Remove now-unused `fs/promises` imports (`readFile`, `writeFile`, `copyFile`, `rename`, `unlink` — keep `readdir`, `s...",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: IPC handlers delegate to core; ~100+ lines of inline fs logic eliminated; storage behavior unchanged",
+                  "done": true
+                },
+                {
+                  "name": "In `packages/electron/src/main/main.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Exit backup uses core's `createVersionedBackup`; local backup import removed",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron test` — verify same pass/fail as pre-slice",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: Electron main.ts delegates to core storage",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Electron builds clean; test results unchanged; commit created",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/__tests__/__fixtures__/test-project/project-documents/ai-project-guide/`",
+                  "done": true
+                },
+                {
+                  "name": "Create minimal `prompt.ai-project.system.md` containing a simple template with at least one variable placeholder (e.g...",
+                  "done": true
+                },
+                {
+                  "name": "Create minimal `statements.ai-project.default.md` with at least one statement section",
+                  "done": true
+                },
+                {
+                  "name": "Verify fixture structure matches what `createContextPipeline()` expects (`PROMPT_FILE_RELATIVE_PATH` and `STATEMENTS_...",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Fixture directory exists with valid prompt and statement files",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/core/src/__tests__/pipeline-integration.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Test: create project via `FileProjectStore`, wire `createContextPipeline()` with fixture path, call `integrator.gener...",
+                  "done": true
+                },
+                {
+                  "name": "Test: CRUD round-trip on `FileProjectStore` (create, read, update, delete)",
+                  "done": true
+                },
+                {
+                  "name": "Test: recovery from corrupted `projects.json` via backup",
+                  "done": true
+                },
+                {
+                  "name": "All tests use `CONTEXT_FORGE_DATA_DIR` env var with temp directories; clean up in `afterEach`",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: All pipeline integration tests pass; validates full context generation chain without Electron",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron build` — verify success",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm -r build` — full workspace builds in correct order",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/core test` — all storage and integration tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron test` — same pass/fail as pre-slice",
+                  "done": true
+                },
+                {
+                  "name": "Grep `packages/core/src/` for Electron imports (`electron`, `app.getPath`, `BrowserWindow`) — must find zero",
+                  "done": true
+                },
+                {
+                  "name": "Verify `FileProjectStore` importable from `@context-forge/core/node` (workspace link)",
+                  "done": true
+                },
+                {
+                  "name": "Verify `IProjectStore` type importable from `@context-forge/core` (browser-safe barrel)",
+                  "done": true
+                },
+                {
+                  "name": "Git commit: pipeline integration test and final verification",
+                  "done": true
+                },
+                {
+                  "name": "Update DEVLOG with slice 144 implementation summary",
+                  "done": true
+                },
+                {
+                  "name": "**Note**: After successful build, PM should manually copy versioned backups:",
+                  "done": true
+                },
+                {
+                  "name": "**Success**: Full workspace builds; all tests pass; no Electron imports in core; storage accessible from MCP server p...",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "145",
+            "name": "mcp-server-project-tools",
+            "status": "not-started",
+            "dateCreated": "20260219",
+            "dateUpdated": "20260219",
+            "tasks": {
+              "index": "145",
+              "name": "tasks.mcp-server-project-tools",
+              "status": "complete",
+              "taskCount": 53,
+              "completedTasks": 53,
+              "dateCreated": "20260219",
+              "dateUpdated": "20260219",
+              "items": [
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp add @modelcontextprotocol/server zod`",
+                  "done": true
+                },
+                {
+                  "name": "Verify import resolution: create a minimal test import in `src/index.ts` to confirm `McpServer` and `StdioServerTrans...",
+                  "done": true
+                },
+                {
+                  "name": "Verify zod import: `import * as z from 'zod/v4'` (v2) or `import { z } from 'zod'` (v1)",
+                  "done": true
+                },
+                {
+                  "name": "Record which SDK version was installed in a brief comment at top of `src/index.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Add `#!/usr/bin/env node` shebang as first line",
+                  "done": true
+                },
+                {
+                  "name": "Import `McpServer`, `StdioServerTransport` (path depends on v1/v2 per Task 1)",
+                  "done": true
+                },
+                {
+                  "name": "Create `McpServer` instance with:",
+                  "done": true
+                },
+                {
+                  "name": "Create `StdioServerTransport` and call `server.connect(transport)`",
+                  "done": true
+                },
+                {
+                  "name": "Add stderr startup log: `console.error('[context-forge-mcp] Server started')`",
+                  "done": true
+                },
+                {
+                  "name": "Wrap in async main function with top-level error handling that logs to stderr and exits with code 1",
+                  "done": true
+                },
+                {
+                  "name": "Do NOT write anything to stdout — only stderr",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp build`",
+                  "done": true
+                },
+                {
+                  "name": "Verify `dist/index.js` exists and contains the shebang line",
+                  "done": true
+                },
+                {
+                  "name": "Commit: \"feat(mcp-server): scaffold MCP server with SDK and stdio transport (slice 145)\"",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/src/tools/projectTools.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Export a `registerProjectTools(server: McpServer)` function (type `McpServer` from SDK)",
+                  "done": true
+                },
+                {
+                  "name": "Register `project_list` tool using `server.registerTool()`:",
+                  "done": true
+                },
+                {
+                  "name": "`project_list` handler logic:",
+                  "done": true
+                },
+                {
+                  "name": "Register `project_get` tool:",
+                  "done": true
+                },
+                {
+                  "name": "`project_get` handler logic:",
+                  "done": true
+                },
+                {
+                  "name": "Wrap both handlers in try/catch — errors return `{ content: [...], isError: true }`",
+                  "done": true
+                },
+                {
+                  "name": "Wire in `index.ts`: import `registerProjectTools`, call before `server.connect(transport)`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/src/__tests__/projectTools.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Mock `FileProjectStore` from `@context-forge/core/node` using `vi.mock()`",
+                  "done": true
+                },
+                {
+                  "name": "Create mock project data fixture matching `ProjectData` shape",
+                  "done": true
+                },
+                {
+                  "name": "`project_list` tests:",
+                  "done": true
+                },
+                {
+                  "name": "`project_get` tests:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp test` — all tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp build`",
+                  "done": true
+                },
+                {
+                  "name": "Commit: \"feat(mcp-server): implement project_list and project_get tools with tests (slice 145)\"",
+                  "done": true
+                },
+                {
+                  "name": "Register `project_update` tool in `registerProjectTools()`:",
+                  "done": true
+                },
+                {
+                  "name": "Handler logic:",
+                  "done": true
+                },
+                {
+                  "name": "Wrap in try/catch per error handling pattern",
+                  "done": true
+                },
+                {
+                  "name": "Add `project_update` tests to existing `projectTools.test.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp test` — all tests pass (read-only + update)",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp build`",
+                  "done": true
+                },
+                {
+                  "name": "Commit: \"feat(mcp-server): implement project_update tool with tests (slice 145)\"",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/src/__tests__/serverLifecycle.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Spawn server as child process: `node` with `dist/index.js` (requires build first)",
+                  "done": true
+                },
+                {
+                  "name": "Send MCP `initialize` request as JSON-RPC over stdin:",
+                  "done": true
+                },
+                {
+                  "name": "Parse JSON-RPC response from stdout",
+                  "done": true
+                },
+                {
+                  "name": "Assert response contains `serverInfo.name === \"context-forge-mcp\"`",
+                  "done": true
+                },
+                {
+                  "name": "Send `notifications/initialized`: `{ \"jsonrpc\": \"2.0\", \"method\": \"notifications/initialized\" }`",
+                  "done": true
+                },
+                {
+                  "name": "Optionally: send `tools/list` request and assert all 3 tools are present",
+                  "done": true
+                },
+                {
+                  "name": "Close stdin and verify process exits with code 0 (or use a timeout)",
+                  "done": true
+                },
+                {
+                  "name": "Clean up temp directory in afterEach",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm -r build` — full workspace builds cleanly",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp test` — all MCP server tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm -r test` — no regressions in core or Electron tests",
+                  "done": true
+                },
+                {
+                  "name": "Verify `dist/index.js` contains shebang and is executable",
+                  "done": true
+                },
+                {
+                  "name": "Commit: \"test(mcp-server): server lifecycle test, verify full build (slice 145)\"",
+                  "done": true
+                },
+                {
+                  "name": "Update DEVLOG.md with implementation summary and commit hashes",
+                  "done": true
+                },
+                {
+                  "name": "Mark slice 145 as `[x]` in `140-slices.context-forge-restructure.md`",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "146",
+            "name": "mcp-context-tools",
+            "status": "not-started",
+            "dateCreated": "20260220",
+            "dateUpdated": "20260220",
+            "tasks": {
+              "index": "146",
+              "name": "tasks.mcp-server-context-tools",
+              "status": "complete",
+              "taskCount": 70,
+              "completedTasks": 70,
+              "dateCreated": "20260220",
+              "dateUpdated": "20260220",
+              "items": [
+                {
+                  "name": "Read `packages/core/src/services/CoreServiceFactory.ts` to confirm `createContextPipeline` signature and behavior",
+                  "done": true
+                },
+                {
+                  "name": "Read `packages/core/src/services/ContextIntegrator.ts` to confirm `generateContextFromProject` accepts `ProjectData` ...",
+                  "done": true
+                },
+                {
+                  "name": "Read `packages/core/src/services/SystemPromptParser.ts` to confirm `getAllPrompts()` returns `SystemPrompt[]` and und...",
+                  "done": true
+                },
+                {
+                  "name": "Read `packages/core/src/services/constants.ts` to confirm `PROMPT_FILE_RELATIVE_PATH` value",
+                  "done": true
+                },
+                {
+                  "name": "Verify that `ContextIntegrator` handles the `projectPath` → service path update internally (via `updateServicePaths`)",
+                  "done": true
+                },
+                {
+                  "name": "Verify that `createContextPipeline` and `SystemPromptParser` are exported from `@context-forge/core/node`",
+                  "done": true
+                },
+                {
+                  "name": "Verify that `PROMPT_FILE_RELATIVE_PATH` and `ProjectData` type are exported from `@context-forge/core`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/src/tools/contextTools.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Export a `registerContextTools(server: McpServer)` function (same pattern as `registerProjectTools`)",
+                  "done": true
+                },
+                {
+                  "name": "Import `FileProjectStore`, `createContextPipeline`, `SystemPromptParser` from `@context-forge/core/node`",
+                  "done": true
+                },
+                {
+                  "name": "Import `PROMPT_FILE_RELATIVE_PATH` and `ProjectData` type from `@context-forge/core`",
+                  "done": true
+                },
+                {
+                  "name": "Import `path` from `node:path`",
+                  "done": true
+                },
+                {
+                  "name": "Implement shared `errorResult(message)` and `jsonResult(data)` helpers (same pattern as `projectTools.ts`, or factor ...",
+                  "done": true
+                },
+                {
+                  "name": "Implement shared `generateContext` internal function:",
+                  "done": true
+                },
+                {
+                  "name": "File compiles (`pnpm --filter context-forge-mcp build`)",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp build` — clean build",
+                  "done": true
+                },
+                {
+                  "name": "Commit: \"feat(mcp-server): scaffold contextTools with shared generateContext helper (slice 146)\"",
+                  "done": true
+                },
+                {
+                  "name": "Register `context_build` tool in `registerContextTools()`:",
+                  "done": true
+                },
+                {
+                  "name": "Handler logic:",
+                  "done": true
+                },
+                {
+                  "name": "Handle specific error cases:",
+                  "done": true
+                },
+                {
+                  "name": "Register `template_preview` tool in `registerContextTools()`:",
+                  "done": true
+                },
+                {
+                  "name": "Handler logic: delegates to the same `generateContext` helper as `context_build`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/src/__tests__/contextTools.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Mock `@context-forge/core/node` to stub `FileProjectStore`, `createContextPipeline`, and `SystemPromptParser`",
+                  "done": true
+                },
+                {
+                  "name": "Mock `createContextPipeline` to return a mock `integrator` with `generateContextFromProject` that returns a known con...",
+                  "done": true
+                },
+                {
+                  "name": "Create mock `ProjectData` fixture (must include `projectPath`)",
+                  "done": true
+                },
+                {
+                  "name": "Set up test client using `InMemoryTransport` (same pattern as `projectTools.test.ts`)",
+                  "done": true
+                },
+                {
+                  "name": "`context_build` tests:",
+                  "done": true
+                },
+                {
+                  "name": "Returns assembled context string for valid project (plain text, not JSON)",
+                  "done": true
+                },
+                {
+                  "name": "Applies override parameters (verify the working copy passed to `generateContextFromProject` has overrides applied)",
+                  "done": true
+                },
+                {
+                  "name": "Appends `additionalInstructions` when provided",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` for non-existent project ID",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` when project has no `projectPath`",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` on core generation failure (mock throws)",
+                  "done": true
+                },
+                {
+                  "name": "`template_preview` tests:",
+                  "done": true
+                },
+                {
+                  "name": "Returns same output as `context_build` for identical parameters",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` for non-existent project",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp test` — all tests pass (both new and existing)",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp build` — clean build",
+                  "done": true
+                },
+                {
+                  "name": "Commit: \"feat(mcp-server): implement context_build and template_preview tools with tests (slice 146)\"",
+                  "done": true
+                },
+                {
+                  "name": "Register `prompt_list` tool in `registerContextTools()`:",
+                  "done": true
+                },
+                {
+                  "name": "Handler logic:",
+                  "done": true
+                },
+                {
+                  "name": "Error cases:",
+                  "done": true
+                },
+                {
+                  "name": "Register `prompt_get` tool in `registerContextTools()`:",
+                  "done": true
+                },
+                {
+                  "name": "Handler logic:",
+                  "done": true
+                },
+                {
+                  "name": "Add tests to `contextTools.test.ts` (or create a separate `promptTools.test.ts` if the file is getting long)",
+                  "done": true
+                },
+                {
+                  "name": "Mock `SystemPromptParser` to return known `SystemPrompt[]` fixture data",
+                  "done": true
+                },
+                {
+                  "name": "`prompt_list` tests:",
+                  "done": true
+                },
+                {
+                  "name": "Returns template listing with names, keys, and count",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` for non-existent project",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` when project has no `projectPath`",
+                  "done": true
+                },
+                {
+                  "name": "Handles parse errors gracefully (mock throws)",
+                  "done": true
+                },
+                {
+                  "name": "`prompt_get` tests:",
+                  "done": true
+                },
+                {
+                  "name": "Returns template content for valid name match",
+                  "done": true
+                },
+                {
+                  "name": "Returns template content for valid key match",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` for non-existent template name (with prompt_list reference)",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` for non-existent project",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp test` — all tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp build` — clean build",
+                  "done": true
+                },
+                {
+                  "name": "Commit: \"feat(mcp-server): implement prompt_list and prompt_get tools with tests (slice 146)\"",
+                  "done": true
+                },
+                {
+                  "name": "Edit `packages/mcp-server/src/index.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "No other changes to `index.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Edit `packages/mcp-server/src/__tests__/serverLifecycle.test.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm -r build` — full workspace builds cleanly",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp test` — all MCP server tests pass (project tools, context tools, lifecycle)",
+                  "done": true
+                },
+                {
+                  "name": "Verify no regressions: existing project tools tests pass unchanged",
+                  "done": true
+                },
+                {
+                  "name": "Verify `dist/index.js` exists and contains all tool registrations",
+                  "done": true
+                },
+                {
+                  "name": "Commit: \"test(mcp-server): update lifecycle test for 7 tools, verify full build (slice 146)\"",
+                  "done": true
+                },
+                {
+                  "name": "Update DEVLOG.md with implementation summary and commit hashes",
+                  "done": true
+                },
+                {
+                  "name": "Mark slice 146 (item 7) as `[x]` in `140-slices.context-forge-restructure.md`",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "147",
+            "name": "mcp-server-state-tools",
+            "status": "complete",
+            "dateCreated": "20260220",
+            "dateUpdated": "20260220",
+            "tasks": {
+              "index": "147",
+              "name": "tasks.mcp-server-state-tools",
+              "status": "complete",
+              "taskCount": 33,
+              "completedTasks": 33,
+              "dateCreated": "20260220",
+              "dateUpdated": "20260220",
+              "items": [
+                {
+                  "name": "Create `packages/mcp-server/src/tools/stateTools.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Export a `registerStateTools(server: McpServer)` function (same pattern as `registerProjectTools` and `registerContex...",
+                  "done": true
+                },
+                {
+                  "name": "Add imports:",
+                  "done": true
+                },
+                {
+                  "name": "File compiles (`pnpm --filter context-forge-mcp build`)",
+                  "done": true
+                },
+                {
+                  "name": "Register `context_summarize` tool in `registerStateTools()`:",
+                  "done": true
+                },
+                {
+                  "name": "Handler logic:",
+                  "done": true
+                },
+                {
+                  "name": "Wrap handler in try/catch — surface store failures via `errorResult`",
+                  "done": true
+                },
+                {
+                  "name": "File compiles (`pnpm --filter context-forge-mcp build`)",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/mcp-server/src/__tests__/stateTools.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Mock `@context-forge/core/node` to stub `FileProjectStore` (same pattern as `projectTools.test.ts`)",
+                  "done": true
+                },
+                {
+                  "name": "Mock `getById` and `update` methods on the store",
+                  "done": true
+                },
+                {
+                  "name": "Create mock `ProjectData` fixture with existing `customData` fields (`recentEvents`, `additionalNotes`, `monorepoNote...",
+                  "done": true
+                },
+                {
+                  "name": "Set up test client using `InMemoryTransport` + `Client` pattern (import from `@modelcontextprotocol/sdk`)",
+                  "done": true
+                },
+                {
+                  "name": "Test cases:",
+                  "done": true
+                },
+                {
+                  "name": "Returns updated project as JSON after updating `recentEvents`",
+                  "done": true
+                },
+                {
+                  "name": "Preserves other `customData` fields (`monorepoNote`, `availableTools`) during update",
+                  "done": true
+                },
+                {
+                  "name": "Updates `additionalNotes` when provided",
+                  "done": true
+                },
+                {
+                  "name": "Does not modify `additionalNotes` when not provided in the call",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` for non-existent project ID (message references `project_list`)",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` for empty/whitespace-only summary",
+                  "done": true
+                },
+                {
+                  "name": "Returns `isError: true` on store update failure (mock `update` throws)",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp test` — all tests pass (new + existing)",
+                  "done": true
+                },
+                {
+                  "name": "Edit `packages/mcp-server/src/index.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "No other changes to `index.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Edit `packages/mcp-server/src/__tests__/serverLifecycle.test.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm -r build` — full workspace builds cleanly",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter context-forge-mcp test` — all MCP server tests pass (project tools, context tools, state tools, li...",
+                  "done": true
+                },
+                {
+                  "name": "Verify no regressions: existing tests pass unchanged",
+                  "done": true
+                },
+                {
+                  "name": "Verify `dist/index.js` exists and contains all tool registrations",
+                  "done": true
+                },
+                {
+                  "name": "Commit all changes: \"feat(mcp-server): implement context_summarize tool with tests (slice 147)\"",
+                  "done": true
+                },
+                {
+                  "name": "Update DEVLOG.md with implementation summary and commit hashes",
+                  "done": true
+                },
+                {
+                  "name": "Mark slice 147 (item 8) as `[x]` in `140-slices.context-forge-restructure.md`",
+                  "done": true
+                },
+                {
+                  "name": "Update slice design status from `not started` to `complete`",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "148",
+            "name": "electron-client-conversion",
+            "status": "not-started",
+            "dateCreated": "20260221",
+            "dateUpdated": "20260221",
+            "tasks": {
+              "index": "148",
+              "name": "tasks.electron-client-conversion",
+              "status": "complete",
+              "taskCount": 141,
+              "completedTasks": 141,
+              "dateCreated": "20260221",
+              "dateUpdated": "20260221",
+              "items": [
+                {
+                  "name": "Create `packages/electron/src/main/ipc/projectHandlers.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Export `registerProjectHandlers(store: FileProjectStore)` function",
+                  "done": true
+                },
+                {
+                  "name": "Register IPC handlers for: `project:list`, `project:get`, `project:create`, `project:update`, `project:delete`",
+                  "done": true
+                },
+                {
+                  "name": "`project:list` calls `store.getAll()`, sorts by `updatedAt` descending",
+                  "done": true
+                },
+                {
+                  "name": "`project:get` calls `store.getById(id)`, returns `ProjectData | null`",
+                  "done": true
+                },
+                {
+                  "name": "`project:create` calls `store.create(data)`, returns created `ProjectData`",
+                  "done": true
+                },
+                {
+                  "name": "`project:update` calls `store.update(id, updates)` then `store.getById(id)` to return updated data",
+                  "done": true
+                },
+                {
+                  "name": "`project:delete` calls `store.delete(id)`",
+                  "done": true
+                },
+                {
+                  "name": "All handlers wrap calls in try/catch — rethrow errors with descriptive messages for IPC error propagation",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** File compiles, exports the registration function, all 5 handlers use `ipcMain.handle()`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/tests/unit/main/ipc/projectHandlers.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Mock `FileProjectStore` with vi.fn() for each method",
+                  "done": true
+                },
+                {
+                  "name": "Test `project:list` calls `getAll()` and returns sorted array",
+                  "done": true
+                },
+                {
+                  "name": "Test `project:get` returns project when found, null when not",
+                  "done": true
+                },
+                {
+                  "name": "Test `project:create` passes `CreateProjectData` to `create()` and returns result",
+                  "done": true
+                },
+                {
+                  "name": "Test `project:update` calls `update()` then `getById()` for read-back",
+                  "done": true
+                },
+                {
+                  "name": "Test `project:delete` calls `delete()` with correct id",
+                  "done": true
+                },
+                {
+                  "name": "Test error propagation: handler rethrows when store method throws",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** All tests pass via `pnpm --filter @context-forge/electron test:run`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/src/main/ipc/contextHandlers.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Define `ContextOverrides` interface (or import from a shared types location — see slice design for shape)",
+                  "done": true
+                },
+                {
+                  "name": "Export `registerContextHandlers(store: FileProjectStore)` function",
+                  "done": true
+                },
+                {
+                  "name": "Register `context:generate` handler: takes `(projectId: string, overrides?: ContextOverrides)`",
+                  "done": true
+                },
+                {
+                  "name": "Handler flow: `store.getById(projectId)` → validate project exists → apply overrides to project copy → `createContext...",
+                  "done": true
+                },
+                {
+                  "name": "Override application: merge override fields into a shallow copy of ProjectData before passing to pipeline (same patte...",
+                  "done": true
+                },
+                {
+                  "name": "Error case: project not found → throw descriptive error",
+                  "done": true
+                },
+                {
+                  "name": "Error case: project has no `projectPath` → throw descriptive error",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** File compiles, exports registration function, handler delegates to `createContextPipeline`",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/tests/unit/main/ipc/contextHandlers.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Mock `FileProjectStore` and `createContextPipeline` (from `@context-forge/core/node`)",
+                  "done": true
+                },
+                {
+                  "name": "Test successful generation: returns context string from integrator",
+                  "done": true
+                },
+                {
+                  "name": "Test with overrides: verify override fields are applied to project before passing to pipeline",
+                  "done": true
+                },
+                {
+                  "name": "Test project not found: throws error with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "Test project missing projectPath: throws error",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** All tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/src/main/ipc/appStateHandlers.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Export `registerAppStateHandlers(storageService: FileStorageService)` function",
+                  "done": true
+                },
+                {
+                  "name": "Register `app-state:get` handler: reads `app-state.json` via `storageService.read()`, parses JSON, returns `AppState`...",
+                  "done": true
+                },
+                {
+                  "name": "Register `app-state:update` handler: reads current state, merges `Partial<AppState>` updates, writes back via `storag...",
+                  "done": true
+                },
+                {
+                  "name": "Define `AppState` interface (reuse from existing `src/services/storage/types/AppState.ts` — move type to a shared loc...",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** File compiles, both handlers registered",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/tests/unit/main/ipc/appStateHandlers.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Mock `FileStorageService` read/write methods",
+                  "done": true
+                },
+                {
+                  "name": "Test `app-state:get` returns parsed state from file",
+                  "done": true
+                },
+                {
+                  "name": "Test `app-state:get` returns default state when file doesn't exist",
+                  "done": true
+                },
+                {
+                  "name": "Test `app-state:update` merges partial updates with existing state",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** All tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Modify `packages/electron/src/main/main.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Import `FileProjectStore`, `FileStorageService`, `getStoragePath` from `@context-forge/core/node`",
+                  "done": true
+                },
+                {
+                  "name": "Initialize `FileProjectStore` instance at app startup (using `getStoragePath()`)",
+                  "done": true
+                },
+                {
+                  "name": "Initialize `FileStorageService` instance for app state",
+                  "done": true
+                },
+                {
+                  "name": "Import and call `registerProjectHandlers(store)`, `registerContextHandlers(store)`, `registerAppStateHandlers(storage...",
+                  "done": true
+                },
+                {
+                  "name": "Keep existing old handlers registered (coexistence — both old and new channels work)",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** `pnpm build` succeeds across workspace. App launches and old functionality still works. New handlers are...",
+                  "done": true
+                },
+                {
+                  "name": "Git add and commit all Phase 1 files (new handlers, tests, main.ts changes)",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Clean commit with all Phase 1 work, build passes",
+                  "done": true
+                },
+                {
+                  "name": "Modify `packages/electron/src/preload/preload.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Add new channel bindings via `contextBridge.exposeInMainWorld`:",
+                  "done": true
+                },
+                {
+                  "name": "`project: { list, get, create, update, delete }` — each calls `ipcRenderer.invoke('project:...')`",
+                  "done": true
+                },
+                {
+                  "name": "`context: { generate }` — calls `ipcRenderer.invoke('context:generate', ...)`",
+                  "done": true
+                },
+                {
+                  "name": "`appState: { get, update }` — calls `ipcRenderer.invoke('app-state:...')`",
+                  "done": true
+                },
+                {
+                  "name": "Keep existing bindings intact for now (old and new coexist)",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Preload exposes both old and new API surfaces. Build passes.",
+                  "done": true
+                },
+                {
+                  "name": "Create `packages/electron/src/services/api.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Define typed API objects: `projectApi`, `contextApi`, `appStateApi`",
+                  "done": true
+                },
+                {
+                  "name": "Each method calls through `window.electronAPI.project.*`, `window.electronAPI.context.*`, `window.electronAPI.appStat...",
+                  "done": true
+                },
+                {
+                  "name": "Import types from `@context-forge/core` (`ProjectData`, `CreateProjectData`, `UpdateProjectData`)",
+                  "done": true
+                },
+                {
+                  "name": "Define `ContextOverrides` type (import or re-export from contextHandlers if shared, or define locally)",
+                  "done": true
+                },
+                {
+                  "name": "Update global type declarations for `window.electronAPI` to include new API surface (likely in `StorageClient.ts` or ...",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** `api.ts` compiles with full type safety. No runtime usage yet.",
+                  "done": true
+                },
+                {
+                  "name": "Git add and commit Phase 2 files (preload changes, api.ts)",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Clean commit, build passes",
+                  "done": true
+                },
+                {
+                  "name": "Modify `packages/electron/src/hooks/useContextGeneration.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Replace import of `createSystemPromptParser`, `createStatementManager` from `ServiceFactory` with import of `contextA...",
+                  "done": true
+                },
+                {
+                  "name": "Remove imports of `ContextTemplateEngine`, `ContextIntegrator`, `SectionBuilder` from core (no longer used in renderer)",
+                  "done": true
+                },
+                {
+                  "name": "Simplify hook: single `contextApi.generate(projectId, overrides)` call replaces local pipeline orchestration",
+                  "done": true
+                },
+                {
+                  "name": "Maintain same return interface: `{ contextString, isLoading, error, regenerate }`",
+                  "done": true
+                },
+                {
+                  "name": "Hook signature changes from accepting project data to accepting `projectId: string | null`",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Hook compiles, same return type, uses IPC instead of local orchestration",
+                  "done": true
+                },
+                {
+                  "name": "Create or update test at `packages/electron/tests/unit/hooks/useContextGeneration.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Mock `window.electronAPI.context.generate` via vi.fn()",
+                  "done": true
+                },
+                {
+                  "name": "Test loading state transitions: idle → loading → success",
+                  "done": true
+                },
+                {
+                  "name": "Test error state: mock rejects → error string populated",
+                  "done": true
+                },
+                {
+                  "name": "Test regenerate with overrides: verify overrides passed through",
+                  "done": true
+                },
+                {
+                  "name": "Test null projectId: regenerate is no-op",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** All tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Modify `packages/electron/src/components/ContextBuilderApp.tsx`",
+                  "done": true
+                },
+                {
+                  "name": "Replace `PersistentProjectStore` import with `projectApi` and `appStateApi` from `services/api`",
+                  "done": true
+                },
+                {
+                  "name": "Replace `ProjectManager` import with direct `projectApi` calls",
+                  "done": true
+                },
+                {
+                  "name": "Update project loading: `projectApi.list()` instead of `projectManager.loadAllProjects()`",
+                  "done": true
+                },
+                {
+                  "name": "Update project creation: `projectApi.create(data)` instead of `projectManager.createNewProject(data)`",
+                  "done": true
+                },
+                {
+                  "name": "Update project switching: `projectApi.get(id)` + `appStateApi.update({ lastActiveProjectId: id })` instead of `projec...",
+                  "done": true
+                },
+                {
+                  "name": "Update project deletion: `projectApi.delete(id)` instead of `projectManager.deleteProject(id)`",
+                  "done": true
+                },
+                {
+                  "name": "Update project updates/auto-save: `projectApi.update(id, changes)` instead of `persistentStore.saveProject(project)`",
+                  "done": true
+                },
+                {
+                  "name": "Update app state: `appStateApi.get()` / `appStateApi.update()` instead of `persistentStore.getAppState()` / `persiste...",
+                  "done": true
+                },
+                {
+                  "name": "Update `useContextGeneration` call to pass `projectId` instead of full project data",
+                  "done": true
+                },
+                {
+                  "name": "Evaluate `app:flush-save` handler: if all writes are `await`ed IPC calls, flush may be unnecessary. Remove or simplify.",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Component compiles, all project workflows function via new API",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm build` — must succeed",
+                  "done": true
+                },
+                {
+                  "name": "Run all existing tests — note any failures from updated interfaces",
+                  "done": true
+                },
+                {
+                  "name": "Fix test failures caused by interface changes in ContextBuilderApp or useContextGeneration",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Build succeeds, all non-deleted-module tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Git add and commit Phase 3 files",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Clean commit, build passes",
+                  "done": true
+                },
+                {
+                  "name": "Delete the following files from `packages/electron/src/`:",
+                  "done": true
+                },
+                {
+                  "name": "`services/storage/StorageClient.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`services/storage/ElectronStorageService.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`services/storage/PersistentProjectStore.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`services/storage/StorageService.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`services/project/ProjectManager.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`services/context/StatementManagerIPC.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`services/context/SystemPromptParserIPC.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`services/context/ServiceFactory.ts`",
+                  "done": true
+                },
+                {
+                  "name": "Update or replace `services/context/index.ts` — if any re-exports from core are still needed by other renderer files,...",
+                  "done": true
+                },
+                {
+                  "name": "Verify no remaining imports reference deleted files (TypeScript build will catch this)",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Files deleted, `pnpm build` succeeds",
+                  "done": true
+                },
+                {
+                  "name": "Delete test files for removed modules from `packages/electron/tests/`:",
+                  "done": true
+                },
+                {
+                  "name": "`unit/services/storage/StorageClient.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`unit/services/storage/ElectronStorageService.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`unit/services/storage/integration.test.ts` (if it tests old storage stack)",
+                  "done": true
+                },
+                {
+                  "name": "`unit/services/project/ProjectManager.test.ts`",
+                  "done": true
+                },
+                {
+                  "name": "`unit/services/context/IPCIntegration.test.ts` (if it tests old IPC wrappers)",
+                  "done": true
+                },
+                {
+                  "name": "Review remaining test files: `ContextGenerator.test.ts`, `ContextIntegrator.test.ts`, `TemplateProcessor.test.ts` — t...",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** No test references to deleted modules, `pnpm test:run` passes for remaining tests",
+                  "done": true
+                },
+                {
+                  "name": "Remove old IPC handlers from `main.ts` or `contextServices.ts`:",
+                  "done": true
+                },
+                {
+                  "name": "`storage:read`, `storage:write`, `storage:backup`, `storage:list-backups` handlers",
+                  "done": true
+                },
+                {
+                  "name": "`statements:load`, `statements:save`, `statements:get`, `statements:update` handlers",
+                  "done": true
+                },
+                {
+                  "name": "`systemPrompts:parse`, `systemPrompts:getContextInit`, `systemPrompts:getToolUse`, `systemPrompts:getForInstruction` ...",
+                  "done": true
+                },
+                {
+                  "name": "Delete `src/main/ipc/contextServices.ts` if all its handlers are removed",
+                  "done": true
+                },
+                {
+                  "name": "Remove old channel bindings from `preload.ts` (the `storage`, `statements`, `systemPrompts` sections)",
+                  "done": true
+                },
+                {
+                  "name": "Clean up global type declarations: remove old `window.electronAPI` shape for deleted channels",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Only new domain-level IPC channels remain. Build passes.",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm build` across full workspace",
+                  "done": true
+                },
+                {
+                  "name": "Run `pnpm --filter @context-forge/electron test:run` — all remaining tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Verify success criteria from slice design:",
+                  "done": true
+                },
+                {
+                  "name": "No renderer code imports from `@context-forge/core/node`",
+                  "done": true
+                },
+                {
+                  "name": "All IPC channels are domain-level operations",
+                  "done": true
+                },
+                {
+                  "name": "`StatementManagerIPC`, `SystemPromptParserIPC`, `ServiceFactory`, `ElectronStorageService`, `PersistentProjectStore`,...",
+                  "done": true
+                },
+                {
+                  "name": "Unit tests exist for all new IPC handler modules",
+                  "done": true
+                },
+                {
+                  "name": "Git add and commit cleanup",
+                  "done": true
+                },
+                {
+                  "name": "**Success:** Clean commit, build passes, all tests pass, slice complete",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "149",
+            "name": "integration-core-test",
+            "status": "complete",
+            "dateCreated": "20260222",
+            "dateUpdated": "20260222",
+            "tasks": {
+              "index": "149",
+              "name": "tasks.integration-core-test",
+              "status": "complete",
+              "taskCount": 62,
+              "completedTasks": 52,
+              "dateCreated": "20260222",
+              "dateUpdated": "20260222",
+              "items": [
+                {
+                  "name": "**Task 1: Create shared test helper module** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "No `any` types",
+                  "done": false
+                },
+                {
+                  "name": "Each factory returns a fully valid object (no missing required fields)",
+                  "done": false
+                },
+                {
+                  "name": "File compiles with `pnpm build` in `packages/core`",
+                  "done": false
+                },
+                {
+                  "name": "**Task 2: Expand test fixture for StatementManager format** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Fixture parses correctly when loaded by `StatementManager`",
+                  "done": false
+                },
+                {
+                  "name": "Existing pipeline-integration tests still pass (`pnpm test` in `packages/core`)",
+                  "done": false
+                },
+                {
+                  "name": "**Task 3: Expand prompt fixture for instruction-matching tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "File retains valid YAML frontmatter",
+                  "done": false
+                },
+                {
+                  "name": "At least 6 `#####` sections present for comprehensive instruction-matching tests",
+                  "done": false
+                },
+                {
+                  "name": "Existing pipeline-integration tests still pass",
+                  "done": false
+                },
+                {
+                  "name": "**Task 4: Commit — test infrastructure** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": false
+                },
+                {
+                  "name": "All existing tests pass",
+                  "done": false
+                },
+                {
+                  "name": "**Task 5: TemplateProcessor tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All public methods of `TemplateProcessor` have at least one test",
+                  "done": true
+                },
+                {
+                  "name": "Tests pass with `pnpm test` in `packages/core`",
+                  "done": true
+                },
+                {
+                  "name": "No `any` types in test code",
+                  "done": true
+                },
+                {
+                  "name": "**Task 6: Commit — TemplateProcessor tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit, all tests pass",
+                  "done": true
+                },
+                {
+                  "name": "**Task 7: SystemPromptParser tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All public methods have at least one test",
+                  "done": true
+                },
+                {
+                  "name": "Caching behavior verified (second call cached, file change invalidates)",
+                  "done": true
+                },
+                {
+                  "name": "Tests pass, no `any` types",
+                  "done": true
+                },
+                {
+                  "name": "**Task 8: StatementManager tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All public methods have at least one test",
+                  "done": true
+                },
+                {
+                  "name": "Default fallback behavior verified (missing file → `DEFAULT_STATEMENTS`)",
+                  "done": true
+                },
+                {
+                  "name": "Tests pass, no `any` types",
+                  "done": true
+                },
+                {
+                  "name": "**Task 9: ProjectPathService tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All public methods have at least one test",
+                  "done": true
+                },
+                {
+                  "name": "Security checks verified (null chars, `..` traversal rejected)",
+                  "done": true
+                },
+                {
+                  "name": "Tests pass, no `any` types",
+                  "done": true
+                },
+                {
+                  "name": "**Task 10: Commit — filesystem service tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit, all tests pass",
+                  "done": true
+                },
+                {
+                  "name": "**Task 11: SectionBuilder tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All public methods have at least one test",
+                  "done": true
+                },
+                {
+                  "name": "Mock injection pattern works cleanly (no module-level `vi.mock()`)",
+                  "done": true
+                },
+                {
+                  "name": "Tests pass, no `any` types",
+                  "done": true
+                },
+                {
+                  "name": "**Task 12: Commit — SectionBuilder tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit, all tests pass",
+                  "done": true
+                },
+                {
+                  "name": "**Task 13: ContextTemplateEngine tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All public methods have at least one test",
+                  "done": true
+                },
+                {
+                  "name": "Conditional section inclusion verified",
+                  "done": true
+                },
+                {
+                  "name": "Tests pass, no `any` types",
+                  "done": true
+                },
+                {
+                  "name": "**Task 14: ContextIntegrator tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All public methods have at least one test",
+                  "done": true
+                },
+                {
+                  "name": "Legacy fallback behavior verified",
+                  "done": true
+                },
+                {
+                  "name": "Tests pass, no `any` types",
+                  "done": true
+                },
+                {
+                  "name": "**Task 15: CoreServiceFactory tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Pipeline creation succeeds with fixture project path",
+                  "done": true
+                },
+                {
+                  "name": "Generated context contains expected project name and structure",
+                  "done": true
+                },
+                {
+                  "name": "Tests pass, no `any` types",
+                  "done": true
+                },
+                {
+                  "name": "**Task 16: Commit — integration service tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit, all tests pass",
+                  "done": true
+                },
+                {
+                  "name": "**Task 17: Full test suite verification** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "All tests pass",
+                  "done": true
+                },
+                {
+                  "name": "No Electron dependencies in test imports",
+                  "done": true
+                },
+                {
+                  "name": "No `any` types in test code",
+                  "done": true
+                },
+                {
+                  "name": "Workspace builds clean",
+                  "done": true
+                },
+                {
+                  "name": "**Task 18: Final commit and DEVLOG update** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "DEVLOG updated with implementation summary",
+                  "done": true
+                },
+                {
+                  "name": "All work committed",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "150",
+            "name": "mcp-integration-test",
+            "status": "not-started",
+            "dateCreated": "20260222",
+            "dateUpdated": "20260222",
+            "tasks": {
+              "index": "150",
+              "name": "tasks.mcp-integration-test",
+              "status": "complete",
+              "taskCount": 61,
+              "completedTasks": 61,
+              "dateCreated": "20260223",
+              "dateUpdated": "20260223",
+              "items": [
+                {
+                  "name": "**Task 1: Create fixture project directory and files** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "Directory structure matches slice design diagram",
+                  "done": true
+                },
+                {
+                  "name": "`projects.json` is valid JSON with all required `ProjectData` fields",
+                  "done": true
+                },
+                {
+                  "name": "Statement and prompt files parse correctly (verified in Task 3)",
+                  "done": true
+                },
+                {
+                  "name": "**Task 2: Create integration test helper module** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "No `any` types",
+                  "done": true
+                },
+                {
+                  "name": "`createIntegrationClient` registers all 3 tool groups",
+                  "done": true
+                },
+                {
+                  "name": "`setupFixtureEnv` produces a temp dir with patched absolute path",
+                  "done": true
+                },
+                {
+                  "name": "File compiles with `pnpm build` in `packages/mcp-server`",
+                  "done": true
+                },
+                {
+                  "name": "**Task 3: Smoke test — verify fixture + helper wiring** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Smoke test passes with `pnpm test` in `packages/mcp-server`",
+                  "done": true
+                },
+                {
+                  "name": "Existing 31 unit tests still pass",
+                  "done": true
+                },
+                {
+                  "name": "No `vi.mock()` on `@context-forge/core` in the integration test file",
+                  "done": true
+                },
+                {
+                  "name": "**Task 4: Commit — test infrastructure and smoke test** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "All tests pass (unit + integration)",
+                  "done": true
+                },
+                {
+                  "name": "**Task 5: `project_list` integration tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "All `project_list` tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Assertions verify actual field values against fixture data",
+                  "done": true
+                },
+                {
+                  "name": "**Task 6: `project_get` integration tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "All `project_get` tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Error case verifies `isError: true` in response",
+                  "done": true
+                },
+                {
+                  "name": "**Task 7: `project_update` integration tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All `project_update` tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Mutation tests clean up after themselves",
+                  "done": true
+                },
+                {
+                  "name": "Read-back verification confirms persistence",
+                  "done": true
+                },
+                {
+                  "name": "**Task 8: Commit — project tool integration tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "All tests pass",
+                  "done": true
+                },
+                {
+                  "name": "**Task 9: `context_build` integration tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All `context_build` tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Output verified to contain fixture project markers",
+                  "done": true
+                },
+                {
+                  "name": "Override parameters produce observable changes in output",
+                  "done": true
+                },
+                {
+                  "name": "**Task 10: `template_preview` integration tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "All `template_preview` tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Output structure matches `context_build` expectations",
+                  "done": true
+                },
+                {
+                  "name": "**Task 11: `prompt_list` integration tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "All `prompt_list` tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Template count matches fixture file sections",
+                  "done": true
+                },
+                {
+                  "name": "**Task 12: `prompt_get` integration tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "All `prompt_get` tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Error case returns `isError: true`",
+                  "done": true
+                },
+                {
+                  "name": "**Task 13: Commit — context tool integration tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "All tests pass",
+                  "done": true
+                },
+                {
+                  "name": "**Task 14: `context_summarize` integration tests** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All `context_summarize` tests pass",
+                  "done": true
+                },
+                {
+                  "name": "Mutation tests clean up after themselves",
+                  "done": true
+                },
+                {
+                  "name": "Read-back verification confirms persistence",
+                  "done": true
+                },
+                {
+                  "name": "**Task 15: Commit — state tool integration tests** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "All tests pass",
+                  "done": true
+                },
+                {
+                  "name": "**Task 16: Full test suite verification** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "All MCP server tests pass (unit + integration)",
+                  "done": true
+                },
+                {
+                  "name": "Workspace builds clean",
+                  "done": true
+                },
+                {
+                  "name": "No `vi.mock()` on core in integration tests",
+                  "done": true
+                },
+                {
+                  "name": "Fixture is self-contained",
+                  "done": true
+                },
+                {
+                  "name": "**Task 17: Final commit and DEVLOG update** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "DEVLOG updated with Phase 7 completion",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit",
+                  "done": true
+                },
+                {
+                  "name": "All tests pass",
+                  "done": true
+                }
+              ]
+            }
+          },
+          {
+            "index": "151",
+            "name": "documentation-and-packaging",
+            "status": "not-started",
+            "dateCreated": "20260223",
+            "dateUpdated": "20260223",
+            "tasks": {
+              "index": "151",
+              "name": "tasks.documentation-and-packaging",
+              "status": "complete",
+              "taskCount": 50,
+              "completedTasks": 50,
+              "dateCreated": "20260223",
+              "dateUpdated": "20260223",
+              "items": [
+                {
+                  "name": "**Task 1: Create `docs/TOOLS.md` — full tool reference** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "All 8 tools documented with complete parameter tables",
+                  "done": true
+                },
+                {
+                  "name": "Descriptions match the actual tool registration descriptions in source",
+                  "done": true
+                },
+                {
+                  "name": "File is valid markdown with consistent formatting",
+                  "done": true
+                },
+                {
+                  "name": "**Task 2: Commit — tool reference** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "**Task 3: Create `packages/mcp-server/README.md`** (Effort: 3/5)",
+                  "done": true
+                },
+                {
+                  "name": "README exists at `packages/mcp-server/README.md`",
+                  "done": true
+                },
+                {
+                  "name": "Contains all 10 sections listed above",
+                  "done": true
+                },
+                {
+                  "name": "Claude Code and Cursor config examples are valid JSON",
+                  "done": true
+                },
+                {
+                  "name": "Tool overview table lists all 8 tools",
+                  "done": true
+                },
+                {
+                  "name": "Links to `docs/TOOLS.md` for detailed reference",
+                  "done": true
+                },
+                {
+                  "name": "Mentions ai-project-guide dependency with link and bootstrap command",
+                  "done": true
+                },
+                {
+                  "name": "**Task 4: Commit — MCP server README** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "**Task 5: Create `packages/core/README.md`** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "README exists at `packages/core/README.md`",
+                  "done": true
+                },
+                {
+                  "name": "Documents both export paths with examples",
+                  "done": true
+                },
+                {
+                  "name": "Lists key services with brief descriptions",
+                  "done": true
+                },
+                {
+                  "name": "Explains monorepo role",
+                  "done": true
+                },
+                {
+                  "name": "**Task 6: Commit — core README** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "**Task 7: Update root `README.md`** (Effort: 2/5)",
+                  "done": true
+                },
+                {
+                  "name": "No references to MCP server being \"scaffolded\" or \"not yet functional\"",
+                  "done": true
+                },
+                {
+                  "name": "\"What works\" includes MCP server",
+                  "done": true
+                },
+                {
+                  "name": "\"In progress\" and \"Planned\" reflect actual current state",
+                  "done": true
+                },
+                {
+                  "name": "MCP callout with link to mcp-server README is present",
+                  "done": true
+                },
+                {
+                  "name": "Quick Start includes MCP alternative",
+                  "done": true
+                },
+                {
+                  "name": "**Task 8: Commit — root README update** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "**Task 9: Update `packages/mcp-server/package.json` — publishing metadata** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "`\"private\"` field removed or set to `false`",
+                  "done": true
+                },
+                {
+                  "name": "All metadata fields present and correct",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm build` passes",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm test` passes in `packages/mcp-server`",
+                  "done": true
+                },
+                {
+                  "name": "**Task 10: Update `packages/core/package.json` — publishing metadata** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "`\"private\"` field removed or set to `false`",
+                  "done": true
+                },
+                {
+                  "name": "All metadata fields present and correct",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm build` passes",
+                  "done": true
+                },
+                {
+                  "name": "`pnpm test` passes in `packages/core`",
+                  "done": true
+                },
+                {
+                  "name": "**Task 11: Commit — package.json publishing metadata** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Clean commit with descriptive message",
+                  "done": true
+                },
+                {
+                  "name": "**Task 12: Full verification** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "Workspace builds clean",
+                  "done": true
+                },
+                {
+                  "name": "All tests pass",
+                  "done": true
+                },
+                {
+                  "name": "All document links are correct",
+                  "done": true
+                },
+                {
+                  "name": "**Task 13: DEVLOG update and final commit** (Effort: 1/5)",
+                  "done": true
+                },
+                {
+                  "name": "DEVLOG updated with slice 151 entry",
+                  "done": true
+                },
+                {
+                  "name": "Clean final commit",
+                  "done": true
+                },
+                {
+                  "name": "All tests pass",
+                  "done": true
+                }
+              ]
+            }
+          }
+        ],
+        "features": [],
+        "arch": {
+          "index": "140",
+          "name": "context-forge-restructure",
+          "status": "in-progress",
+          "dateCreated": "20260214",
+          "dateUpdated": "20260215"
+        },
+        "slicePlan": {
+          "index": "140",
+          "name": "context-forge-restructure",
+          "status": "not-started",
+          "dateCreated": "20260214",
+          "dateUpdated": "20260217",
+          "futureWork": []
+        }
+      },
+      "780": {
+        "name": "Future Guide Management",
+        "slices": [],
+        "features": [],
+        "slicePlan": {
+          "index": "780",
+          "name": "future.guide-management",
+          "status": "not-started",
+          "futureWork": []
+        }
+      }
+    },
+    "futureSlices": [
+      {
+        "index": "750",
+        "name": "auto-index-resolution",
+        "status": "not-started",
+        "dateCreated": "20260212",
+        "dateUpdated": "20260213",
+        "parent": "140"
+      },
+      {
+        "index": "751",
+        "name": "project-monorepo",
+        "status": "not-started",
+        "dateCreated": "20250925",
+        "dateUpdated": "20250925",
+        "parent": "140"
+      },
+      {
+        "index": "754",
+        "name": "add-date",
+        "status": "not-started",
+        "dateCreated": "20251005",
+        "dateUpdated": "20251004",
+        "parent": "140"
+      },
+      {
+        "index": "755",
+        "name": "naming-schema-controls",
+        "status": "in-progress",
+        "dateCreated": "20251006",
+        "dateUpdated": "20251007",
+        "parent": "140"
+      },
+      {
+        "index": "756",
+        "name": "projects-versioned-backup",
+        "status": "not-started",
+        "dateCreated": "20260214",
+        "dateUpdated": "20260214",
+        "parent": "140"
+      },
+      {
+        "index": "752",
+        "name": "dynamic-phase-options",
+        "status": "not-started",
+        "dateCreated": "20260207",
+        "dateUpdated": "20260207",
+        "parent": "140"
+      },
+      {
+        "index": "753",
+        "name": "undo",
+        "status": "not-started",
+        "dateCreated": "20251022",
+        "dateUpdated": "20251022",
+        "parent": "140"
+      }
+    ],
+    "quality": [],
+    "investigation": [],
+    "maintenance": [
+      {
+        "index": "900",
+        "name": "add-date",
+        "status": "in-progress",
+        "dateCreated": "20251004",
+        "dateUpdated": "20251004",
+        "taskCount": 42,
+        "completedTasks": 13
+      },
+      {
+        "index": "900",
+        "name": "maintenance",
+        "status": "complete",
+        "dateCreated": "20250916",
+        "dateUpdated": "20250918",
+        "taskCount": 60,
+        "completedTasks": 57
+      },
+      {
+        "index": "900",
+        "name": "naming-schema-controls",
+        "status": "in-progress",
+        "dateCreated": "20251008",
+        "dateUpdated": "20251008",
+        "taskCount": 226,
+        "completedTasks": 118
+      },
+      {
+        "index": "900",
+        "name": "test-infrastructure-deferred",
+        "status": "not-started",
+        "dateCreated": "20260207",
+        "dateUpdated": "20260207",
+        "taskCount": 6,
+        "completedTasks": 0
+      },
+      {
+        "index": "999",
+        "name": "maintenance-ongoing",
+        "status": "not-started",
+        "dateCreated": "20260213",
+        "dateUpdated": "20260218",
+        "taskCount": 10,
+        "completedTasks": 2
+      }
+    ],
+    "devlog": true
+  }
+}

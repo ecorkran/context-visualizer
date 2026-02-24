@@ -1,0 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Package build output
+packages/*/dist/
+packages/electron/out/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Legacy root output (can be removed after full migration)
+out/*
+
+# Environment variables
+.env
+.env.*
+
+# Sensitive / internal-only files
+project-documents/user/slices/120-slice.plugins-1.md
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

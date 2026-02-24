@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Structure Visualizer</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0D0D1A; }
+    #root { min-height: 100vh; }
+    /* Hide Babel warnings */
+    .babel-error { display: none !important; }
+  </style>
+
+  <!-- React 18 -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- Babel standalone for JSX transform -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- Load the component via Babel JSX transform -->
+  <script type="text/babel" data-type="module">
+    // Provide React hooks as globals so the component's named imports work
+    const { useState, useMemo, useRef, useCallback, useEffect } = React;
+
+    // We'll fetch the JSX file and eval it, but simpler: inline-load via a second script tag.
+    // Instead, we dynamically fetch + transform + execute.
+
+    async function boot() {
+      try {
+        const resp = await fetch('./project-structure-viz.jsx');
+        if (!resp.ok) throw new Error(`Failed to load JSX: ${resp.status}`);
+        let src = await resp.text();
+
+        // Strip the ESM import line — we already have React globals
+        src = src.replace(/^import\s+\{[^}]+\}\s+from\s+["']react["'];?\s*$/m, '');
+
+        // Replace `export default` with a global assignment
+        src = src.replace(/export\s+default\s+function\s+(\w+)/, 'window.$COMPONENT = function $1');
+        // Handle arrow-function default exports too
+        src = src.replace(/export\s+default\s+/, 'window.$COMPONENT = ');
+
+        // Transform JSX → JS via Babel
+        const transformed = Babel.transform(src, {
+          presets: ['react'],
+          filename: 'project-structure-viz.jsx',
+        }).code;
+
+        // Execute
+        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', transformed);
+        fn(React, useState, useMemo, useRef, useCallback, useEffect);
+
+        // Render
+        const App = window.$COMPONENT;
+        if (!App) throw new Error('Component not found after eval');
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(React.createElement(App));
+      } catch (err) {
+        document.getElementById('root').innerHTML = `
+          <div style="padding:40px;color:#ff6b6b;font-family:monospace;">
+            <h2>Load Error</h2>
+            <pre>${err.message}\n\n${err.stack || ''}</pre>
+          </div>`;
+        console.error(err);
+      }
+    }
+
+    boot();
+  </script>
+</body>
+</html>
