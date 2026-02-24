@@ -4014,14 +4014,24 @@ const SAMPLE_PROJECTS = {
         }
       }
     },
-    "futureSlices": [
+    "futureSlices": [],
+    "standaloneFeatures": [
       {
         "index": "750",
         "name": "auto-index-resolution",
         "status": "not-started",
         "dateCreated": "20260212",
         "dateUpdated": "20260213",
-        "parent": "140"
+        "parent": "140",
+        "docType": "feature",
+        "tasks": {
+          "index": "750",
+          "name": "tasks.auto-index-resolution",
+          "status": "not-started",
+          "taskCount": 12,
+          "completedTasks": 0,
+          "items": []
+        }
       },
       {
         "index": "751",
@@ -4029,31 +4039,8 @@ const SAMPLE_PROJECTS = {
         "status": "not-started",
         "dateCreated": "20250925",
         "dateUpdated": "20250925",
-        "parent": "140"
-      },
-      {
-        "index": "754",
-        "name": "add-date",
-        "status": "not-started",
-        "dateCreated": "20251005",
-        "dateUpdated": "20251004",
-        "parent": "140"
-      },
-      {
-        "index": "755",
-        "name": "naming-schema-controls",
-        "status": "in-progress",
-        "dateCreated": "20251006",
-        "dateUpdated": "20251007",
-        "parent": "140"
-      },
-      {
-        "index": "756",
-        "name": "projects-versioned-backup",
-        "status": "not-started",
-        "dateCreated": "20260214",
-        "dateUpdated": "20260214",
-        "parent": "140"
+        "parent": "140",
+        "docType": "feature"
       },
       {
         "index": "752",
@@ -4061,7 +4048,8 @@ const SAMPLE_PROJECTS = {
         "status": "not-started",
         "dateCreated": "20260207",
         "dateUpdated": "20260207",
-        "parent": "140"
+        "parent": "140",
+        "docType": "feature"
       },
       {
         "index": "753",
@@ -4069,7 +4057,43 @@ const SAMPLE_PROJECTS = {
         "status": "not-started",
         "dateCreated": "20251022",
         "dateUpdated": "20251022",
-        "parent": "140"
+        "parent": "140",
+        "docType": "feature"
+      },
+      {
+        "index": "754",
+        "name": "add-date",
+        "status": "not-started",
+        "dateCreated": "20251005",
+        "dateUpdated": "20251004",
+        "parent": "140",
+        "docType": "feature"
+      },
+      {
+        "index": "755",
+        "name": "naming-schema-controls",
+        "status": "in-progress",
+        "dateCreated": "20251006",
+        "dateUpdated": "20251007",
+        "parent": "140",
+        "docType": "feature"
+      },
+      {
+        "index": "756",
+        "name": "projects-versioned-backup",
+        "status": "not-started",
+        "dateCreated": "20260214",
+        "dateUpdated": "20260214",
+        "parent": "140",
+        "docType": "feature",
+        "tasks": {
+          "index": "756",
+          "name": "tasks.projects-versioned-backup",
+          "status": "not-started",
+          "taskCount": 8,
+          "completedTasks": 0,
+          "items": []
+        }
       }
     ],
     "quality": [],
@@ -7942,6 +7966,72 @@ const InitiativeCard = ({ band, initiative, futureSlices }) => {
 };
 
 // ============================================================================
+// FEATURES CARD — standalone features/issues displayed as initiative-like band
+// ============================================================================
+const FeaturesCard = ({ features }) => {
+  const [expanded, setExpanded] = useState(false);
+  const tTotal = features.reduce((s, f) => s + (f.tasks?.taskCount || 0), 0);
+  const tDone = features.reduce((s, f) => s + (f.tasks?.completedTasks || 0), 0);
+  const colorSet = THEME.colors.feature;
+
+  return (
+    <div style={{
+      backgroundColor: "#1A1A2E", border: "1px solid #2A2A4E",
+      borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
+        onClick={() => setExpanded(!expanded)}>
+        <span style={{
+          fontFamily: THEME.fonts.heading, fontSize: 18, color: colorSet.accent,
+          fontWeight: 700, opacity: 0.4,
+        }}>★</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: THEME.fonts.heading, fontSize: 16, color: "#E8E8FF", fontWeight: 600, marginBottom: 4 }}>
+            Features & Issues
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, flexWrap: "wrap" }}>
+            <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA" }}>
+              {features.length} {features.length === 1 ? "item" : "items"}
+            </span>
+            {tTotal > 0 && (
+              <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#6666AA" }}>
+                {tDone}/{tTotal} tasks
+              </span>
+            )}
+          </div>
+        </div>
+        <span style={{
+          color: "#8888AA", fontSize: 14, transition: "transform 0.15s ease",
+          transform: expanded ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block",
+        }}>▶</span>
+      </div>
+
+      {expanded && (
+        <div style={{ paddingLeft: THEME.sp.sm, marginTop: THEME.sp.md }}>
+          {[...features].sort((a, b) => parseInt(a.index) - parseInt(b.index)).map((f, i) => (
+            <DocBlock key={i} colorSet={colorSet}
+              label={f.docType === "issue" ? "ISSUE" : "FEAT"}
+              name={f.name} index={f.index} status={f.status} item={f}
+              expandable={!!f.tasks}
+              showTaskPill={!!f.tasks}
+              taskCount={f.tasks?.taskCount} completedTasks={f.tasks?.completedTasks}>
+              {f.tasks && (
+                <DocBlock colorSet={THEME.colors.tasks} label="TASKS"
+                  name={f.tasks.name} index={f.tasks.index}
+                  status={f.tasks.status} item={f.tasks}
+                  showTaskPill taskCount={f.tasks.taskCount} completedTasks={f.tasks.completedTasks}
+                  expandable={f.tasks.items?.length > 0}
+                  taskItems={f.tasks.items} />
+              )}
+            </DocBlock>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // PROJECT VIEW
 // ============================================================================
 const ProjectView = ({ data }) => {
@@ -8002,6 +8092,11 @@ const ProjectView = ({ data }) => {
       {bands.map(([band, init]) => (
         <InitiativeCard key={band} band={band} initiative={init} futureSlices={data.futureSlices} />
       ))}
+
+      {/* Standalone features/issues — displayed as their own band */}
+      {(data.standaloneFeatures || []).length > 0 && (
+        <FeaturesCard features={data.standaloneFeatures} />
+      )}
 
       {(data.quality.length > 0 || data.investigation.length > 0 || data.maintenance.length > 0) && (
         <div style={{ borderTop: "1px solid #2A2A4E", paddingTop: THEME.sp.lg, marginTop: THEME.sp.lg }}>
