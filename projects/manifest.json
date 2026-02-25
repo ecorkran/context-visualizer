@@ -1,0 +1,14 @@
+{
+  "projects": [
+    {
+      "key": "context-forge",
+      "file": "context-forge-structure.json",
+      "sourcePath": ""
+    },
+    {
+      "key": "orchestration",
+      "file": "orchestration-structure.json",
+      "sourcePath": ""
+    }
+  ]
+}
