@@ -85,9 +85,9 @@
           filename: 'project-structure-viz.jsx',
         }).code;
 
-        // Execute — pass PROJECTS alongside React hooks
-        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', 'PROJECTS', transformed);
-        fn(React, useState, useMemo, useRef, useCallback, useEffect, PROJECTS);
+        // Execute — PROJECTS is read from window.__PROJECTS inside the component
+        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', transformed);
+        fn(React, useState, useMemo, useRef, useCallback, useEffect);
 
         // Render
         const App = window.$COMPONENT;
