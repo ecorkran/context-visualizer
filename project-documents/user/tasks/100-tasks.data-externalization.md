@@ -6,6 +6,7 @@ dependencies: []
 projectState: Working local visualizer with inline project data in JSX. Parser (parse.py) outputs JSON. Two JSON files at project root. No build toolchain — CDN React + Babel transform.
 dateCreated: 20260224
 dateUpdated: 20260225
+status: complete
 ---
 
 ## Context Summary
@@ -120,19 +121,19 @@ dateUpdated: 20260225
 **Effort**: 2/5
 **Objective**: Modify the `boot()` function in `index.html` to fetch project data from external files via the manifest instead of relying on inline data.
 
-- [ ] **Add data loading before component mount**: In `boot()`, before fetching and transforming the JSX:
+- [x] **Add data loading before component mount**: In `boot()`, before fetching and transforming the JSX:
   1. Fetch `projects/manifest.json`
   2. For each project in manifest, fetch `projects/{file}`
   3. Assemble a `PROJECTS` object keyed by project key
-- [ ] **Inject `PROJECTS` as a global**: Pass it into the component execution context alongside the React hooks (add to the `new Function()` call and `fn()` invocation)
-- [ ] **Add error handling**: If manifest fetch fails, display an error message in `#root` (similar to existing error handling pattern). If an individual project file fails, log warning and continue with remaining projects.
+- [x] **Inject `PROJECTS` as a global**: Pass it into the component execution context alongside the React hooks (add to the `new Function()` call and `fn()` invocation)
+- [x] **Add error handling**: If manifest fetch fails, display an error message in `#root` (similar to existing error handling pattern). If an individual project file fails, log warning and continue with remaining projects.
 
 **Success Criteria**:
-- [ ] `boot()` fetches manifest and all project JSON files before mounting the component
-- [ ] `PROJECTS` global is available to the component code
-- [ ] Missing manifest shows a clear error message
-- [ ] Missing individual project file logs a warning but doesn't crash
-- [ ] Commit checkpoint
+- [x] `boot()` fetches manifest and all project JSON files before mounting the component
+- [x] `PROJECTS` global is available to the component code
+- [x] Missing manifest shows a clear error message
+- [x] Missing individual project file logs a warning but doesn't crash
+- [x] Commit checkpoint
 
 ---
 
@@ -142,17 +143,17 @@ dateUpdated: 20260225
 **Effort**: 2/5
 **Objective**: Remove the inline project data from `project-structure-viz.jsx` and update all references from `SAMPLE_PROJECTS` to `PROJECTS`.
 
-- [ ] **Replace section header**: Change `// SAMPLE DATA` to `// DATA`
-- [ ] **Remove inline data**: Delete the entire `SAMPLE_PROJECTS` constant definition (from `const SAMPLE_PROJECTS = {` through the closing `};` — this is a large block starting around line 103)
-- [ ] **Add external reference**: Replace the removed constant with a comment and declaration that references the global: `const PROJECTS = window.__PROJECTS;` (or whatever injection mechanism was used in Task 5)
-- [ ] **Rename all references**: Replace all `SAMPLE_PROJECTS` usages with `PROJECTS` (approximately lines 8173, 8202, 8208 — verify actual locations as they will shift after data removal)
-- [ ] **Verify no stale references**: Search the entire file for any remaining `SAMPLE` references
+- [x] **Replace section header**: Change `// SAMPLE DATA` to `// DATA`
+- [x] **Remove inline data**: Delete the entire `SAMPLE_PROJECTS` constant definition (from `const SAMPLE_PROJECTS = {` through the closing `};` — this is a large block starting around line 103)
+- [x] **Add external reference**: Replace the removed constant with a comment and declaration that references the global: `const PROJECTS = window.__PROJECTS;` (or whatever injection mechanism was used in Task 5)
+- [x] **Rename all references**: Replace all `SAMPLE_PROJECTS` usages with `PROJECTS` (approximately lines 8173, 8202, 8208 — verify actual locations as they will shift after data removal)
+- [x] **Verify no stale references**: Search the entire file for any remaining `SAMPLE` references
 
 **Success Criteria**:
-- [ ] No `SAMPLE_PROJECTS` or `SAMPLE DATA` text exists in the JSX file
-- [ ] `PROJECTS` variable is properly declared and references external data
-- [ ] File is significantly smaller (rendering logic only, no inline JSON)
-- [ ] Commit checkpoint
+- [x] No `SAMPLE_PROJECTS` or `SAMPLE DATA` text exists in the JSX file
+- [x] `PROJECTS` variable is properly declared and references external data
+- [x] File is significantly smaller (rendering logic only, no inline JSON)
+- [x] Commit checkpoint
 
 ---
 
@@ -162,17 +163,17 @@ dateUpdated: 20260225
 **Effort**: 1/5
 **Objective**: Verify the complete pipeline works: parse → JSON in projects/ → visualizer loads and renders.
 
-- [ ] Run the parser against both project paths with default output
-- [ ] Open `index.html` via `python -m http.server` (or equivalent local server)
-- [ ] Verify both projects appear in the project tab selector
-- [ ] Verify project data renders correctly (initiatives, slices, tasks, status indicators, progress bars)
-- [ ] Switch between projects and verify each renders correctly
-- [ ] Verify no console errors related to data loading
-- [ ] Compare visual output against current behavior — should be identical
+- [x] Run the parser against both project paths with default output
+- [x] Open `index.html` via `python -m http.server` (or equivalent local server)
+- [x] Verify both projects appear in the project tab selector
+- [x] Verify project data renders correctly (initiatives, slices, tasks, status indicators, progress bars)
+- [x] Switch between projects and verify each renders correctly
+- [x] Verify no console errors related to data loading
+- [x] Compare visual output against current behavior — should be identical
 
 **Success Criteria**:
-- [ ] Both projects load and display correctly from external JSON
-- [ ] Tab switching works
-- [ ] No console errors
-- [ ] Visual output matches pre-migration behavior
-- [ ] Final commit for this slice
+- [x] Both projects load and display correctly from external JSON
+- [x] Tab switching works
+- [x] No console errors
+- [x] Visual output matches pre-migration behavior
+- [x] Final commit for this slice

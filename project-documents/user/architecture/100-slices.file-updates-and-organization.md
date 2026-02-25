@@ -13,7 +13,7 @@ dateUpdated: 20260224
 
 ## Migration / Refactoring Slices
 
-1. [ ] **Data Externalization**
+1. [x] **Data Externalization**
    Migrate project data out of the JSX component and into external JSON files loaded at runtime.
    - Move existing JSON data (`context-forge-structure.json`, `orchestration-structure.json`) into a `projects/` subdirectory with consistent naming (`{projectname}-structure.json`)
    - Update `parse_project.py` to default output to `projects/` with the standardized filename pattern
