@@ -5,7 +5,7 @@ lld: user/slices/100-slice.data-externalization.md
 dependencies: []
 projectState: Working local visualizer with inline project data in JSX. Parser (parse.py) outputs JSON. Two JSON files at project root. No build toolchain — CDN React + Babel transform.
 dateCreated: 20260224
-dateUpdated: 20260224
+dateUpdated: 20260225
 ---
 
 ## Context Summary
@@ -23,17 +23,17 @@ dateUpdated: 20260224
 **Effort**: 1/5
 **Objective**: Create the `projects/` subdirectory and relocate existing parsed JSON files into it.
 
-- [ ] Create `projects/` directory at the project root
-- [ ] Move `context-forge-structure.json` → `projects/context-forge-structure.json`
-- [ ] Move `orchestration-structure.json` → `projects/orchestration-structure.json`
-- [ ] Delete the original JSON files from the project root
-- [ ] Verify both JSON files are valid after move (parse with `python -c "import json; json.load(open('projects/context-forge-structure.json'))"` for each)
+- [x] Create `projects/` directory at the project root
+- [x] Move `context-forge-structure.json` → `projects/context-forge-structure.json`
+- [x] Move `orchestration-structure.json` → `projects/orchestration-structure.json`
+- [x] Delete the original JSON files from the project root
+- [x] Verify both JSON files are valid after move (parse with `python -c "import json; json.load(open('projects/context-forge-structure.json'))"` for each)
 
 **Success Criteria**:
-- [ ] `projects/` directory exists
-- [ ] Both JSON files are in `projects/` and valid
-- [ ] No JSON structure files remain at project root
-- [ ] Commit checkpoint
+- [x] `projects/` directory exists
+- [x] Both JSON files are in `projects/` and valid
+- [x] No JSON structure files remain at project root
+- [x] Commit checkpoint
 
 ---
 
@@ -43,7 +43,7 @@ dateUpdated: 20260224
 **Effort**: 1/5
 **Objective**: Create the project manifest file that the visualizer will use to discover available projects.
 
-- [ ] Create `projects/manifest.json` with the following structure:
+- [x] Create `projects/manifest.json` with the following structure:
 ```json
 {
   "projects": [
@@ -60,12 +60,12 @@ dateUpdated: 20260224
   ]
 }
 ```
-- [ ] `sourcePath` fields will be populated by the parser update (Task 3). Leave as empty strings for now.
+- [x] `sourcePath` fields will be populated by the parser update (Task 3). Leave as empty strings for now.
 
 **Success Criteria**:
-- [ ] `projects/manifest.json` exists and is valid JSON
-- [ ] Contains entries for both existing projects
-- [ ] Commit checkpoint
+- [x] `projects/manifest.json` exists and is valid JSON
+- [x] Contains entries for both existing projects
+- [x] Commit checkpoint
 
 ---
 
@@ -75,20 +75,20 @@ dateUpdated: 20260224
 **Effort**: 2/5
 **Objective**: Update the parser to write JSON to `projects/` by default and update the manifest.
 
-- [ ] **Add `--projects-dir` flag** to argparse: optional path override, defaults to `projects/` relative to CWD
-- [ ] **Update default behavior (no `-o` flag)**: For each parsed project, write to `{projects-dir}/{key}-structure.json`
-- [ ] **Manifest update logic**: After writing project JSON, read existing `manifest.json` from `{projects-dir}/`, merge the new project entry (add if new, update if existing), write back. Include `sourcePath` set to the resolved project root path.
-- [ ] **Preserve `-o` behavior**: When `-o` is specified, write to that path as before — no manifest update, no `projects/` involvement
-- [ ] **Create `projects/` directory** if it doesn't exist when writing default output
+- [x] **Add `--projects-dir` flag** to argparse: optional path override, defaults to `projects/` relative to CWD
+- [x] **Update default behavior (no `-o` flag)**: For each parsed project, write to `{projects-dir}/{key}-structure.json`
+- [x] **Manifest update logic**: After writing project JSON, read existing `manifest.json` from `{projects-dir}/`, merge the new project entry (add if new, update if existing), write back. Include `sourcePath` set to the resolved project root path.
+- [x] **Preserve `-o` behavior**: When `-o` is specified, write to that path as before — no manifest update, no `projects/` involvement
+- [x] **Create `projects/` directory** if it doesn't exist when writing default output
 
 **Success Criteria**:
-- [ ] `python parse.py /path/to/project` writes to `projects/{key}-structure.json` and updates `projects/manifest.json`
-- [ ] `python parse.py /path/to/project -o custom.json` writes to `custom.json` without touching manifest
-- [ ] `python parse.py proj1 proj2` writes both and manifest contains both entries with correct `sourcePath` values
-- [ ] `--projects-dir /tmp/test` writes to the specified directory instead of `projects/`
-- [ ] Manifest merges correctly (doesn't clobber entries for other projects)
-- [ ] Parser remains zero-dependency (stdlib only)
-- [ ] Commit checkpoint
+- [x] `python parse.py /path/to/project` writes to `projects/{key}-structure.json` and updates `projects/manifest.json`
+- [x] `python parse.py /path/to/project -o custom.json` writes to `custom.json` without touching manifest
+- [x] `python parse.py proj1 proj2` writes both and manifest contains both entries with correct `sourcePath` values
+- [x] `--projects-dir /tmp/test` writes to the specified directory instead of `projects/`
+- [x] Manifest merges correctly (doesn't clobber entries for other projects)
+- [x] Parser remains zero-dependency (stdlib only)
+- [x] Commit checkpoint
 
 ---
 
@@ -98,19 +98,19 @@ dateUpdated: 20260224
 **Effort**: 1/5
 **Objective**: Verify the updated parser produces correct output in all modes.
 
-- [ ] Run `python parse.py` against both known project paths with default output — verify JSON files appear in `projects/`
-- [ ] Verify `manifest.json` contains correct entries with `sourcePath` populated
-- [ ] Run with `-o` flag — verify file appears at specified path and manifest is not modified
-- [ ] Run with `--projects-dir` — verify output goes to specified directory
-- [ ] Compare JSON content of new output vs the previously moved files from Task 1 — should be identical (or differ only in expected ways if project documents have changed)
-- [ ] Verify parser still works with `--pretty` and `--name` flags
+- [x] Run `python parse.py` against both known project paths with default output — verify JSON files appear in `projects/`
+- [x] Verify `manifest.json` contains correct entries with `sourcePath` populated
+- [x] Run with `-o` flag — verify file appears at specified path and manifest is not modified
+- [x] Run with `--projects-dir` — verify output goes to specified directory
+- [x] Compare JSON content of new output vs the previously moved files from Task 1 — should be identical (or differ only in expected ways if project documents have changed)
+- [x] Verify parser still works with `--pretty` and `--name` flags
 
 **Success Criteria**:
-- [ ] All output modes produce valid JSON
-- [ ] Manifest is correctly updated in default mode
-- [ ] Manifest is untouched in `-o` mode
-- [ ] JSON content matches expected parser output
-- [ ] Commit checkpoint
+- [x] All output modes produce valid JSON
+- [x] Manifest is correctly updated in default mode
+- [x] Manifest is untouched in `-o` mode
+- [x] JSON content matches expected parser output
+- [x] Commit checkpoint
 
 ---
 
