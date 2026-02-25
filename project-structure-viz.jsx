@@ -646,10 +646,32 @@ const Legend = () => (
 // MAIN
 // ============================================================================
 export default function ProjectStructureVisualizer() {
-  const keys = Object.keys(PROJECTS);
+  const [projects, setProjects] = useState(PROJECTS);
+  const keys = Object.keys(projects);
   const [active, setActive] = useState(keys[0]);
   // 'idle' | 'refreshing' | 'error'
   const [refreshState, setRefreshState] = useState('idle');
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshState('refreshing');
+    try {
+      const resp = await fetch('/api/refresh', { method: 'POST' });
+      const body = await resp.json();
+      if (!resp.ok || body.status !== 'ok') {
+        throw new Error(body.message || `HTTP ${resp.status}`);
+      }
+      // Re-fetch all project data without a page reload
+      const fresh = await window.__loadProjects();
+      setProjects(fresh);
+      // Preserve active tab if it still exists, else fall back to first
+      setActive((prev) => (fresh[prev] ? prev : Object.keys(fresh)[0]));
+      setRefreshState('idle');
+    } catch (err) {
+      console.error('Refresh failed:', err);
+      setRefreshState('error');
+      setTimeout(() => setRefreshState('idle'), 3000);
+    }
+  }, []);
 
   return (
     <div style={{ backgroundColor: "#0D0D1A", minHeight: "100vh", padding: THEME.sp.xl, fontFamily: THEME.fonts.body }}>
@@ -678,12 +700,12 @@ export default function ProjectStructureVisualizer() {
               color: active === k ? "#FFD700" : "#6666AA",
               cursor: "pointer", transition: "all 0.15s ease",
             }}>
-              {PROJECTS[k].name}
+              {projects[k].name}
             </button>
           ))}
           {/* Refresh button — positioned immediately right of project tabs */}
           <button
-            onClick={() => {/* wired in Task 6 */}}
+            onClick={handleRefresh}
             disabled={refreshState === 'refreshing'}
             title={refreshState === 'error' ? 'Refresh failed' : 'Refresh project data'}
             style={{
@@ -706,7 +728,7 @@ export default function ProjectStructureVisualizer() {
         </div>
       </div>
       <Legend />
-      <ProjectView data={PROJECTS[active]} />
+      <ProjectView data={projects[active]} />
     </div>
   );
 }
