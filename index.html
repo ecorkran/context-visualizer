@@ -27,11 +27,46 @@
     // Provide React hooks as globals so the component's named imports work
     const { useState, useMemo, useRef, useCallback, useEffect } = React;
 
-    // We'll fetch the JSX file and eval it, but simpler: inline-load via a second script tag.
-    // Instead, we dynamically fetch + transform + execute.
+    function showError(message) {
+      document.getElementById('root').innerHTML = `
+        <div style="padding:40px;color:#ff6b6b;font-family:monospace;">
+          <h2>Load Error</h2>
+          <pre>${message}</pre>
+        </div>`;
+    }
+
+    // Load all project data from external JSON files via manifest
+    async function loadProjects() {
+      const manifestResp = await fetch('./projects/manifest.json');
+      if (!manifestResp.ok) {
+        throw new Error(`Failed to load manifest: ${manifestResp.status} ${manifestResp.statusText}`);
+      }
+      const manifest = await manifestResp.json();
+
+      const projects = {};
+      for (const entry of manifest.projects) {
+        try {
+          const resp = await fetch(`./projects/${entry.file}`);
+          if (!resp.ok) {
+            console.warn(`Skipping ${entry.key}: fetch failed (${resp.status})`);
+            continue;
+          }
+          const data = await resp.json();
+          // Each file is keyed by project key: { "key": { ...model... } }
+          Object.assign(projects, data);
+        } catch (err) {
+          console.warn(`Skipping ${entry.key}: ${err.message}`);
+        }
+      }
+      return projects;
+    }
 
     async function boot() {
       try {
+        // Load project data before mounting the component
+        const PROJECTS = await loadProjects();
+        window.__PROJECTS = PROJECTS;
+
         const resp = await fetch('./project-structure-viz.jsx');
         if (!resp.ok) throw new Error(`Failed to load JSX: ${resp.status}`);
         let src = await resp.text();
@@ -50,9 +85,9 @@
           filename: 'project-structure-viz.jsx',
         }).code;
 
-        // Execute
-        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', transformed);
-        fn(React, useState, useMemo, useRef, useCallback, useEffect);
+        // Execute — pass PROJECTS alongside React hooks
+        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', 'PROJECTS', transformed);
+        fn(React, useState, useMemo, useRef, useCallback, useEffect, PROJECTS);
 
         // Render
         const App = window.$COMPONENT;
@@ -61,11 +96,7 @@
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(React.createElement(App));
       } catch (err) {
-        document.getElementById('root').innerHTML = `
-          <div style="padding:40px;color:#ff6b6b;font-family:monospace;">
-            <h2>Load Error</h2>
-            <pre>${err.message}\n\n${err.stack || ''}</pre>
-          </div>`;
+        showError(`${err.message}\n\n${err.stack || ''}`);
         console.error(err);
       }
     }
