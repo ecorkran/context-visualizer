@@ -648,9 +648,12 @@ const Legend = () => (
 export default function ProjectStructureVisualizer() {
   const keys = Object.keys(PROJECTS);
   const [active, setActive] = useState(keys[0]);
+  // 'idle' | 'refreshing' | 'error'
+  const [refreshState, setRefreshState] = useState('idle');
 
   return (
     <div style={{ backgroundColor: "#0D0D1A", minHeight: "100vh", padding: THEME.sp.xl, fontFamily: THEME.fonts.body }}>
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       <PatternDefs />
       <div style={{
         display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -664,7 +667,7 @@ export default function ProjectStructureVisualizer() {
             ai-project-guide methodology visualizer
           </p>
         </div>
-        <div style={{ display: "flex", gap: THEME.sp.xs }}>
+        <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.xs }}>
           {keys.map((k) => (
             <button key={k} onClick={() => setActive(k)} style={{
               fontFamily: THEME.fonts.heading, fontSize: 12,
@@ -678,6 +681,28 @@ export default function ProjectStructureVisualizer() {
               {PROJECTS[k].name}
             </button>
           ))}
+          {/* Refresh button — positioned immediately right of project tabs */}
+          <button
+            onClick={() => {/* wired in Task 6 */}}
+            disabled={refreshState === 'refreshing'}
+            title={refreshState === 'error' ? 'Refresh failed' : 'Refresh project data'}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 32, height: 32, borderRadius: THEME.radius,
+              border: `1px solid ${refreshState === 'error' ? '#FF6B6B' : '#2A2A4E'}`,
+              backgroundColor: refreshState === 'error' ? '#FF6B6B18' : 'transparent',
+              color: refreshState === 'error' ? '#FF6B6B' : '#6666AA',
+              cursor: refreshState === 'refreshing' ? 'default' : 'pointer',
+              transition: 'all 0.15s ease',
+              pointerEvents: refreshState === 'refreshing' ? 'none' : 'auto',
+              fontSize: 16,
+            }}
+          >
+            <span style={{
+              display: 'inline-block',
+              animation: refreshState === 'refreshing' ? 'spin 0.8s linear infinite' : 'none',
+            }}>&#x21bb;</span>
+          </button>
         </div>
       </div>
       <Legend />
