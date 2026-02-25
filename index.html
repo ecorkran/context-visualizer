@@ -61,6 +61,9 @@
       return projects;
     }
 
+    // Expose loadProjects so the mounted component can call it for refresh
+    window.__loadProjects = loadProjects;
+
     async function boot() {
       try {
         // Load project data before mounting the component
