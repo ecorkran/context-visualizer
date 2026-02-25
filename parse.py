@@ -7,15 +7,19 @@ metadata from filenames and YAML frontmatter, parses task checkboxes,
 and outputs the JSON model consumed by the project-structure-viz component.
 
 Usage:
-    python parse_project.py /path/to/project-root
-    python parse_project.py /path/to/project-root --pretty
-    python parse_project.py /path/to/project-root -o output.json
+    # Default: write per-project JSON to projects/ and update manifest
+    python parse.py /path/to/project-root
+    python parse.py /path/to/project-root --pretty
+    python parse.py /path/to/project1 /path/to/project2
 
-    # Multiple projects:
-    python parse_project.py /path/to/project1 /path/to/project2 --pretty
+    # Explicit output file (no manifest update):
+    python parse.py /path/to/project-root -o output.json
+
+    # Custom output directory:
+    python parse.py /path/to/project-root --projects-dir /tmp/out
 
     # Override project name:
-    python parse_project.py /path/to/project --name "My Project"
+    python parse.py /path/to/project --name "My Project"
 """
 
 from __future__ import annotations
@@ -431,18 +435,81 @@ def find_user_dir(path: Path) -> Path | None:
     return None
 
 
+def update_manifest(
+    projects_dir: Path,
+    key: str,
+    filename: str,
+    source_path: str,
+) -> None:
+    """Add or update a project entry in manifest.json (merge, don't replace)."""
+    manifest_path = projects_dir / "manifest.json"
+    manifest: dict[str, Any] = {"projects": []}
+
+    if manifest_path.exists():
+        with open(manifest_path, "r", encoding="utf-8") as f:
+            manifest = json.load(f)
+
+    entry = {"key": key, "file": filename, "sourcePath": source_path}
+
+    # Replace existing entry for this key, or append
+    projects = manifest.get("projects", [])
+    replaced = False
+    for i, p in enumerate(projects):
+        if p.get("key") == key:
+            projects[i] = entry
+            replaced = True
+            break
+    if not replaced:
+        projects.append(entry)
+
+    manifest["projects"] = projects
+
+    with open(manifest_path, "w", encoding="utf-8") as f:
+        json.dump(manifest, f, indent=2, ensure_ascii=False)
+        f.write("\n")
+
+
 def main():
     ap = argparse.ArgumentParser(
         description="Parse ai-project-guide structure → JSON for visualization",
     )
     ap.add_argument("projects", nargs="+", type=Path, help="Project root path(s)")
     ap.add_argument("-o", "--output", type=Path, default=None, help="Output file")
+    ap.add_argument(
+        "--projects-dir",
+        type=Path,
+        default=None,
+        help="Output directory for project JSON files (default: projects/)",
+    )
     ap.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
     ap.add_argument("--name", type=str, default=None, help="Override project name")
     ap.add_argument("--description", type=str, default="", help="Project description")
 
     args = ap.parse_args()
-    results: dict[str, Any] = {}
+    indent = 2 if args.pretty else None
+
+    # Explicit -o mode: bundle all projects into one file, no manifest update
+    if args.output:
+        results: dict[str, Any] = {}
+        for pp in args.projects:
+            pp = pp.resolve()
+            ud = find_user_dir(pp)
+            if not ud:
+                print(f"Error: No project-documents/user/ in {pp}", file=sys.stderr)
+                sys.exit(1)
+            nm = args.name if len(args.projects) == 1 else None
+            model = build_model(ud, nm, args.description)
+            key = pp.name.lower().replace(" ", "-")
+            results[key] = model
+
+        out = json.dumps(results, indent=indent, ensure_ascii=False)
+        args.output.write_text(out + "\n", encoding="utf-8")
+        print(f"Written to {args.output}", file=sys.stderr)
+        return
+
+    # Default mode: write per-project JSON to projects/ dir and update manifest
+    projects_dir = args.projects_dir or Path("projects")
+    projects_dir.mkdir(parents=True, exist_ok=True)
 
     for pp in args.projects:
         pp = pp.resolve()
@@ -454,15 +521,14 @@ def main():
         nm = args.name if len(args.projects) == 1 else None
         model = build_model(ud, nm, args.description)
         key = pp.name.lower().replace(" ", "-")
-        results[key] = model
+        filename = f"{key}-structure.json"
+        filepath = projects_dir / filename
 
-    out = json.dumps(results, indent=2 if args.pretty else None, ensure_ascii=False)
+        out = json.dumps({key: model}, indent=indent, ensure_ascii=False)
+        filepath.write_text(out + "\n", encoding="utf-8")
+        print(f"Written to {filepath}", file=sys.stderr)
 
-    if args.output:
-        args.output.write_text(out, encoding="utf-8")
-        print(f"Written to {args.output}", file=sys.stderr)
-    else:
-        print(out)
+        update_manifest(projects_dir, key, filename, str(pp))
 
 
 if __name__ == "__main__":

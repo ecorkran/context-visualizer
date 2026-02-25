@@ -3,12 +3,12 @@
     {
       "key": "context-forge",
       "file": "context-forge-structure.json",
-      "sourcePath": ""
+      "sourcePath": "/Users/manta/source/repos/manta/context-forge"
     },
     {
       "key": "orchestration",
       "file": "orchestration-structure.json",
-      "sourcePath": ""
+      "sourcePath": "/Users/manta/source/repos/manta/orchestration"
     }
   ]
 }
