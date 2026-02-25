@@ -29,6 +29,11 @@ out/*
 # Sensitive / internal-only files
 project-documents/user/slices/120-slice.plugins-1.md
 
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
