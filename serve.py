@@ -27,6 +27,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         else:
             self.send_error(404, "Not Found")
 
+    def do_GET(self) -> None:
+        if self.path == "/api/refresh":
+            self.send_error(405, "Method Not Allowed")
+        else:
+            super().do_GET()
+
     def _handle_refresh(self) -> None:
         """Re-parse all projects listed in projects/manifest.json."""
         manifest_path = Path("projects/manifest.json")
@@ -99,7 +105,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
     def log_message(self, fmt: str, *args) -> None:  # noqa: ANN002
         # Suppress noisy access logs for static assets; keep API logs
-        if "/api/" in (args[0] if args else ""):
+        first = str(args[0]) if args else ""
+        if "/api/" in first:
             super().log_message(fmt, *args)
 
 
