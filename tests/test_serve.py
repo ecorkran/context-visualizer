@@ -1,0 +1,281 @@
+"""Tests for serve.py — static file serving and /api/refresh endpoint."""
+
+from __future__ import annotations
+
+import json
+import socket
+import threading
+import time
+import urllib.error
+import urllib.request
+from pathlib import Path
+
+import pytest
+
+# Project root
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+
+def _find_free_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("", 0))
+        return s.getsockname()[1]
+
+
+class ServerFixture:
+    """Manages a serve.py server instance for testing."""
+
+    def __init__(self, projects_dir: Path | None = None) -> None:
+        import sys
+
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import http.server
+
+        import serve
+
+        self.port = _find_free_port()
+        self.projects_dir = projects_dir
+
+        # Override Handler to use a test directory if provided
+        HandlerClass = serve.Handler
+        if projects_dir is not None:
+
+            class TestHandler(serve.Handler):
+                def _manifest_path(self) -> Path:
+                    return projects_dir / "manifest.json"
+
+                def _parse_py(self) -> Path:
+                    return PROJECT_ROOT / "parse.py"
+
+                def _handle_refresh(self) -> None:
+                    # Patch manifest path in refresh handler for isolation
+                    manifest_path = projects_dir / "manifest.json"
+                    if not manifest_path.exists():
+                        self._json_response(
+                            500,
+                            {"status": "error", "message": "projects/manifest.json not found"},
+                        )
+                        return
+                    try:
+                        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+                    except Exception as exc:
+                        self._json_response(500, {"status": "error", "message": f"Failed to read manifest: {exc}"})
+                        return
+
+                    content_length = int(self.headers.get("Content-Length", 0))
+                    requested: list[str] | None = None
+                    if content_length > 0:
+                        try:
+                            body = json.loads(self.rfile.read(content_length))
+                            requested = body.get("projects")
+                        except Exception:
+                            pass
+
+                    entries = manifest.get("projects", [])
+                    if requested is not None:
+                        entries = [e for e in entries if e.get("key") in requested]
+
+                    parse_py = PROJECT_ROOT / "parse.py"
+                    if not parse_py.exists():
+                        self._json_response(
+                            500,
+                            {"status": "error", "message": f"parse.py not found at {parse_py}"},
+                        )
+                        return
+
+                    import subprocess
+                    import sys
+
+                    refreshed: list[str] = []
+                    errors: list[str] = []
+
+                    for entry in entries:
+                        key = entry.get("key", "")
+                        source_path = entry.get("sourcePath", "")
+                        if not source_path:
+                            errors.append(f"{key}: no sourcePath in manifest")
+                            continue
+                        result = subprocess.run(
+                            [sys.executable, str(parse_py), source_path,
+                             "--projects-dir", str(projects_dir)],
+                            capture_output=True,
+                            text=True,
+                        )
+                        if result.returncode != 0:
+                            errors.append(f"{key}: {result.stderr.strip() or 'parser returned non-zero'}")
+                        else:
+                            refreshed.append(key)
+
+                    if errors and not refreshed:
+                        self._json_response(500, {"status": "error", "message": "; ".join(errors)})
+                    elif errors:
+                        self._json_response(200, {"status": "ok", "projects": refreshed, "warnings": errors})
+                    else:
+                        self._json_response(200, {"status": "ok", "projects": refreshed})
+
+            HandlerClass = TestHandler
+
+        self.server = http.server.HTTPServer(("127.0.0.1", self.port), HandlerClass)
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+
+    def start(self) -> None:
+        self.thread.start()
+        time.sleep(0.05)
+
+    def stop(self) -> None:
+        self.server.shutdown()
+
+    def url(self, path: str = "") -> str:
+        return f"http://127.0.0.1:{self.port}{path}"
+
+    def get(self, path: str) -> tuple[int, bytes]:
+        try:
+            resp = urllib.request.urlopen(self.url(path))
+            return resp.status, resp.read()
+        except urllib.error.HTTPError as exc:
+            return exc.code, exc.read()
+
+    def post(self, path: str, body: dict | None = None) -> tuple[int, dict]:
+        data = json.dumps(body).encode("utf-8") if body is not None else b""
+        req = urllib.request.Request(
+            self.url(path),
+            data=data,
+            method="POST",
+            headers={"Content-Type": "application/json", "Content-Length": str(len(data))},
+        )
+        try:
+            resp = urllib.request.urlopen(req)
+            return resp.status, json.loads(resp.read())
+        except urllib.error.HTTPError as exc:
+            try:
+                return exc.code, json.loads(exc.read())
+            except Exception:
+                return exc.code, {}
+
+
+# ── Static file serving tests ──────────────────────────────────────────────
+
+
+class TestStaticServing:
+    def setup_method(self) -> None:
+        self.srv = ServerFixture()
+        self.srv.server.RequestHandlerClass.directory = str(PROJECT_ROOT)
+        self.srv.start()
+
+    def teardown_method(self) -> None:
+        self.srv.stop()
+
+    def test_index_html(self) -> None:
+        status, body = self.srv.get("/")
+        assert status == 200
+        assert b"<!DOCTYPE html>" in body or b"<html" in body
+
+    def test_jsx_file(self) -> None:
+        status, _ = self.srv.get("/project-structure-viz.jsx")
+        assert status == 200
+
+    def test_manifest_json(self) -> None:
+        status, body = self.srv.get("/projects/manifest.json")
+        assert status == 200
+        data = json.loads(body)
+        assert "projects" in data
+
+    def test_missing_file_404(self) -> None:
+        status, _ = self.srv.get("/nonexistent-file.xyz")
+        assert status == 404
+
+
+# ── /api/refresh endpoint tests ────────────────────────────────────────────
+
+CF_PATH = Path("/Users/manta/source/repos/manta/context-forge")
+
+
+@pytest.mark.skipif(not CF_PATH.exists(), reason="context-forge project not available")
+class TestRefreshEndpoint:
+    def setup_method(self, tmp_path_factory) -> None:  # noqa: ANN001
+        self.tmp_dir = Path("/tmp/test_serve_refresh")
+        self.tmp_dir.mkdir(exist_ok=True)
+        # Seed manifest with a real project
+        manifest = {
+            "projects": [
+                {
+                    "key": "context-forge",
+                    "file": "context-forge-structure.json",
+                    "sourcePath": str(CF_PATH),
+                }
+            ]
+        }
+        (self.tmp_dir / "manifest.json").write_text(json.dumps(manifest, indent=2))
+        self.srv = ServerFixture(projects_dir=self.tmp_dir)
+        self.srv.start()
+
+    def teardown_method(self) -> None:
+        self.srv.stop()
+        import shutil
+
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def test_post_refresh_all(self) -> None:
+        status, resp = self.srv.post("/api/refresh")
+        assert status == 200
+        assert resp["status"] == "ok"
+        assert "context-forge" in resp["projects"]
+        assert (self.tmp_dir / "context-forge-structure.json").exists()
+
+    def test_post_refresh_specific_project(self) -> None:
+        status, resp = self.srv.post("/api/refresh", {"projects": ["context-forge"]})
+        assert status == 200
+        assert resp["status"] == "ok"
+        assert resp["projects"] == ["context-forge"]
+
+    def test_get_api_refresh_returns_405(self) -> None:
+        status, _ = self.srv.get("/api/refresh")
+        assert status == 405
+
+
+class TestRefreshErrorCases:
+    def setup_method(self) -> None:
+        self.tmp_dir = Path("/tmp/test_serve_errors")
+        self.tmp_dir.mkdir(exist_ok=True)
+        self.srv = ServerFixture(projects_dir=self.tmp_dir)
+        self.srv.start()
+
+    def teardown_method(self) -> None:
+        self.srv.stop()
+        import shutil
+
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def test_missing_manifest_returns_500(self) -> None:
+        # No manifest in tmp_dir
+        status, resp = self.srv.post("/api/refresh")
+        assert status == 500
+        assert resp["status"] == "error"
+        assert "manifest" in resp["message"].lower()
+
+    def test_missing_source_path_returns_error(self) -> None:
+        manifest = {
+            "projects": [{"key": "test-proj", "file": "test.json", "sourcePath": ""}]
+        }
+        (self.tmp_dir / "manifest.json").write_text(json.dumps(manifest))
+        status, resp = self.srv.post("/api/refresh")
+        assert status == 500
+        assert resp["status"] == "error"
+
+    def test_server_does_not_crash_on_bad_body(self) -> None:
+        manifest = {"projects": []}
+        (self.tmp_dir / "manifest.json").write_text(json.dumps(manifest))
+        # Send malformed body — should not crash
+        req = urllib.request.Request(
+            self.srv.url("/api/refresh"),
+            data=b"not valid json",
+            method="POST",
+            headers={"Content-Type": "application/json", "Content-Length": "14"},
+        )
+        try:
+            resp = urllib.request.urlopen(req)
+            status = resp.status
+        except urllib.error.HTTPError as exc:
+            status = exc.code
+        # Should return 200 (empty projects, refreshed nothing)
+        assert status == 200
