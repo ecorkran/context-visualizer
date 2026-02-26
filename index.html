@@ -35,9 +35,10 @@
         </div>`;
     }
 
-    // Load all project data from external JSON files via manifest
+    // Load all project data from external JSON files via manifest.
+    // cache: 'no-store' ensures re-fetches (e.g. after refresh) bypass the browser cache.
     async function loadProjects() {
-      const manifestResp = await fetch('./projects/manifest.json');
+      const manifestResp = await fetch('./projects/manifest.json', { cache: 'no-store' });
       if (!manifestResp.ok) {
         throw new Error(`Failed to load manifest: ${manifestResp.status} ${manifestResp.statusText}`);
       }
@@ -46,7 +47,7 @@
       const projects = {};
       for (const entry of manifest.projects) {
         try {
-          const resp = await fetch(`./projects/${entry.file}`);
+          const resp = await fetch(`./projects/${entry.file}`, { cache: 'no-store' });
           if (!resp.ok) {
             console.warn(`Skipping ${entry.key}: fetch failed (${resp.status})`);
             continue;

@@ -53,3 +53,24 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 **Notable issue:** `PROJECTS` was declared both as a `new Function` parameter and as `const PROJECTS = window.__PROJECTS` in the JSX — duplicate identifier error. Fixed by removing the parameter and letting the JSX read directly from `window.__PROJECTS`.
 
 **Next:** Slice 101 — Refresh Mechanism (`serve.py` local server + refresh button UI).
+
+###### Slice 101: Refresh Mechanism — Implementation Complete
+
+**Commits:**
+- `cc580b7` feat: add serve.py local server with static file serving
+- `ea1505d` feat: add /api/refresh endpoint and GET 405 guard to serve.py
+- `5d5cb21` test: add unit and integration tests for serve.py
+- `481d6c2` feat: expose loadProjects as window.__loadProjects for component refresh
+- `d79c1da` feat: add refresh button UI with idle/refreshing/error states
+- `735f25e` feat: wire refresh button to /api/refresh and live data reload
+
+**What was delivered:**
+- `serve.py` — stdlib-only HTTP server replacing `python -m http.server`; serves static files and exposes `POST /api/refresh`
+- `/api/refresh` reads `projects/manifest.json`, invokes `parse.py` via `subprocess.run()` for each project, returns `{"status": "ok", "projects": [...]}` or `{"status": "error", "message": "..."}`; GET returns 405
+- `index.html` `loadProjects()` extracted as reusable function and exposed as `window.__loadProjects`; `cache: 'no-store'` added to all project JSON fetches to bypass browser cache after refresh
+- Refresh button (↻) added to JSX tab bar: three states (idle / spinning / red error flash), wired to `POST /api/refresh` → re-fetch via `window.__loadProjects()` → React state update; active tab preserved
+- 10 unit/integration tests added for serve.py (static serving, refresh endpoint, error cases)
+
+**Notable issue:** Browser cache caused re-fetched JSON to return stale data after a successful parse. Fixed by adding `{ cache: 'no-store' }` to all `fetch()` calls in `loadProjects()`.
+
+**Initiative 100 complete.** Both slices delivered. `python serve.py` is now the local development command.

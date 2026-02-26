@@ -5,7 +5,8 @@ lld: user/slices/101-slice.refresh-mechanism.md
 dependencies: [100-slice.data-externalization]
 projectState: Data Externalization slice complete. Project data loads from external JSON in projects/ via manifest. parse.py writes to projects/ by default. Visualizer fetches and renders from external files.
 dateCreated: 20260224
-dateUpdated: 20260224
+dateUpdated: 20260225
+status: complete
 ---
 
 ## Context Summary
@@ -23,19 +24,19 @@ dateUpdated: 20260224
 **Effort**: 1/5
 **Objective**: Create a minimal Python HTTP server that serves the static site, replacing `python -m http.server`.
 
-- [ ] Create `serve.py` at project root
-- [ ] Subclass `http.server.SimpleHTTPRequestHandler` for static file serving
-- [ ] Add `--port` CLI argument (default: 8000)
-- [ ] Entry point: `python serve.py` starts the server and prints the URL
-- [ ] Ensure it serves `index.html`, `project-structure-viz.jsx`, and files in `projects/`
-- [ ] Zero dependencies — stdlib only (`http.server`, `argparse`)
+- [x] Create `serve.py` at project root
+- [x] Subclass `http.server.SimpleHTTPRequestHandler` for static file serving
+- [x] Add `--port` CLI argument (default: 8000)
+- [x] Entry point: `python serve.py` starts the server and prints the URL
+- [x] Ensure it serves `index.html`, `project-structure-viz.jsx`, and files in `projects/`
+- [x] Zero dependencies — stdlib only (`http.server`, `argparse`)
 
 **Success Criteria**:
-- [ ] `python serve.py` starts a server on port 8000
-- [ ] `python serve.py --port 3000` starts on port 3000
-- [ ] Navigating to `http://localhost:8000` loads the visualizer identically to `python -m http.server`
-- [ ] All project data loads correctly from `projects/`
-- [ ] Commit checkpoint
+- [x] `python serve.py` starts a server on port 8000
+- [x] `python serve.py --port 3000` starts on port 3000
+- [x] Navigating to `http://localhost:8000` loads the visualizer identically to `python -m http.server`
+- [x] All project data loads correctly from `projects/`
+- [x] Commit checkpoint
 
 ---
 
@@ -45,23 +46,23 @@ dateUpdated: 20260224
 **Effort**: 2/5
 **Objective**: Add a POST endpoint to `serve.py` that invokes the parser and returns a JSON response.
 
-- [ ] **Override `do_POST`** in the handler to route `/api/refresh`
-- [ ] **Read manifest**: Load `projects/manifest.json` to get project entries and their `sourcePath` values
-- [ ] **Invoke parser**: For each project in the manifest (or those specified in the request body), run `parse.py` via `subprocess.run()` using `sys.executable` as the Python interpreter
-- [ ] **Return JSON response**:
+- [x] **Override `do_POST`** in the handler to route `/api/refresh`
+- [x] **Read manifest**: Load `projects/manifest.json` to get project entries and their `sourcePath` values
+- [x] **Invoke parser**: For each project in the manifest (or those specified in the request body), run `parse.py` via `subprocess.run()` using `sys.executable` as the Python interpreter
+- [x] **Return JSON response**:
   - Success: `{"status": "ok", "projects": ["context-forge", "orchestration"]}`
   - Failure: `{"status": "error", "message": "..."}`
-- [ ] **Set response headers**: `Content-Type: application/json`, status 200 (success) or 500 (failure)
-- [ ] **Handle optional request body**: If POST body contains `{"projects": ["context-forge"]}`, only re-parse those. If no body or empty, re-parse all.
-- [ ] **Handle edge cases**: Missing manifest file, missing `sourcePath`, parser not found, parser returns non-zero exit code
+- [x] **Set response headers**: `Content-Type: application/json`, status 200 (success) or 500 (failure)
+- [x] **Handle optional request body**: If POST body contains `{"projects": ["context-forge"]}`, only re-parse those. If no body or empty, re-parse all.
+- [x] **Handle edge cases**: Missing manifest file, missing `sourcePath`, parser not found, parser returns non-zero exit code
 
 **Success Criteria**:
-- [ ] `curl -X POST http://localhost:8000/api/refresh` triggers a re-parse of all projects
-- [ ] Response is valid JSON with `status` field
-- [ ] Project JSON files in `projects/` are updated after successful refresh
-- [ ] Error response returned if parser fails (not a server crash)
-- [ ] Non-POST requests to `/api/refresh` are rejected (405 or fall through to static)
-- [ ] Commit checkpoint
+- [x] `curl -X POST http://localhost:8000/api/refresh` triggers a re-parse of all projects
+- [x] Response is valid JSON with `status` field
+- [x] Project JSON files in `projects/` are updated after successful refresh
+- [x] Error response returned if parser fails (not a server crash)
+- [x] Non-POST requests to `/api/refresh` are rejected (405 or fall through to static)
+- [x] Commit checkpoint
 
 ---
 
@@ -71,18 +72,18 @@ dateUpdated: 20260224
 **Effort**: 1/5
 **Objective**: Verify the server and refresh endpoint work correctly.
 
-- [ ] Start `serve.py`, verify static serving works
-- [ ] Test refresh with `curl -X POST http://localhost:8000/api/refresh` — verify success response and updated JSON files
-- [ ] Test refresh with specific project: `curl -X POST -d '{"projects":["context-forge"]}' http://localhost:8000/api/refresh`
-- [ ] Test error case: temporarily rename `parse.py`, attempt refresh, verify error response (not crash)
-- [ ] Test error case: remove a `sourcePath` from manifest, attempt refresh for that project, verify error response
-- [ ] Verify GET requests to `/api/refresh` don't trigger a parse
+- [x] Start `serve.py`, verify static serving works
+- [x] Test refresh with `curl -X POST http://localhost:8000/api/refresh` — verify success response and updated JSON files
+- [x] Test refresh with specific project: `curl -X POST -d '{"projects":["context-forge"]}' http://localhost:8000/api/refresh`
+- [x] Test error case: temporarily rename `parse.py`, attempt refresh, verify error response (not crash)
+- [x] Test error case: remove a `sourcePath` from manifest, attempt refresh for that project, verify error response
+- [x] Verify GET requests to `/api/refresh` don't trigger a parse
 
 **Success Criteria**:
-- [ ] All success and error cases return appropriate JSON responses
-- [ ] Server does not crash on any error case
-- [ ] Static file serving continues to work alongside the API
-- [ ] Commit checkpoint
+- [x] All success and error cases return appropriate JSON responses
+- [x] Server does not crash on any error case
+- [x] Static file serving continues to work alongside the API
+- [x] Commit checkpoint
 
 ---
 
@@ -92,16 +93,16 @@ dateUpdated: 20260224
 **Effort**: 1/5
 **Objective**: Refactor the data-loading logic in `boot()` into a reusable function that both boot and the refresh handler can call.
 
-- [ ] Extract the manifest-fetch and project-data-fetch logic from `boot()` into a standalone `async function loadProjects()` that returns the assembled `PROJECTS` object
-- [ ] Update `boot()` to call `loadProjects()` instead of inline fetch logic
-- [ ] Expose `loadProjects` so the component can call it (e.g., as `window.__loadProjects`)
-- [ ] Verify the visualizer still loads correctly after this refactor
+- [x] Extract the manifest-fetch and project-data-fetch logic from `boot()` into a standalone `async function loadProjects()` that returns the assembled `PROJECTS` object
+- [x] Update `boot()` to call `loadProjects()` instead of inline fetch logic
+- [x] Expose `loadProjects` so the component can call it (e.g., as `window.__loadProjects`)
+- [x] Verify the visualizer still loads correctly after this refactor
 
 **Success Criteria**:
-- [ ] `loadProjects()` is a standalone async function
-- [ ] `boot()` uses `loadProjects()` and behavior is identical to before
-- [ ] `loadProjects` is accessible from within the component context
-- [ ] Commit checkpoint
+- [x] `loadProjects()` is a standalone async function
+- [x] `boot()` uses `loadProjects()` and behavior is identical to before
+- [x] `loadProjects` is accessible from within the component context
+- [x] Commit checkpoint
 
 ---
 
@@ -111,21 +112,21 @@ dateUpdated: 20260224
 **Effort**: 2/5
 **Objective**: Add a refresh button with circular-arrow icon positioned to the right of the project tab selectors.
 
-- [ ] **Add refresh button element** in the component's tab bar area, positioned immediately to the right of the last project tab
-- [ ] **Circular arrow icon**: Use an SVG or unicode character (&#x21bb;) styled consistently with the existing UI theme
-- [ ] **Button styling**: Match the visual weight and height of the project tabs. Background transparent or subtle, with hover state.
-- [ ] **Three visual states**:
+- [x] **Add refresh button element** in the component's tab bar area, positioned immediately to the right of the last project tab
+- [x] **Circular arrow icon**: Use an SVG or unicode character (&#x21bb;) styled consistently with the existing UI theme
+- [x] **Button styling**: Match the visual weight and height of the project tabs. Background transparent or subtle, with hover state.
+- [x] **Three visual states**:
   - Default: Static icon, cursor pointer
   - Refreshing: CSS spin animation on the icon, pointer-events disabled
   - Error: Brief red tint or flash, reverts to default after ~3 seconds
-- [ ] **Add component state**: `refreshState` — one of `'idle'`, `'refreshing'`, `'error'`
+- [x] **Add component state**: `refreshState` — one of `'idle'`, `'refreshing'`, `'error'`
 
 **Success Criteria**:
-- [ ] Refresh button is visible to the right of the project tabs
-- [ ] Icon is a recognizable circular arrow
-- [ ] Button visually matches the existing UI style
-- [ ] All three states (idle, refreshing, error) are visually distinct
-- [ ] Commit checkpoint
+- [x] Refresh button is visible to the right of the project tabs
+- [x] Icon is a recognizable circular arrow
+- [x] Button visually matches the existing UI style
+- [x] All three states (idle, refreshing, error) are visually distinct
+- [x] Commit checkpoint
 
 ---
 
@@ -135,19 +136,19 @@ dateUpdated: 20260224
 **Effort**: 2/5
 **Objective**: Connect the refresh button click to the parse endpoint and update the display with fresh data.
 
-- [ ] **Click handler**: On click, set state to `'refreshing'`, then `POST /api/refresh`
-- [ ] **On success**: Call `loadProjects()` (from Task 4) to re-fetch all project JSON, update the component's project data state, set refresh state to `'idle'`
-- [ ] **On failure**: Set refresh state to `'error'`, log the error message to console, set a timeout to revert to `'idle'` after 3 seconds
-- [ ] **Preserve active tab**: After data reload, keep the same project tab selected (don't reset to the first project)
-- [ ] **No full page reload**: React state update only — the component re-renders with new data
+- [x] **Click handler**: On click, set state to `'refreshing'`, then `POST /api/refresh`
+- [x] **On success**: Call `loadProjects()` (from Task 4) to re-fetch all project JSON, update the component's project data state, set refresh state to `'idle'`
+- [x] **On failure**: Set refresh state to `'error'`, log the error message to console, set a timeout to revert to `'idle'` after 3 seconds
+- [x] **Preserve active tab**: After data reload, keep the same project tab selected (don't reset to the first project)
+- [x] **No full page reload**: React state update only — the component re-renders with new data
 
 **Success Criteria**:
-- [ ] Clicking refresh triggers a parse and data reload
-- [ ] Display updates to reflect any changes in project documents
-- [ ] Active project tab is preserved after refresh
-- [ ] Refresh errors show error state and don't break the display
-- [ ] Current data remains visible if refresh fails
-- [ ] Commit checkpoint
+- [x] Clicking refresh triggers a parse and data reload
+- [x] Display updates to reflect any changes in project documents
+- [x] Active project tab is preserved after refresh
+- [x] Refresh errors show error state and don't break the display
+- [x] Current data remains visible if refresh fails
+- [x] Commit checkpoint
 
 ---
 
@@ -157,18 +158,18 @@ dateUpdated: 20260224
 **Effort**: 1/5
 **Objective**: Verify the complete refresh workflow end-to-end.
 
-- [ ] Start the visualizer with `python serve.py`
-- [ ] Verify both projects load and display correctly
-- [ ] Make a visible change to a project document (e.g., change a status in frontmatter)
-- [ ] Click the refresh button
-- [ ] Verify the spinner appears during refresh
-- [ ] Verify the display updates to reflect the document change
-- [ ] Verify the active project tab is preserved
-- [ ] Test error case: stop any one project's source from being parseable, click refresh, verify error state appears but existing data remains
-- [ ] Verify no console errors during normal operation
+- [x] Start the visualizer with `python serve.py`
+- [x] Verify both projects load and display correctly
+- [x] Make a visible change to a project document (e.g., change a status in frontmatter)
+- [x] Click the refresh button
+- [x] Verify the spinner appears during refresh
+- [x] Verify the display updates to reflect the document change
+- [x] Verify the active project tab is preserved
+- [x] Test error case: stop any one project's source from being parseable, click refresh, verify error state appears but existing data remains
+- [x] Verify no console errors during normal operation
 
 **Success Criteria**:
-- [ ] Full round-trip works: edit document → click refresh → see updated visualization
-- [ ] Error handling works gracefully
-- [ ] No console errors in normal flow
-- [ ] Final commit for this slice
+- [x] Full round-trip works: edit document → click refresh → see updated visualization
+- [x] Error handling works gracefully
+- [x] No console errors in normal flow
+- [x] Final commit for this slice

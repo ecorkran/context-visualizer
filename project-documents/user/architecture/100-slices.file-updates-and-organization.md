@@ -33,7 +33,7 @@ dateUpdated: 20260224
    - **Risk:** Low — straightforward file reorganization and data loading refactor. The JSON format and component rendering logic are unchanged.
    - **Effort:** 2/5
 
-2. [ ] **Refresh Mechanism**
+2. [x] **Refresh Mechanism**
    Add a UI control that triggers re-parsing of loaded projects and updates the display.
    - Add a refresh button (circular arrow icon) positioned immediately to the right of the project tab selectors
    - Implement a lightweight local mechanism to invoke the Python parser from the browser context and reload the updated JSON
