@@ -26,7 +26,7 @@ const THEME = {
   status: {
     complete: "#4CAF50",
     "in-progress": "#FF9800",
-    "not-started": "#78909C",
+    "not-started": "#6880C0",
     deprecated: "#9E9E9E",
   },
 };
