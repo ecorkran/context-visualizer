@@ -152,6 +152,17 @@ class ServerFixture:
             except Exception:
                 return exc.code, {}
 
+    def delete(self, path: str) -> tuple[int, dict]:
+        req = urllib.request.Request(self.url(path), method="DELETE")
+        try:
+            resp = urllib.request.urlopen(req)
+            return resp.status, json.loads(resp.read())
+        except urllib.error.HTTPError as exc:
+            try:
+                return exc.code, json.loads(exc.read())
+            except Exception:
+                return exc.code, {}
+
 
 # ── Static file serving tests ──────────────────────────────────────────────
 
@@ -279,3 +290,196 @@ class TestRefreshErrorCases:
             status = exc.code
         # Should return 200 (empty projects, refreshed nothing)
         assert status == 200
+
+
+# ── Helper: build a minimal synthetic project tree ──────────────────────────
+
+
+def _make_project(tmp_path: Path, name: str = "test-proj") -> Path:
+    """Create a minimal project-documents/user/ tree suitable for parse.py."""
+    proj_dir = tmp_path / name
+    user_dir = proj_dir / "project-documents" / "user"
+    (user_dir / "architecture").mkdir(parents=True)
+    (user_dir / "slices").mkdir(parents=True)
+    (user_dir / "tasks").mkdir(parents=True)
+    # Minimal arch doc so build_model finds a project
+    (user_dir / "architecture" / "100-arch.test.md").write_text(
+        "---\ndocType: architecture\nproject: Test Project\n---\n# Test\n"
+    )
+    return proj_dir
+
+
+# ── GET /api/projects tests ──────────────────────────────────────────────────
+
+
+class TestListProjects:
+    def setup_method(self) -> None:
+        self.tmp_dir = Path(f"/tmp/test_list_projects_{id(self)}")
+        self.tmp_dir.mkdir(exist_ok=True)
+
+    def teardown_method(self) -> None:
+        import shutil
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def test_returns_all_manifest_entries(self) -> None:
+        manifest = {"projects": [
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a", "displayName": "Proj A"},
+            {"key": "proj-b", "file": "b.json", "sourcePath": "/b"},
+        ]}
+        (self.tmp_dir / "manifest.json").write_text(json.dumps(manifest))
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        try:
+            status, body = srv.get("/api/projects")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            keys = [p["key"] for p in data["projects"]]
+            assert keys == ["proj-a", "proj-b"]
+            assert data["projects"][0]["displayName"] == "Proj A"
+        finally:
+            srv.stop()
+
+    def test_empty_manifest_returns_empty_array(self) -> None:
+        (self.tmp_dir / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        try:
+            status, body = srv.get("/api/projects")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            assert data["projects"] == []
+        finally:
+            srv.stop()
+
+    def test_missing_manifest_returns_500(self) -> None:
+        # No manifest file in tmp_dir
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        try:
+            status, body = srv.get("/api/projects")
+            assert status == 500
+            data = json.loads(body)
+            assert data["status"] == "error"
+        finally:
+            srv.stop()
+
+
+# ── POST /api/projects tests ─────────────────────────────────────────────────
+
+
+@pytest.mark.skipif(not CF_PATH.exists(), reason="context-forge project not available")
+class TestAddProject:
+    def setup_method(self) -> None:
+        self.tmp_dir = Path(f"/tmp/test_add_project_{id(self)}")
+        self.tmp_dir.mkdir(exist_ok=True)
+        (self.tmp_dir / "manifest.json").write_text(json.dumps({"projects": []}))
+        self.srv = ServerFixture(projects_dir=self.tmp_dir)
+        self.srv.start()
+
+    def teardown_method(self) -> None:
+        self.srv.stop()
+        import shutil
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def test_valid_path_adds_project_to_manifest(self) -> None:
+        status, resp = self.srv.post("/api/projects", {"path": str(CF_PATH)})
+        assert status == 200
+        assert resp["status"] == "ok"
+        assert resp["project"]["key"] == "context-forge"
+        assert "displayName" in resp["project"]
+        manifest = json.loads((self.tmp_dir / "manifest.json").read_text())
+        keys = [p["key"] for p in manifest["projects"]]
+        assert "context-forge" in keys
+
+    def test_valid_path_creates_json_file(self) -> None:
+        self.srv.post("/api/projects", {"path": str(CF_PATH)})
+        assert (self.tmp_dir / "context-forge-structure.json").exists()
+
+    def test_missing_path_field_returns_400(self) -> None:
+        status, resp = self.srv.post("/api/projects", {})
+        assert status == 400
+        assert resp["status"] == "error"
+        assert "path" in resp["message"].lower()
+
+    def test_nonexistent_path_returns_400(self) -> None:
+        status, resp = self.srv.post("/api/projects", {"path": "/does/not/exist"})
+        assert status == 400
+        assert resp["status"] == "error"
+
+    def test_path_without_project_structure_returns_400(self, tmp_path: Path) -> None:
+        status, resp = self.srv.post("/api/projects", {"path": str(tmp_path)})
+        assert status == 400
+        assert resp["status"] == "error"
+        assert "project-documents" in resp["message"] or "user" in resp["message"].lower()
+
+    def test_re_add_existing_project_is_idempotent(self) -> None:
+        self.srv.post("/api/projects", {"path": str(CF_PATH)})
+        status, resp = self.srv.post("/api/projects", {"path": str(CF_PATH)})
+        assert status == 200
+        manifest = json.loads((self.tmp_dir / "manifest.json").read_text())
+        cf_entries = [p for p in manifest["projects"] if p["key"] == "context-forge"]
+        assert len(cf_entries) == 1
+
+
+# ── DELETE /api/projects/{key} tests ─────────────────────────────────────────
+
+
+class TestRemoveProject:
+    def setup_method(self) -> None:
+        self.tmp_dir = Path(f"/tmp/test_remove_project_{id(self)}")
+        self.tmp_dir.mkdir(exist_ok=True)
+        # Seed a manifest with two entries and one actual JSON file
+        manifest = {"projects": [
+            {"key": "proj-a", "file": "proj-a-structure.json", "sourcePath": "/a"},
+            {"key": "proj-b", "file": "proj-b-structure.json", "sourcePath": "/b"},
+        ]}
+        (self.tmp_dir / "manifest.json").write_text(json.dumps(manifest))
+        (self.tmp_dir / "proj-a-structure.json").write_text("{}")
+        # proj-b JSON intentionally absent (tests graceful missing-file handling)
+        self.srv = ServerFixture(projects_dir=self.tmp_dir)
+        self.srv.start()
+
+    def teardown_method(self) -> None:
+        self.srv.stop()
+        import shutil
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def test_delete_existing_key_returns_200(self) -> None:
+        status, resp = self.srv.delete("/api/projects/proj-a")
+        assert status == 200
+        assert resp["status"] == "ok"
+        assert resp["removed"] == "proj-a"
+
+    def test_delete_removes_entry_from_manifest(self) -> None:
+        self.srv.delete("/api/projects/proj-a")
+        manifest = json.loads((self.tmp_dir / "manifest.json").read_text())
+        keys = [p["key"] for p in manifest["projects"]]
+        assert "proj-a" not in keys
+
+    def test_delete_removes_json_file(self) -> None:
+        assert (self.tmp_dir / "proj-a-structure.json").exists()
+        self.srv.delete("/api/projects/proj-a")
+        assert not (self.tmp_dir / "proj-a-structure.json").exists()
+
+    def test_delete_preserves_other_entries(self) -> None:
+        self.srv.delete("/api/projects/proj-a")
+        manifest = json.loads((self.tmp_dir / "manifest.json").read_text())
+        keys = [p["key"] for p in manifest["projects"]]
+        assert "proj-b" in keys
+
+    def test_delete_nonexistent_key_returns_404(self) -> None:
+        status, resp = self.srv.delete("/api/projects/no-such-key")
+        assert status == 404
+        assert resp["status"] == "error"
+        assert "no-such-key" in resp["message"]
+
+    def test_delete_when_json_file_absent_still_succeeds(self) -> None:
+        # proj-b has no JSON file — delete should succeed anyway
+        status, resp = self.srv.delete("/api/projects/proj-b")
+        assert status == 200
+        assert resp["removed"] == "proj-b"
+        manifest = json.loads((self.tmp_dir / "manifest.json").read_text())
+        keys = [p["key"] for p in manifest["projects"]]
+        assert "proj-b" not in keys

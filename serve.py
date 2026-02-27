@@ -170,8 +170,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             return
 
         parse_py = self._parse_py()
+        projects_dir = str(self._manifest_path().parent)
         result = subprocess.run(
-            [sys.executable, str(parse_py), str(project_path)],
+            [sys.executable, str(parse_py), str(project_path), "--projects-dir", projects_dir],
             capture_output=True,
             text=True,
         )
