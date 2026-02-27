@@ -1,14 +1,16 @@
 {
   "projects": [
     {
-      "key": "context-forge",
-      "file": "context-forge-structure.json",
-      "sourcePath": "/Users/manta/source/repos/manta/context-forge"
-    },
-    {
       "key": "orchestration",
       "file": "orchestration-structure.json",
-      "sourcePath": "/Users/manta/source/repos/manta/orchestration"
+      "sourcePath": "/Users/manta/source/repos/manta/orchestration",
+      "displayName": "Orchestration"
+    },
+    {
+      "key": "context-forge",
+      "file": "context-forge-structure.json",
+      "sourcePath": "/Users/manta/source/repos/manta/context-forge",
+      "displayName": "Context Forge"
     }
   ]
 }
