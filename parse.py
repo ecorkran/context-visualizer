@@ -86,6 +86,101 @@ def parse_frontmatter(filepath: Path) -> dict[str, str]:
 
 CHECKBOX_RE = re.compile(r"^(?:\s*)-\s+\[([ xX])\]\s+(.+)$")
 
+# Numbered list items in sections: "N. [ ] ..." or "N. [ ] **(NNN) Name** ..."
+_FW_ITEM_RE = re.compile(r"^\d+\.\s+\[([ xX])\]\s+(.+)$")
+_FW_INDEX_RE = re.compile(r"^\((\d+)\)\s*")
+# Plan slice entries: "N. [ ] **(NNN) Name** — ..."  (bold index distinguishes from future work)
+_PLAN_SLICE_RE = re.compile(r"^\d+\.\s+\[([ xX])\]\s+\*\*\((\d+)\)\s+(.+?)\*\*")
+
+# Headings that do NOT contain slice entries in a slice plan
+_NON_SLICE_HEADINGS = {"future work", "implementation order", "notes", "parent document"}
+
+
+def _fw_title(text: str) -> str:
+    """Extract short title from a future work item (text before em-dash or colon)."""
+    for sep in (" — ", ": "):
+        pos = text.find(sep)
+        if pos > 0:
+            return text[:pos].strip()
+    return text
+
+
+def parse_plan_slices(filepath: Path) -> list[dict[str, Any]]:
+    """Extract planned slice entries from a slice plan document.
+
+    Matches numbered list items of the form:
+        N. [ ] **(NNN) Slice Name** — description...
+    The bold ``**(NNN)``  pattern distinguishes slice entries from future work items.
+    """
+    items: list[dict[str, Any]] = []
+    in_slice_section = True  # Assume slice sections until a non-slice heading
+    try:
+        with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                stripped = line.strip()
+                if re.match(r"^#{1,3}\s+", stripped):
+                    heading = stripped.lstrip("#").strip().lower()
+                    in_slice_section = not any(ns in heading for ns in _NON_SLICE_HEADINGS)
+                    continue
+                if not in_slice_section:
+                    continue
+                m = _PLAN_SLICE_RE.match(stripped)
+                if not m:
+                    continue
+                done = m.group(1).lower() == "x"
+                index = int(m.group(2))
+                name = m.group(3).strip()
+                items.append({
+                    "index": index,
+                    "name": name,
+                    "status": "complete" if done else "not-started",
+                })
+    except (OSError, UnicodeDecodeError):
+        pass
+    return items
+
+
+def parse_future_work(filepath: Path, next_index: int = 0) -> list[dict[str, Any]]:
+    """Extract numbered items from the '## Future Work' section of a slice plan.
+
+    Items with an explicit ``(NNN)`` index use that index.  Unnumbered items
+    are assigned sequential indices starting at ``next_index``.
+    """
+    items: list[dict[str, Any]] = []
+    in_section = False
+    auto_idx = next_index
+    try:
+        with open(filepath, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                stripped = line.strip()
+                if re.match(r"^#{1,3}\s+Future Work", stripped, re.IGNORECASE):
+                    in_section = True
+                    continue
+                if in_section and re.match(r"^#{1,3}\s+", stripped):
+                    break  # Next heading ends the section
+                if not in_section:
+                    continue
+                m = _FW_ITEM_RE.match(stripped)
+                if not m:
+                    continue
+                done = m.group(1).lower() == "x"
+                text = m.group(2).strip()
+                # Strip leading " — " that sometimes follows an index like "(781) — Name"
+                text = text.lstrip("—").strip()
+                # Optional explicit index like "(780) Config System..."
+                idx_match = _FW_INDEX_RE.match(text)
+                if idx_match:
+                    index = idx_match.group(1)
+                    text = text[idx_match.end():].strip(" —-")
+                else:
+                    index = str(auto_idx) if auto_idx > 0 else "?"
+                    auto_idx = auto_idx + 1 if auto_idx > 0 else auto_idx
+                name = _fw_title(text)
+                items.append({"index": index, "name": name, "done": done})
+    except (OSError, UnicodeDecodeError):
+        pass
+    return items
+
 
 def parse_task_items(filepath: Path) -> list[dict[str, Any]]:
     """Extract `- [x] name` / `- [ ] name` items from a task file."""
@@ -326,11 +421,13 @@ def build_model(
             raw_name = slices_doc.name
         name = raw_name.replace("-", " ").replace(".", " ").strip().title()
 
-        # Collect slices in [base, upper)
+        # Collect slices from actual slice files in [base, upper)
+        actual_slice_indices: set[int] = set()
         init_slices: list[dict[str, Any]] = []
         for d in by_type.get("slice", []):
             if base <= d.index < upper:
                 sl = _d(d)
+                actual_slice_indices.add(d.index)
 
                 # Matching task file(s)
                 task_docs = by_it.get((d.index, "tasks"), [])
@@ -348,14 +445,30 @@ def build_model(
 
                 init_slices.append(sl)
 
+        # Fill in planned slices from the slice plan for indices with no actual file
+        if slices_doc:
+            for ps in parse_plan_slices(slices_doc.filepath):
+                if base <= ps["index"] < upper and ps["index"] not in actual_slice_indices:
+                    init_slices.append({
+                        "index": f"{ps['index']:03d}",
+                        "name": ps["name"],
+                        "status": ps["status"],
+                        "planned": True,
+                    })
+
         init_slices.sort(key=lambda x: int(x["index"]))
+
+        # Compute next auto-index for unnumbered future work items
+        last_slice_idx = max(
+            (int(sl["index"]) for sl in init_slices), default=base
+        )
 
         init: dict[str, Any] = {"name": name, "slices": init_slices, "features": []}
         if arch_doc:
             init["arch"] = _d(arch_doc)
         if slices_doc:
             sp = _d(slices_doc)
-            sp["futureWork"] = []
+            sp["futureWork"] = parse_future_work(slices_doc.filepath, next_index=last_slice_idx + 1)
             init["slicePlan"] = sp
 
         initiatives[base] = init
@@ -371,11 +484,15 @@ def build_model(
     for d in by_type.get("feature", []) + by_type.get("issue", []):
         if 100 <= d.index <= 799 and d.index not in claimed:
             e = _d(d)
-            # Associate with nearest initiative base
-            for base in sorted(initiatives.keys(), reverse=True):
-                if d.index >= base:
-                    e["parent"] = str(base)
-                    break
+            # Explicit parent frontmatter takes precedence over nearest-base
+            if d.parent and d.parent in {str(k) for k in initiatives}:
+                e["parent"] = d.parent
+            else:
+                # Fall back to nearest initiative base <= d.index
+                for base in sorted(initiatives.keys(), reverse=True):
+                    if d.index >= base:
+                        e["parent"] = str(base)
+                        break
             future_slices.append(e)
 
     # ------------------------------------------------------------------

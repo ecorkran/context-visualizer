@@ -207,7 +207,7 @@ const TaskItemList = ({ items, colorSet }) => {
 // ============================================================================
 // FUTURE WORK BLOCK — solid dimmed border + hash pattern
 // ============================================================================
-const FutureBlock = ({ item, colorSet }) => (
+const FutureBlock = ({ item, colorSet, label = "FUTURE" }) => (
   <div style={{
     position: "relative", borderRadius: THEME.radius,
     border: `1px solid ${colorSet.border}40`,
@@ -223,7 +223,7 @@ const FutureBlock = ({ item, colorSet }) => (
         backgroundColor: THEME.status["not-started"], flexShrink: 0,
       }} />
       <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: colorSet.accent, opacity: 0.5, minWidth: 28 }}>{item.index}</span>
-      <Badge colorSet={colorSet} dimmed>FUTURE</Badge>
+      <Badge colorSet={colorSet} dimmed>{label}</Badge>
       <span style={{ fontFamily: THEME.fonts.body, fontSize: 13, color: colorSet.text, opacity: 0.6, fontWeight: 500 }}>{item.name}</span>
     </div>
   </div>
@@ -259,7 +259,7 @@ const FutureSlicesGroup = ({ items }) => {
           <span style={{
             fontFamily: THEME.fonts.heading, fontSize: 10, color: "#555577",
             textTransform: "uppercase", letterSpacing: "0.1em",
-          }}>Future Slices</span>
+          }}>Features</span>
           <span style={{
             fontFamily: THEME.fonts.heading, fontSize: 10, color: colorSet.accent, opacity: 0.4,
           }}>{items.length}</span>
@@ -267,7 +267,7 @@ const FutureSlicesGroup = ({ items }) => {
       </div>
       {expanded && (
         <div style={{ marginTop: THEME.sp.sm, paddingLeft: THEME.sp.md }}>
-          {[...items].sort((a, b) => parseInt(a.index) - parseInt(b.index)).map((fs, i) => <FutureBlock key={i} item={fs} colorSet={colorSet} />)}
+          {[...items].sort((a, b) => parseInt(a.index) - parseInt(b.index)).map((fs, i) => <FutureBlock key={i} item={fs} colorSet={colorSet} label="FEATURE" />)}
         </div>
       )}
     </div>
