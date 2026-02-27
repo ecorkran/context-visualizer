@@ -24,14 +24,25 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self) -> None:
         if self.path == "/api/refresh":
             self._handle_refresh()
+        elif self.path == "/api/projects":
+            self._handle_add_project()
         else:
             self.send_error(404, "Not Found")
 
     def do_GET(self) -> None:
-        if self.path == "/api/refresh":
+        if self.path == "/api/projects":
+            self._handle_list_projects()
+        elif self.path == "/api/refresh":
             self.send_error(405, "Method Not Allowed")
         else:
             super().do_GET()
+
+    def do_DELETE(self) -> None:
+        if self.path.startswith("/api/projects/"):
+            key = self.path[len("/api/projects/"):]
+            self._handle_remove_project(key)
+        else:
+            self.send_error(404, "Not Found")
 
     def _handle_refresh(self) -> None:
         """Re-parse all projects listed in projects/manifest.json."""
@@ -94,6 +105,115 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_response(200, {"status": "ok", "projects": refreshed, "warnings": errors})
         else:
             self._json_response(200, {"status": "ok", "projects": refreshed})
+
+    def _manifest_path(self) -> Path:
+        return Path("projects/manifest.json")
+
+    def _parse_py(self) -> Path:
+        return Path("parse.py").resolve()
+
+    def _read_manifest(self) -> tuple[dict | None, str | None]:
+        """Read and return manifest dict, or (None, error_message) on failure."""
+        mp = self._manifest_path()
+        if not mp.exists():
+            return None, "projects/manifest.json not found"
+        try:
+            return json.loads(mp.read_text(encoding="utf-8")), None
+        except Exception as exc:
+            return None, f"Failed to read manifest: {exc}"
+
+    def _write_manifest(self, manifest: dict) -> None:
+        mp = self._manifest_path()
+        mp.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    def _handle_list_projects(self) -> None:
+        """GET /api/projects — return all manifest entries."""
+        manifest, err = self._read_manifest()
+        if err:
+            self._json_response(500, {"status": "error", "message": err})
+            return
+        self._json_response(200, {"status": "ok", "projects": manifest.get("projects", [])})
+
+    def _handle_add_project(self) -> None:
+        """POST /api/projects — parse project at path and add to manifest."""
+        import subprocess
+
+        content_length = int(self.headers.get("Content-Length", 0))
+        try:
+            body = json.loads(self.rfile.read(content_length)) if content_length > 0 else {}
+        except Exception:
+            self._json_response(400, {"status": "error", "message": "Invalid JSON body"})
+            return
+
+        path_str = body.get("path", "")
+        if not path_str:
+            self._json_response(400, {"status": "error", "message": "Missing required field: path"})
+            return
+
+        project_path = Path(path_str)
+        if not project_path.exists():
+            self._json_response(400, {"status": "error", "message": f"Path does not exist: {path_str}"})
+            return
+
+        # Validate project structure by importing find_user_dir from parse.py
+        sys.path.insert(0, str(self._parse_py().parent))
+        try:
+            from parse import find_user_dir
+            if find_user_dir(project_path) is None:
+                self._json_response(
+                    400,
+                    {"status": "error", "message": f"No project-documents/user/ found in {path_str}"},
+                )
+                return
+        except ImportError as exc:
+            self._json_response(500, {"status": "error", "message": f"Cannot import parse.py: {exc}"})
+            return
+
+        parse_py = self._parse_py()
+        result = subprocess.run(
+            [sys.executable, str(parse_py), str(project_path)],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode != 0:
+            self._json_response(
+                500,
+                {"status": "error", "message": f"Parser error: {result.stderr.strip() or 'non-zero exit'}"},
+            )
+            return
+
+        # Return the updated manifest entry for this project
+        key = project_path.resolve().name.lower().replace(" ", "-")
+        manifest, err = self._read_manifest()
+        if err:
+            self._json_response(500, {"status": "error", "message": err})
+            return
+
+        entry = next((p for p in manifest.get("projects", []) if p.get("key") == key), None)
+        self._json_response(200, {"status": "ok", "project": entry})
+
+    def _handle_remove_project(self, key: str) -> None:
+        """DELETE /api/projects/{key} — remove from manifest and delete JSON file."""
+        manifest, err = self._read_manifest()
+        if err:
+            self._json_response(500, {"status": "error", "message": err})
+            return
+
+        projects = manifest.get("projects", [])
+        entry = next((p for p in projects if p.get("key") == key), None)
+        if entry is None:
+            self._json_response(404, {"status": "error", "message": f"Project '{key}' not found"})
+            return
+
+        manifest["projects"] = [p for p in projects if p.get("key") != key]
+        self._write_manifest(manifest)
+
+        # Delete the JSON data file (derived artifact — ignore if already absent)
+        json_file = self._manifest_path().parent / entry.get("file", "")
+        if json_file.name and json_file.exists():
+            json_file.unlink()
+
+        self._json_response(200, {"status": "ok", "removed": key})
 
     def _json_response(self, status: int, body: dict) -> None:
         payload = json.dumps(body).encode("utf-8")
