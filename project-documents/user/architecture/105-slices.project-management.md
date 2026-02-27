@@ -21,7 +21,7 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 
 ## Feature Slices (in implementation order)
 
-1. [ ] **Project Management API** — Extend the manifest schema with a `displayName` field (written by `parse.py` at parse time); add `GET /api/projects`, `POST /api/projects`, and `DELETE /api/projects/{key}` endpoints to `serve.py`; update tests. No UI changes in this slice. Deliverable: fully functional catalog API testable via `curl`.
+1. [x] **Project Management API** — Extend the manifest schema with a `displayName` field (written by `parse.py` at parse time); add `GET /api/projects`, `POST /api/projects`, and `DELETE /api/projects/{key}` endpoints to `serve.py`; update tests. No UI changes in this slice. Deliverable: fully functional catalog API testable via `curl`.
    - **Value:** Establishes the backend contract that the panel UI will consume. Existing manifest entries without `displayName` are handled gracefully. Adds/removes projects without touching the JSX component.
    - **Success Criteria:**
      - `parse.py` writes `displayName` to manifest entries when parsing; re-parsing an existing project updates it
