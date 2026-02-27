@@ -557,6 +557,7 @@ def update_manifest(
     key: str,
     filename: str,
     source_path: str,
+    display_name: str | None = None,
 ) -> None:
     """Add or update a project entry in manifest.json (merge, don't replace)."""
     manifest_path = projects_dir / "manifest.json"
@@ -566,7 +567,9 @@ def update_manifest(
         with open(manifest_path, "r", encoding="utf-8") as f:
             manifest = json.load(f)
 
-    entry = {"key": key, "file": filename, "sourcePath": source_path}
+    entry: dict[str, Any] = {"key": key, "file": filename, "sourcePath": source_path}
+    if display_name:
+        entry["displayName"] = display_name
 
     # Replace existing entry for this key, or append
     projects = manifest.get("projects", [])
@@ -645,7 +648,7 @@ def main():
         filepath.write_text(out + "\n", encoding="utf-8")
         print(f"Written to {filepath}", file=sys.stderr)
 
-        update_manifest(projects_dir, key, filename, str(pp))
+        update_manifest(projects_dir, key, filename, str(pp), display_name=model["name"])
 
 
 if __name__ == "__main__":
