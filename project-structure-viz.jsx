@@ -293,11 +293,11 @@ const DocBlock = ({
       backgroundColor: colorSet.bg, border: `1px solid ${colorSet.border}`,
       borderRadius: THEME.radius, padding: THEME.sp.md,
       marginBottom: THEME.sp.sm, transition: "all 0.15s ease",
-      cursor: hasKids ? "pointer" : "default",
-    }}
-      onClick={hasKids ? (e) => { e.stopPropagation(); setExpanded(!expanded); } : undefined}
-    >
-      <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.sm }}>
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.sm,
+        cursor: hasKids ? "pointer" : "default" }}
+        onClick={hasKids ? (e) => { e.stopPropagation(); setExpanded(!expanded); } : undefined}
+      >
         {hasKids && (
           <span style={{
             color: colorSet.accent, fontSize: 12, fontFamily: THEME.fonts.heading,
