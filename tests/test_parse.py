@@ -77,6 +77,32 @@ class TestUpdateManifest:
         assert by_key["proj-a"]["sourcePath"] == "/path/a-v2"
         assert by_key["proj-b"]["sourcePath"] == "/path/b"
 
+    def test_writes_display_name_when_provided(self, tmp_path: Path) -> None:
+        from parse import update_manifest
+
+        update_manifest(tmp_path, "my-proj", "my-proj.json", "/path", display_name="My Project")
+
+        manifest = json.loads((tmp_path / "manifest.json").read_text())
+        assert manifest["projects"][0]["displayName"] == "My Project"
+
+    def test_no_display_name_field_when_not_provided(self, tmp_path: Path) -> None:
+        from parse import update_manifest
+
+        update_manifest(tmp_path, "my-proj", "my-proj.json", "/path")
+
+        manifest = json.loads((tmp_path / "manifest.json").read_text())
+        assert "displayName" not in manifest["projects"][0]
+
+    def test_reparse_updates_display_name(self, tmp_path: Path) -> None:
+        from parse import update_manifest
+
+        update_manifest(tmp_path, "my-proj", "my-proj.json", "/path", display_name="Old Name")
+        update_manifest(tmp_path, "my-proj", "my-proj.json", "/path", display_name="New Name")
+
+        manifest = json.loads((tmp_path / "manifest.json").read_text())
+        assert len(manifest["projects"]) == 1
+        assert manifest["projects"][0]["displayName"] == "New Name"
+
 
 # ── CLI integration tests ──────────────────────────────────────────────
 
@@ -105,6 +131,24 @@ class TestCLIDefaultMode:
         assert entry["key"] == "context-forge"
         assert entry["file"] == "context-forge-structure.json"
         assert entry["sourcePath"] != ""
+
+    def test_manifest_contains_display_name(self, tmp_path: Path) -> None:
+        result = _run_parser(str(CF_PATH), "--projects-dir", str(tmp_path))
+        assert result.returncode == 0
+
+        manifest = json.loads((tmp_path / "manifest.json").read_text())
+        entry = manifest["projects"][0]
+        assert "displayName" in entry
+        assert entry["displayName"] != ""
+
+    def test_reparse_updates_display_name_no_duplicates(self, tmp_path: Path) -> None:
+        _run_parser(str(CF_PATH), "--projects-dir", str(tmp_path))
+        _run_parser(str(CF_PATH), "--projects-dir", str(tmp_path))
+
+        manifest = json.loads((tmp_path / "manifest.json").read_text())
+        cf_entries = [p for p in manifest["projects"] if p["key"] == "context-forge"]
+        assert len(cf_entries) == 1
+        assert "displayName" in cf_entries[0]
 
     def test_multiple_projects(self, tmp_path: Path) -> None:
         if not ORCH_PATH.exists():
