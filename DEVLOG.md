@@ -101,3 +101,21 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 - Path validation reuses `find_user_dir()` from `parse.py`
 
 **Next:** Task breakdown for slice 105 (Phase 5), then implementation.
+
+###### Slice 105: Project Management API — Implementation Complete
+
+**Commits:**
+- `85869aa` feat: add displayName to update_manifest() and main() call site
+- `389b06c` test: add displayName manifest tests to test_parse.py
+- `6a478b5` feat: add GET /api/projects, POST /api/projects, DELETE /api/projects/{key}
+- `3d48eab` test: add project management endpoint tests; fix POST --projects-dir arg
+- `b686795` chore: backfill displayName into manifest entries
+- `783a137` docs: mark slice 105 complete in slice design, slice plan, and task file
+
+**What was delivered:**
+- `parse.py` — `update_manifest()` accepts optional `display_name` parameter; `main()` passes `model["name"]`; all existing callers backward compatible
+- `serve.py` — `GET /api/projects` reads and returns manifest entries; `POST /api/projects` validates path, invokes parser via subprocess with `--projects-dir`, returns new entry; `DELETE /api/projects/{key}` removes manifest entry and deletes derived JSON file; `do_DELETE` added; `_manifest_path()` and `_parse_py()` helpers enable test isolation
+- `projects/manifest.json` — backfilled `displayName` for `context-forge` and `orchestration`
+- 5 new tests in `test_parse.py` (unit-level `displayName` assertions); 15 new tests in `test_serve.py` (GET, POST, DELETE — happy paths, error cases, idempotent re-add, missing-file graceful handling); 52 total tests passing
+
+**Notable fix:** `POST /api/projects` subprocess call originally omitted `--projects-dir`, causing JSON and manifest writes to land in the repo's `projects/` rather than the test's temp dir. Fixed by passing `--projects-dir` derived from `_manifest_path().parent`.
