@@ -74,3 +74,30 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 **Notable issue:** Browser cache caused re-fetched JSON to return stale data after a successful parse. Fixed by adding `{ cache: 'no-store' }` to all `fetch()` calls in `loadProjects()`.
 
 **Initiative 100 complete.** Both slices delivered. `python serve.py` is now the local development command.
+
+## 20260226
+
+###### Bug Fixes — parse.py and JSX visualizer
+
+**Commits:**
+- `b809b2f` fix: futureWork parsing, plan slice extraction, feature parent attribution
+- `48ca388` fix: move DocBlock click handler to header row only
+
+**What was fixed:**
+- `parse.py`: futureWork items now extract title-only names (before em-dash separator), plan slices distinguished from future work by bold `**(NNN)**` pattern, feature parent attribution respects explicit `parent` frontmatter
+- `project-structure-viz.jsx`: clicking a non-expandable item (e.g., future work entry inside an expanded PLAN block) no longer collapses the parent — onClick moved from outer wrapper div to header row div
+
+###### Initiative 105: Project Management — Slice 105 Design Complete
+
+**Document created:**
+- `user/slices/105-slice.project-management-api.md` — Slice design for the catalog management API
+
+**Scope:** Extend manifest with `displayName`, add `GET /api/projects`, `POST /api/projects`, `DELETE /api/projects/{key}` to `serve.py`. No UI changes — backend only. Panel UI deferred to slice 106.
+
+**Key decisions:**
+- `displayName` sourced from `model["name"]` in `build_model()`, written by `update_manifest()`
+- DELETE removes both manifest entry and JSON file (JSON is a derived artifact, regenerable by re-adding)
+- POST is idempotent — re-adding an existing project re-parses and updates
+- Path validation reuses `find_user_dir()` from `parse.py`
+
+**Next:** Task breakdown for slice 105 (Phase 5), then implementation.
