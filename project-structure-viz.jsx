@@ -689,69 +689,37 @@ export default function ProjectStructureVisualizer() {
   }, []);
 
   return (
-    <div style={{ backgroundColor: "#0D0D1A", minHeight: "100vh", fontFamily: THEME.fonts.body, display: "flex" }}>
+    <div style={{ backgroundColor: "#0D0D1A", minHeight: "100vh", fontFamily: THEME.fonts.body, display: "flex", flexDirection: "column" }}>
       <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       <PatternDefs />
-      <ProjectPanel
-        projects={projects}
-        active={active}
-        onActivate={setActive}
-        onRefreshAll={handleRefresh}
-        refreshState={refreshState}
-      />
-      <div style={{ flex: 1, overflow: "auto", padding: THEME.sp.xl }}>
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          marginBottom: THEME.sp.xl, flexWrap: "wrap", gap: THEME.sp.md,
-        }}>
-          <div>
-            <h1 style={{ fontFamily: THEME.fonts.heading, fontSize: 24, color: "#E8E8FF", fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>
-              <span style={{ color: "#FFD700", opacity: 0.6 }}>⬡</span> Project Structure
-            </h1>
-            <p style={{ fontFamily: THEME.fonts.body, fontSize: 12, color: "#6666AA", margin: "4px 0 0 0" }}>
-              ai-project-guide methodology visualizer
-            </p>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.xs }}>
-            {keys.map((k) => (
-              <button key={k} onClick={() => setActive(k)} style={{
-                fontFamily: THEME.fonts.heading, fontSize: 12,
-                padding: `${THEME.sp.sm}px ${THEME.sp.lg}px`,
-                borderRadius: THEME.radius, border: "1px solid",
-                borderColor: active === k ? "#FFD700" : "#2A2A4E",
-                backgroundColor: active === k ? "#FFD70015" : "transparent",
-                color: active === k ? "#FFD700" : "#6666AA",
-                cursor: "pointer", transition: "all 0.15s ease",
-              }}>
-                {projects[k].name}
-              </button>
-            ))}
-            {/* Refresh button — positioned immediately right of project tabs */}
-            <button
-              onClick={handleRefresh}
-              disabled={refreshState === 'refreshing'}
-              title={refreshState === 'error' ? 'Refresh failed' : 'Refresh project data'}
-              style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 32, height: 32, borderRadius: THEME.radius,
-                border: `1px solid ${refreshState === 'error' ? '#FF6B6B' : '#2A2A4E'}`,
-                backgroundColor: refreshState === 'error' ? '#FF6B6B18' : 'transparent',
-                color: refreshState === 'error' ? '#FF6B6B' : '#6666AA',
-                cursor: refreshState === 'refreshing' ? 'default' : 'pointer',
-                transition: 'all 0.15s ease',
-                pointerEvents: refreshState === 'refreshing' ? 'none' : 'auto',
-                fontSize: 16,
-              }}
-            >
-              <span style={{
-                display: 'inline-block',
-                animation: refreshState === 'refreshing' ? 'spin 0.8s linear infinite' : 'none',
-              }}>&#x21bb;</span>
-            </button>
-          </div>
+      {/* Full-width header */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: `${THEME.sp.lg}px ${THEME.sp.xl}px`,
+        borderBottom: "1px solid #1E1E3A", flexShrink: 0,
+      }}>
+        <div>
+          <h1 style={{ fontFamily: THEME.fonts.heading, fontSize: 24, color: "#E8E8FF", fontWeight: 800, margin: 0, letterSpacing: "-0.02em" }}>
+            <span style={{ color: "#FFD700", opacity: 0.6 }}>⬡</span> Project Structure
+          </h1>
+          <p style={{ fontFamily: THEME.fonts.body, fontSize: 12, color: "#6666AA", margin: "4px 0 0 0" }}>
+            ai-project-guide methodology visualizer
+          </p>
         </div>
-        <Legend />
-        <ProjectView data={projects[active]} />
+      </div>
+      {/* Two-column body */}
+      <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
+        <ProjectPanel
+          projects={projects}
+          active={active}
+          onActivate={setActive}
+          onRefreshAll={handleRefresh}
+          refreshState={refreshState}
+        />
+        <div style={{ flex: 1, overflow: "auto", padding: THEME.sp.xl }}>
+          <Legend />
+          <ProjectView data={projects[active]} />
+        </div>
       </div>
     </div>
   );
