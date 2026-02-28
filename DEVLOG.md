@@ -119,3 +119,20 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 - 5 new tests in `test_parse.py` (unit-level `displayName` assertions); 15 new tests in `test_serve.py` (GET, POST, DELETE — happy paths, error cases, idempotent re-add, missing-file graceful handling); 52 total tests passing
 
 **Notable fix:** `POST /api/projects` subprocess call originally omitted `--projects-dir`, causing JSON and manifest writes to land in the repo's `projects/` rather than the test's temp dir. Fixed by passing `--projects-dir` derived from `_manifest_path().parent`.
+
+###### Slice 106: Project Panel UI — Design Complete
+
+**Document created:**
+- `user/slices/106-slice.project-panel-ui.md` — Slice design for collapsible project panel replacing the tab bar
+
+**Scope:** Two-column flex layout with collapsible left panel (~36 px collapsed, ~240 px expanded). Panel renders project list from `GET /api/projects`, wires add/remove/refresh controls to catalog API endpoints. Tab bar removed. Panel state persisted via `localStorage`. All changes in `project-structure-viz.jsx` — no new files.
+
+**Key decisions:**
+- `ProjectPanel` component added to existing JSX file (no new files, no build tooling changes)
+- Collapsed panel shows color dots per project (clickable to switch); expanded shows full list with `displayName` (fallback to `key`)
+- Per-row ↻ uses existing `POST /api/refresh { "projects": [key] }` filtering — no new endpoint needed
+- Remove is immediate (no confirmation modal) — consistent with lightweight UI pattern
+- After add, newly added project becomes active automatically
+- No frontend test infrastructure — manual verification only; server endpoints already tested
+
+**Next:** Task breakdown for slice 106 (Phase 5), then implementation.
