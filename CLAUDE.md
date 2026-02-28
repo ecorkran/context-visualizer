@@ -37,6 +37,15 @@
   written — never modify or remove.
 - Keep success summaries concise and minimal.
 
+## Testing
+
+- Backend tests: `pytest tests/test_parse.py tests/test_serve.py`
+- E2E browser tests: `pytest tests/test_ui_smoke.py` (requires `playwright install chromium`)
+- All tests: `pytest tests/`
+- Skip E2E tests: `pytest -m "not e2e"`
+- E2E tests use pytest-playwright with a `live_server` fixture (defined in `tests/conftest.py`)
+- E2E test files should be marked with `pytestmark = pytest.mark.e2e`
+
 ## Git Rules
 
 ### Branch Naming

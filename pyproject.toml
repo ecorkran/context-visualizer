@@ -9,4 +9,10 @@ dependencies = []
 [tool.uv]
 dev-dependencies = [
     "pytest>=9.0.2",
+    "pytest-playwright>=0.7.0",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "e2e: end-to-end browser tests (require playwright)",
 ]

@@ -6,8 +6,8 @@ parent: user/architecture/105-slices.project-management.md
 dependencies: [105-project-management-api]
 interfaces: []
 status: not-started
-dateCreated: 20260226
-dateUpdated: 20260226
+dateCreated: 20260228
+dateUpdated: 20260228
 ---
 
 # Slice Design: Project Panel UI

@@ -15,7 +15,7 @@ dateUpdated: 20260228
 - Slice 105 (Project Management API) is complete — all catalog endpoints exist and are tested
 - This slice replaces the header tab bar with a collapsible left-side panel for project navigation and management
 - All changes are in `project-structure-viz.jsx` (and minor `index.html` if needed) — no new files
-- No frontend test infrastructure exists; verification is manual (server endpoints already tested in `test_serve.py`)
+- E2E browser tests available via pytest-playwright (`pytest tests/test_ui_smoke.py`); `live_server` fixture in `tests/conftest.py`
 - Key files: `project-structure-viz.jsx` (~735 lines currently), `index.html`, `serve.py`
 - No subsequent slices currently planned in this initiative
 
