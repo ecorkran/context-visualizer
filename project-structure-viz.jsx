@@ -647,12 +647,82 @@ const Legend = () => (
 // ============================================================================
 const PANEL_COLORS = ["#5BA4D9", "#5CCFB9", "#D4B45A", "#C9A8E8", "#D48A8A", "#A0C880", "#A0A0D4", "#FFB84D"];
 
-function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState }) {
+function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState, onProjectsChanged }) {
   const projectList = Object.keys(projects).map((k, i) => ({
     key: k,
     name: projects[k].name || k,
     color: PANEL_COLORS[i % PANEL_COLORS.length],
   }));
+
+  // Add-project state
+  const [addPath, setAddPath] = useState('');
+  const [addState, setAddState] = useState('idle'); // 'idle' | 'adding' | 'error'
+  const [addError, setAddError] = useState('');
+
+  // Per-row refresh state: { [key]: 'idle' | 'refreshing' }
+  const [rowRefreshState, setRowRefreshState] = useState({});
+
+  const handleAdd = async () => {
+    if (!addPath.trim()) return;
+    setAddState('adding');
+    try {
+      const resp = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: addPath.trim() }),
+      });
+      const body = await resp.json();
+      if (!resp.ok || body.status !== 'ok') {
+        throw new Error(body.message || `HTTP ${resp.status}`);
+      }
+      await onProjectsChanged();
+      onActivate(body.project.key);
+      setAddPath('');
+      setAddState('idle');
+    } catch (err) {
+      console.error('Add project failed:', err);
+      setAddError(err.message);
+      setAddState('error');
+      setTimeout(() => { setAddState('idle'); setAddError(''); }, 3000);
+    }
+  };
+
+  const handleRemove = async (key) => {
+    try {
+      const resp = await fetch(`/api/projects/${encodeURIComponent(key)}`, { method: 'DELETE' });
+      const body = await resp.json();
+      if (!resp.ok || body.status !== 'ok') {
+        throw new Error(body.message || `HTTP ${resp.status}`);
+      }
+      const fresh = await onProjectsChanged();
+      if (active === key) {
+        const remaining = Object.keys(fresh);
+        onActivate(remaining.length > 0 ? remaining[0] : null);
+      }
+    } catch (err) {
+      console.error('Remove project failed:', err);
+    }
+  };
+
+  const handleRowRefresh = async (key) => {
+    setRowRefreshState((s) => ({ ...s, [key]: 'refreshing' }));
+    try {
+      const resp = await fetch('/api/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projects: [key] }),
+      });
+      const body = await resp.json();
+      if (!resp.ok || body.status !== 'ok') {
+        throw new Error(body.message || `HTTP ${resp.status}`);
+      }
+      await onProjectsChanged();
+    } catch (err) {
+      console.error('Row refresh failed:', err);
+    } finally {
+      setRowRefreshState((s) => ({ ...s, [key]: 'idle' }));
+    }
+  };
 
   return (
     <div style={{
@@ -698,7 +768,7 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
             onClick={() => onActivate(key)}
             style={{
               display: "flex", alignItems: "center", gap: THEME.sp.sm,
-              padding: `${THEME.sp.sm}px ${THEME.sp.md}px`,
+              padding: `${THEME.sp.sm}px ${THEME.sp.sm}px ${THEME.sp.sm}px ${THEME.sp.md}px`,
               cursor: "pointer", transition: "background-color 0.15s ease",
               borderLeft: `3px solid ${active === key ? "#FFD700" : "transparent"}`,
               backgroundColor: active === key ? "#FFD70008" : "transparent",
@@ -706,15 +776,92 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
           >
             <span style={{
               width: 8, height: 8, borderRadius: "50%",
-              backgroundColor: color, flexShrink: 0,
-              display: "inline-block",
+              backgroundColor: color, flexShrink: 0, display: "inline-block",
             }} />
             <span style={{
               fontFamily: THEME.fonts.body, fontSize: 13, color: active === key ? "#E8E8FF" : "#8888AA",
-              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
             }}>{name}</span>
+            {/* Per-row refresh */}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRowRefresh(key); }}
+              title="Refresh this project"
+              style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 20, height: 20, borderRadius: 4, border: "1px solid transparent",
+                backgroundColor: "transparent", color: "#555577",
+                cursor: "pointer", flexShrink: 0, fontSize: 12, padding: 0,
+                transition: "color 0.15s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#8888AA"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#555577"; }}
+            >
+              <span style={{ display: 'inline-block', animation: rowRefreshState[key] === 'refreshing' ? 'spin 0.8s linear infinite' : 'none' }}>
+                &#x21bb;
+              </span>
+            </button>
+            {/* Remove */}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleRemove(key); }}
+              title="Remove this project"
+              style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 20, height: 20, borderRadius: 4, border: "1px solid transparent",
+                backgroundColor: "transparent", color: "#555577",
+                cursor: "pointer", flexShrink: 0, fontSize: 14, padding: 0,
+                transition: "color 0.15s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.color = "#FF6B6B"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.color = "#555577"; }}
+            >
+              ×
+            </button>
           </div>
         ))}
+      </div>
+
+      {/* Add-project input */}
+      <div style={{
+        padding: THEME.sp.sm, borderTop: "1px solid #1E1E3A", flexShrink: 0,
+      }}>
+        <div style={{ display: "flex", gap: THEME.sp.xs }}>
+          <input
+            type="text"
+            value={addPath}
+            onChange={(e) => setAddPath(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
+            placeholder="Project path..."
+            disabled={addState === 'adding'}
+            style={{
+              flex: 1, fontFamily: THEME.fonts.body, fontSize: 12,
+              padding: `${THEME.sp.xs}px ${THEME.sp.sm}px`,
+              backgroundColor: "#0D0D1A", border: "1px solid #2A2A4E",
+              borderRadius: 6, color: "#C0C0D0", outline: "none",
+              opacity: addState === 'adding' ? 0.6 : 1,
+            }}
+          />
+          <button
+            onClick={handleAdd}
+            disabled={addState === 'adding' || !addPath.trim()}
+            style={{
+              fontFamily: THEME.fonts.heading, fontSize: 11,
+              padding: `${THEME.sp.xs}px ${THEME.sp.sm}px`,
+              borderRadius: 6, border: "1px solid #2A2A4E",
+              backgroundColor: "transparent", color: "#8888AA",
+              cursor: addState === 'adding' || !addPath.trim() ? 'default' : 'pointer',
+              opacity: addState === 'adding' || !addPath.trim() ? 0.5 : 1,
+              transition: "all 0.15s ease", flexShrink: 0,
+            }}
+          >
+            {addState === 'adding' ? '…' : 'Add'}
+          </button>
+        </div>
+        {addState === 'error' && (
+          <div style={{
+            marginTop: THEME.sp.xs, fontFamily: THEME.fonts.body, fontSize: 11,
+            color: "#FF6B6B", lineHeight: 1.4,
+          }}>{addError}</div>
+        )}
       </div>
     </div>
   );
@@ -728,6 +875,14 @@ export default function ProjectStructureVisualizer() {
   const [active, setActive] = useState(() => Object.keys(PROJECTS)[0]);
   // 'idle' | 'refreshing' | 'error'
   const [refreshState, setRefreshState] = useState('idle');
+
+  // Called after add/remove/per-row refresh — reloads project data and updates state
+  const handleProjectsChanged = useCallback(async () => {
+    const fresh = await window.__loadProjects();
+    setProjects(fresh);
+    setActive((prev) => (fresh[prev] ? prev : Object.keys(fresh)[0] ?? null));
+    return fresh;
+  }, []);
 
   const handleRefresh = useCallback(async () => {
     setRefreshState('refreshing');
@@ -777,10 +932,23 @@ export default function ProjectStructureVisualizer() {
           onActivate={setActive}
           onRefreshAll={handleRefresh}
           refreshState={refreshState}
+          onProjectsChanged={handleProjectsChanged}
         />
         <div style={{ flex: 1, overflow: "auto", padding: THEME.sp.xl }}>
-          <Legend />
-          <ProjectView data={projects[active]} />
+          {Object.keys(projects).length === 0 || !active ? (
+            <div style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              height: "60%", fontFamily: THEME.fonts.body, fontSize: 14,
+              color: "#555577", fontStyle: "italic",
+            }}>
+              No projects. Add one using the panel.
+            </div>
+          ) : (
+            <>
+              <Legend />
+              <ProjectView data={projects[active]} />
+            </>
+          )}
         </div>
       </div>
     </div>
