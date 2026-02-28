@@ -821,10 +821,11 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
       </div>
 
       {/* Project list */}
-      <div style={{ flex: 1, overflowY: "auto", padding: `${THEME.sp.sm}px 0` }}>
+      <div className="panel-list" style={{ flex: 1, overflowY: "auto", padding: `${THEME.sp.sm}px 0` }}>
         {projectList.map(({ key, name, color }) => (
           <div
             key={key}
+            className="panel-row"
             onClick={() => onActivate(key)}
             style={{
               display: "flex", alignItems: "center", gap: THEME.sp.sm,
@@ -971,7 +972,14 @@ export default function ProjectStructureVisualizer() {
 
   return (
     <div style={{ backgroundColor: "#0D0D1A", minHeight: "100vh", fontFamily: THEME.fonts.body, display: "flex", flexDirection: "column" }}>
-      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .panel-row:hover { background-color: #ffffff08 !important; }
+        .panel-list::-webkit-scrollbar { width: 4px; }
+        .panel-list::-webkit-scrollbar-track { background: transparent; }
+        .panel-list::-webkit-scrollbar-thumb { background: #2A2A4E; border-radius: 2px; }
+        .panel-list::-webkit-scrollbar-thumb:hover { background: #3A3A6E; }
+      `}</style>
       <PatternDefs />
       {/* Full-width header */}
       <div style={{
