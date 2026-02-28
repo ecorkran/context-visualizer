@@ -648,11 +648,54 @@ const Legend = () => (
 const PANEL_COLORS = ["#5BA4D9", "#5CCFB9", "#D4B45A", "#C9A8E8", "#D48A8A", "#A0C880", "#A0A0D4", "#FFB84D"];
 
 function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState }) {
+  const projectList = Object.keys(projects).map((k, i) => ({
+    key: k,
+    name: projects[k].name || k,
+    color: PANEL_COLORS[i % PANEL_COLORS.length],
+  }));
+
   return (
     <div style={{
       width: 240, flexShrink: 0, backgroundColor: "#111128",
-      minHeight: "100vh", display: "flex", flexDirection: "column",
+      display: "flex", flexDirection: "column", borderRight: "1px solid #1E1E3A",
     }}>
+      {/* Panel header */}
+      <div style={{
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: `${THEME.sp.md}px ${THEME.sp.md}px`,
+        borderBottom: "1px solid #1E1E3A", flexShrink: 0,
+      }}>
+        <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+          Projects
+        </span>
+      </div>
+
+      {/* Project list */}
+      <div style={{ flex: 1, overflowY: "auto", padding: `${THEME.sp.sm}px 0` }}>
+        {projectList.map(({ key, name, color }) => (
+          <div
+            key={key}
+            onClick={() => onActivate(key)}
+            style={{
+              display: "flex", alignItems: "center", gap: THEME.sp.sm,
+              padding: `${THEME.sp.sm}px ${THEME.sp.md}px`,
+              cursor: "pointer", transition: "background-color 0.15s ease",
+              borderLeft: `3px solid ${active === key ? "#FFD700" : "transparent"}`,
+              backgroundColor: active === key ? "#FFD70008" : "transparent",
+            }}
+          >
+            <span style={{
+              width: 8, height: 8, borderRadius: "50%",
+              backgroundColor: color, flexShrink: 0,
+              display: "inline-block",
+            }} />
+            <span style={{
+              fontFamily: THEME.fonts.body, fontSize: 13, color: active === key ? "#E8E8FF" : "#8888AA",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+            }}>{name}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
