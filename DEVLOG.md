@@ -136,3 +136,22 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 - No frontend test infrastructure — manual verification only; server endpoints already tested
 
 **Next:** Task breakdown for slice 106 (Phase 5), then implementation.
+
+###### Slice 106: Project Panel UI — Task Breakdown Complete
+
+**Document created:**
+- `user/tasks/106-tasks.project-panel-ui.md` — 9 tasks, 196 lines
+
+###### Playwright E2E Test Infrastructure
+
+**What was set up:**
+- `pytest-playwright` added to dev dependencies; Chromium browser binary installed
+- `tests/conftest.py` — session-scoped `live_server` fixture (starts `serve.py` on free port)
+- `tests/test_ui_smoke.py` — 3 smoke tests (title renders, project visible, no console errors)
+- Playwright MCP server configured in `.claude/settings.local.json` for interactive browser verification
+- `CLAUDE.md` updated with testing conventions; `e2e` pytest marker added
+- 55 tests passing (52 backend + 3 E2E)
+
+**Why:** The project had no frontend test infrastructure. Since the app uses CDN-loaded React with Babel Standalone (no build step), unit-level tools like Vitest don't apply. Playwright tests the running app in a real browser, matching the actual runtime.
+
+**Next:** Implementation of slice 106 tasks.
