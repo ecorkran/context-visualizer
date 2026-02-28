@@ -35,7 +35,7 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
    - **Risk:** Low
    - **Effort:** 2/5
 
-2. [ ] **Project Panel UI** — Two-column root layout; collapsible left panel rendering the project list from `GET /api/projects`; add-project path input wired to `POST /api/projects`; per-row remove control wired to `DELETE /api/projects/{key}`; clicking a row activates the project in the main view; panel expanded/collapsed state persisted via `localStorage`; header tab bar removed; global ↻ refresh button relocated to panel header.
+2. [x] **Project Panel UI** — Two-column root layout; collapsible left panel rendering the project list from `GET /api/projects`; add-project path input wired to `POST /api/projects`; per-row remove control wired to `DELETE /api/projects/{key}`; clicking a row activates the project in the main view; panel expanded/collapsed state persisted via `localStorage`; header tab bar removed; global ↻ refresh button relocated to panel header.
    - **Value:** Users can add and remove tracked projects from the UI with no CLI commands required. The panel replaces the tab bar as the unified project selector, resolving the horizontal overflow problem as project count grows.
    - **Success Criteria:**
      - Two-column layout renders correctly: panel left, content right, content area fills remaining width

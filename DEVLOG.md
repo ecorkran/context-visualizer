@@ -154,4 +154,25 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 
 **Why:** The project had no frontend test infrastructure. Since the app uses CDN-loaded React with Babel Standalone (no build step), unit-level tools like Vitest don't apply. Playwright tests the running app in a real browser, matching the actual runtime.
 
+###### Slice 106: Project Panel UI — Implementation Complete
+
+**Commits:**
+- `e444e61` feat: add two-column layout and ProjectPanel skeleton
+- `b17867f` feat: restructure to full-width header with two-column body below
+- `52cb5ed` feat: add project list with click-to-activate to panel
+- `3434147` feat: remove tab bar, relocate refresh button to panel header
+- `88a1e75` feat: add add/remove/per-row-refresh controls to project panel
+- `011cae0` feat: add collapsible panel with localStorage persistence
+- `441f2a8` feat: add hover effects and dark scrollbar styling to panel
+
+**What was delivered:**
+- Full-width header (title + subtitle) with two-column body below: collapsible panel left, scrollable content right
+- `ProjectPanel` component: expanded (240 px) shows project list with color dots, active gold border, per-row ↻ and × controls, global ↻ in panel header, add-project path input at bottom; collapsed (36 px) shows › chevron and color dots (clickable to switch project)
+- Panel expanded/collapsed state persisted via `localStorage` (`panel-expanded` key); defaults to collapsed on first visit
+- `POST /api/projects`, `DELETE /api/projects/{key}`, `POST /api/refresh` all wired end-to-end; root data reloads via `window.__loadProjects()` after mutations
+- Empty state ("No projects. Add one using the panel.") when all projects removed
+- Tab bar and header-area refresh button removed; header simplified to title only
+- Hover effects and dark webkit scrollbar styling on panel list
+- 55 tests passing (no regressions)
+
 **Next:** Implementation of slice 106 tasks.
