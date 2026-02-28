@@ -647,7 +647,7 @@ const Legend = () => (
 // ============================================================================
 const PANEL_COLORS = ["#5BA4D9", "#5CCFB9", "#D4B45A", "#C9A8E8", "#D48A8A", "#A0C880", "#A0A0D4", "#FFB84D"];
 
-function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState, onProjectsChanged }) {
+function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState, onProjectsChanged, expanded, onToggle }) {
   const projectList = Object.keys(projects).map((k, i) => ({
     key: k,
     name: projects[k].name || k,
@@ -724,10 +724,56 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
     }
   };
 
+  const panelWidth = expanded ? 240 : 36;
+
+  // Collapsed strip
+  if (!expanded) {
+    return (
+      <div
+        style={{
+          width: panelWidth, flexShrink: 0, backgroundColor: "#111128",
+          display: "flex", flexDirection: "column", alignItems: "center",
+          borderRight: "1px solid #1E1E3A", transition: "width 0.2s ease",
+          overflow: "hidden", paddingTop: THEME.sp.sm,
+        }}
+      >
+        {/* Expand chevron */}
+        <button
+          onClick={onToggle}
+          title="Expand panel"
+          style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 24, height: 24, borderRadius: 6, border: "1px solid #2A2A4E",
+            backgroundColor: "transparent", color: "#6666AA",
+            cursor: "pointer", fontSize: 14, padding: 0, marginBottom: THEME.sp.sm,
+            transition: "color 0.15s ease", flexShrink: 0,
+          }}
+        >›</button>
+        {/* Color dots — click to activate */}
+        {projectList.map(({ key, color }) => (
+          <div
+            key={key}
+            onClick={() => onActivate(key)}
+            title={projects[key].name || key}
+            style={{
+              width: 10, height: 10, borderRadius: "50%",
+              backgroundColor: color, cursor: "pointer",
+              marginBottom: THEME.sp.sm, flexShrink: 0,
+              border: `2px solid ${active === key ? "#FFD700" : "transparent"}`,
+              transition: "border-color 0.15s ease",
+            }}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  // Expanded panel
   return (
     <div style={{
-      width: 240, flexShrink: 0, backgroundColor: "#111128",
+      width: panelWidth, flexShrink: 0, backgroundColor: "#111128",
       display: "flex", flexDirection: "column", borderRight: "1px solid #1E1E3A",
+      transition: "width 0.2s ease", overflow: "hidden",
     }}>
       {/* Panel header */}
       <div style={{
@@ -738,26 +784,40 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
         <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA", textTransform: "uppercase", letterSpacing: "0.1em" }}>
           Projects
         </span>
-        <button
-          onClick={onRefreshAll}
-          disabled={refreshState === 'refreshing'}
-          title={refreshState === 'error' ? 'Refresh failed' : 'Refresh all projects'}
-          style={{
-            display: "inline-flex", alignItems: "center", justifyContent: "center",
-            width: 24, height: 24, borderRadius: 6,
-            border: `1px solid ${refreshState === 'error' ? '#FF6B6B' : '#2A2A4E'}`,
-            backgroundColor: refreshState === 'error' ? '#FF6B6B18' : 'transparent',
-            color: refreshState === 'error' ? '#FF6B6B' : '#6666AA',
-            cursor: refreshState === 'refreshing' ? 'default' : 'pointer',
-            transition: 'all 0.15s ease',
-            pointerEvents: refreshState === 'refreshing' ? 'none' : 'auto',
-            fontSize: 14, padding: 0,
-          }}
-        >
-          <span style={{ display: 'inline-block', animation: refreshState === 'refreshing' ? 'spin 0.8s linear infinite' : 'none' }}>
-            &#x21bb;
-          </span>
-        </button>
+        <div style={{ display: "flex", gap: THEME.sp.xs, alignItems: "center" }}>
+          <button
+            onClick={onRefreshAll}
+            disabled={refreshState === 'refreshing'}
+            title={refreshState === 'error' ? 'Refresh failed' : 'Refresh all projects'}
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 24, height: 24, borderRadius: 6,
+              border: `1px solid ${refreshState === 'error' ? '#FF6B6B' : '#2A2A4E'}`,
+              backgroundColor: refreshState === 'error' ? '#FF6B6B18' : 'transparent',
+              color: refreshState === 'error' ? '#FF6B6B' : '#6666AA',
+              cursor: refreshState === 'refreshing' ? 'default' : 'pointer',
+              transition: 'all 0.15s ease',
+              pointerEvents: refreshState === 'refreshing' ? 'none' : 'auto',
+              fontSize: 14, padding: 0,
+            }}
+          >
+            <span style={{ display: 'inline-block', animation: refreshState === 'refreshing' ? 'spin 0.8s linear infinite' : 'none' }}>
+              &#x21bb;
+            </span>
+          </button>
+          {/* Collapse chevron */}
+          <button
+            onClick={onToggle}
+            title="Collapse panel"
+            style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: 24, height: 24, borderRadius: 6, border: "1px solid #2A2A4E",
+              backgroundColor: "transparent", color: "#6666AA",
+              cursor: "pointer", fontSize: 14, padding: 0,
+              transition: "color 0.15s ease",
+            }}
+          >‹</button>
+        </div>
       </div>
 
       {/* Project list */}
@@ -821,9 +881,7 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
       </div>
 
       {/* Add-project input */}
-      <div style={{
-        padding: THEME.sp.sm, borderTop: "1px solid #1E1E3A", flexShrink: 0,
-      }}>
+      <div style={{ padding: THEME.sp.sm, borderTop: "1px solid #1E1E3A", flexShrink: 0 }}>
         <div style={{ display: "flex", gap: THEME.sp.xs }}>
           <input
             type="text"
@@ -875,6 +933,12 @@ export default function ProjectStructureVisualizer() {
   const [active, setActive] = useState(() => Object.keys(PROJECTS)[0]);
   // 'idle' | 'refreshing' | 'error'
   const [refreshState, setRefreshState] = useState('idle');
+  const [panelExpanded, setPanelExpanded] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('panel-expanded')) ?? false; } catch { return false; }
+  });
+  const handlePanelToggle = useCallback(() => {
+    setPanelExpanded((v) => { const next = !v; localStorage.setItem('panel-expanded', JSON.stringify(next)); return next; });
+  }, []);
 
   // Called after add/remove/per-row refresh — reloads project data and updates state
   const handleProjectsChanged = useCallback(async () => {
@@ -933,6 +997,8 @@ export default function ProjectStructureVisualizer() {
           onRefreshAll={handleRefresh}
           refreshState={refreshState}
           onProjectsChanged={handleProjectsChanged}
+          expanded={panelExpanded}
+          onToggle={handlePanelToggle}
         />
         <div style={{ flex: 1, overflow: "auto", padding: THEME.sp.xl }}>
           {Object.keys(projects).length === 0 || !active ? (
