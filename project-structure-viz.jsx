@@ -668,6 +668,26 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
         <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA", textTransform: "uppercase", letterSpacing: "0.1em" }}>
           Projects
         </span>
+        <button
+          onClick={onRefreshAll}
+          disabled={refreshState === 'refreshing'}
+          title={refreshState === 'error' ? 'Refresh failed' : 'Refresh all projects'}
+          style={{
+            display: "inline-flex", alignItems: "center", justifyContent: "center",
+            width: 24, height: 24, borderRadius: 6,
+            border: `1px solid ${refreshState === 'error' ? '#FF6B6B' : '#2A2A4E'}`,
+            backgroundColor: refreshState === 'error' ? '#FF6B6B18' : 'transparent',
+            color: refreshState === 'error' ? '#FF6B6B' : '#6666AA',
+            cursor: refreshState === 'refreshing' ? 'default' : 'pointer',
+            transition: 'all 0.15s ease',
+            pointerEvents: refreshState === 'refreshing' ? 'none' : 'auto',
+            fontSize: 14, padding: 0,
+          }}
+        >
+          <span style={{ display: 'inline-block', animation: refreshState === 'refreshing' ? 'spin 0.8s linear infinite' : 'none' }}>
+            &#x21bb;
+          </span>
+        </button>
       </div>
 
       {/* Project list */}
@@ -705,8 +725,7 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
 // ============================================================================
 export default function ProjectStructureVisualizer() {
   const [projects, setProjects] = useState(PROJECTS);
-  const keys = Object.keys(projects);
-  const [active, setActive] = useState(keys[0]);
+  const [active, setActive] = useState(() => Object.keys(PROJECTS)[0]);
   // 'idle' | 'refreshing' | 'error'
   const [refreshState, setRefreshState] = useState('idle');
 
