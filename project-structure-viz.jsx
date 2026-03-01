@@ -662,6 +662,14 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
   // Per-row refresh state: { [key]: 'idle' | 'refreshing' }
   const [rowRefreshState, setRowRefreshState] = useState({});
 
+  // Discover section state
+  const [showDiscover, setShowDiscover] = useState(false);
+  const [scanRoot, setScanRoot] = useState('');
+  const [scanState, setScanState] = useState('idle'); // 'idle'|'scanning'|'done'|'error'
+  const [scanResults, setScanResults] = useState([]);
+  const [scanError, setScanError] = useState('');
+  const [rowAddState, setRowAddState] = useState({}); // { [path]: 'idle'|'adding' }
+
   const handleAdd = async () => {
     if (!addPath.trim()) return;
     setAddState('adding');
@@ -721,6 +729,57 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
       console.error('Row refresh failed:', err);
     } finally {
       setRowRefreshState((s) => ({ ...s, [key]: 'idle' }));
+    }
+  };
+
+  const handleToggleDiscover = async () => {
+    const opening = !showDiscover;
+    setShowDiscover(opening);
+    if (opening && scanRoot === '') {
+      try {
+        const resp = await fetch('/api/info');
+        const body = await resp.json();
+        if (resp.ok && body.status === 'ok') setScanRoot(body.scanRoot);
+      } catch (err) {
+        console.error('Failed to fetch scan root:', err);
+      }
+    }
+  };
+
+  const handleFind = async () => {
+    if (!scanRoot.trim()) return;
+    setScanState('scanning');
+    setScanResults([]);
+    setScanError('');
+    try {
+      const resp = await fetch(`/api/discover?root=${encodeURIComponent(scanRoot.trim())}`);
+      const body = await resp.json();
+      if (!resp.ok || body.status !== 'ok') throw new Error(body.message || `HTTP ${resp.status}`);
+      setScanResults(body.candidates);
+      setScanState('done');
+    } catch (err) {
+      setScanError(err.message);
+      setScanState('error');
+      setTimeout(() => { setScanState('idle'); setScanError(''); }, 3000);
+    }
+  };
+
+  const handleRowAdd = async (path) => {
+    setRowAddState((s) => ({ ...s, [path]: 'adding' }));
+    try {
+      const resp = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path }),
+      });
+      const body = await resp.json();
+      if (!resp.ok || body.status !== 'ok') throw new Error(body.message || `HTTP ${resp.status}`);
+      await onProjectsChanged();
+      onActivate(body.project.key);
+    } catch (err) {
+      console.error('Row add failed:', err);
+    } finally {
+      setRowAddState((s) => ({ ...s, [path]: 'idle' }));
     }
   };
 
@@ -920,6 +979,122 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
             marginTop: THEME.sp.xs, fontFamily: THEME.fonts.body, fontSize: 11,
             color: "#FF6B6B", lineHeight: 1.4,
           }}>{addError}</div>
+        )}
+      </div>
+
+      {/* Find projects section */}
+      <div style={{ borderTop: "1px solid #1E1E3A", flexShrink: 0 }}>
+        {/* Toggle button */}
+        <button
+          onClick={handleToggleDiscover}
+          style={{
+            width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: `${THEME.sp.xs}px ${THEME.sp.sm}px`,
+            backgroundColor: "transparent", border: "none",
+            color: "#6666AA", fontFamily: THEME.fonts.body, fontSize: 12,
+            cursor: "pointer", textAlign: "left",
+          }}
+        >
+          <span>Find projects</span>
+          <span style={{ fontSize: 14 }}>{showDiscover ? '‹' : '›'}</span>
+        </button>
+
+        {showDiscover && (
+          <div style={{ padding: `0 ${THEME.sp.sm}px ${THEME.sp.sm}px` }}>
+            {/* Root input + Find button */}
+            <div style={{ display: "flex", gap: THEME.sp.xs, marginBottom: THEME.sp.xs }}>
+              <input
+                type="text"
+                value={scanRoot}
+                onChange={(e) => setScanRoot(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleFind()}
+                placeholder="Root directory..."
+                style={{
+                  flex: 1, fontFamily: THEME.fonts.body, fontSize: 12,
+                  padding: `${THEME.sp.xs}px ${THEME.sp.sm}px`,
+                  backgroundColor: "#0D0D1A", border: "1px solid #2A2A4E",
+                  borderRadius: 6, color: "#C0C0D0", outline: "none",
+                }}
+              />
+              <button
+                onClick={handleFind}
+                disabled={scanState === 'scanning' || !scanRoot.trim()}
+                style={{
+                  fontFamily: THEME.fonts.heading, fontSize: 11,
+                  padding: `${THEME.sp.xs}px ${THEME.sp.sm}px`,
+                  borderRadius: 6, border: "1px solid #2A2A4E",
+                  backgroundColor: "transparent", color: "#8888AA",
+                  cursor: scanState === 'scanning' || !scanRoot.trim() ? 'default' : 'pointer',
+                  opacity: scanState === 'scanning' || !scanRoot.trim() ? 0.5 : 1,
+                  transition: "all 0.15s ease", flexShrink: 0,
+                }}
+              >
+                {scanState === 'scanning' ? '…' : 'Find'}
+              </button>
+            </div>
+
+            {/* Scan error */}
+            {scanState === 'error' && (
+              <div style={{ fontFamily: THEME.fonts.body, fontSize: 11, color: "#FF6B6B", marginBottom: THEME.sp.xs }}>
+                {scanError}
+              </div>
+            )}
+
+            {/* Results */}
+            {scanState === 'done' && (() => {
+              const trackedPaths = new Set(Object.values(projects).map(p => p.sourcePath).filter(Boolean));
+              return scanResults.length === 0 ? (
+                <div style={{ fontFamily: THEME.fonts.body, fontSize: 11, color: "#555577", fontStyle: "italic" }}>
+                  No projects found here
+                </div>
+              ) : scanResults.map((candidate) => {
+                const isTracked = trackedPaths.has(candidate.path);
+                const isAdding = rowAddState[candidate.path] === 'adding';
+                return (
+                  <div key={candidate.path} style={{ marginBottom: THEME.sp.xs }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.xs }}>
+                      <span style={{ color: isTracked ? "#444466" : "#8888AA", fontSize: 10, flexShrink: 0 }}>
+                        {isTracked ? '○' : '●'}
+                      </span>
+                      <span style={{
+                        fontFamily: THEME.fonts.body, fontSize: 12,
+                        color: isTracked ? "#444466" : "#C0C0D0",
+                        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
+                      }}>
+                        {candidate.displayName}
+                      </span>
+                      {isTracked ? (
+                        <span style={{ fontFamily: THEME.fonts.body, fontSize: 10, color: "#444466", flexShrink: 0 }}>
+                          already added
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleRowAdd(candidate.path)}
+                          disabled={isAdding}
+                          style={{
+                            fontFamily: THEME.fonts.heading, fontSize: 10,
+                            padding: `1px ${THEME.sp.xs}px`,
+                            borderRadius: 4, border: "1px solid #2A2A4E",
+                            backgroundColor: "transparent", color: "#8888AA",
+                            cursor: isAdding ? 'default' : 'pointer',
+                            opacity: isAdding ? 0.5 : 1, flexShrink: 0,
+                          }}
+                        >
+                          {isAdding ? '…' : 'Add'}
+                        </button>
+                      )}
+                    </div>
+                    <div style={{
+                      fontFamily: THEME.fonts.body, fontSize: 10, color: "#444466",
+                      paddingLeft: 16, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                    }}>
+                      {candidate.path}
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
         )}
       </div>
     </div>
