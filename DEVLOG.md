@@ -240,3 +240,12 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 **Dependencies:** Context-forge slice 164 (MCP Introspection Tools) — provides `project_structure` and `project_list` MCP tools.
 
 **Next:** Task breakdown for slice 108 (Phase 5), then implementation after context-forge slice 164 is complete.
+
+###### Slice 108: MCP Client — Task Breakdown Complete
+
+**Document created:**
+- `user/tasks/108-tasks.mcp-client.md` — 17 tasks, 316 lines
+
+**Task structure:** Config/gitignore → MCP client transport (spawn, JSON-RPC) → unit tests → call_tool/list_tools → unit tests → config loading in serve.py → integration tests → GET /api/structures → GET /api/status → integration tests → loadProjects() update → refresh MCP mode → integration tests → UI mode indicator → E2E verification → end-to-end polish → mark complete. Test-with pattern followed: each implementation task paired with its test task.
+
+**Next:** Implementation (Phase 7) after context-forge slice 164 is complete.
