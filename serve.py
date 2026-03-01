@@ -61,6 +61,10 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._handle_info()
         elif self.path.startswith("/api/discover"):
             self._handle_discover()
+        elif self.path == "/api/structures":
+            self._handle_structures()
+        elif self.path == "/api/status":
+            self._handle_status()
         elif self.path == "/api/refresh":
             self.send_error(405, "Method Not Allowed")
         else:
@@ -217,6 +221,65 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         candidates.sort(key=lambda c: c["displayName"])
         self._json_response(200, {"status": "ok", "candidates": candidates[:30]})
+
+    def _handle_structures(self) -> None:
+        """GET /api/structures — return all project structure models.
+
+        MCP path: calls project_list + project_structure for each project.
+        Local path: returns 503 telling the frontend to use manifest+JSON fallback.
+        """
+        client = _mcp_client
+        if client is None or not client.connected:
+            self._json_response(503, {
+                "status": "error",
+                "mode": "local",
+                "message": "MCP not connected",
+            })
+            return
+
+        try:
+            # 1. Enumerate projects
+            project_list_result = client.call_tool("project_list", {})
+            projects_raw = project_list_result.get("projects", [])
+
+            # 2. Fetch structure for each project
+            structures: dict = {}
+            for proj in projects_raw:
+                proj_id = proj.get("id", "")
+                proj_name = proj.get("name", proj_id)
+                proj_path = proj.get("projectPath", "")
+
+                model = client.call_tool("project_structure", {"projectId": proj_id})
+
+                # Derive key: lowercase, spaces → hyphens
+                key = proj_name.lower().replace(" ", "-")
+                model["sourcePath"] = proj_path
+                structures[key] = model
+
+            self._json_response(200, {
+                "status": "ok",
+                "mode": "mcp",
+                "projects": structures,
+            })
+
+        except Exception as exc:
+            logger.warning("MCP /api/structures failed: %s", exc)
+            self._json_response(503, {
+                "status": "error",
+                "mode": "mcp",
+                "message": str(exc),
+            })
+
+    def _handle_status(self) -> None:
+        """GET /api/status — report current mode and MCP connection health."""
+        client = _mcp_client
+        connected = client is not None and client.connected
+        self._json_response(200, {
+            "status": "ok",
+            "mode": "mcp" if connected else "local",
+            "mcpConnected": connected,
+            "serverInfo": client.server_info if connected else None,
+        })
 
     def _handle_list_projects(self) -> None:
         """GET /api/projects — return all manifest entries."""
