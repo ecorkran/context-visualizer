@@ -35,6 +35,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._handle_list_projects()
         elif self.path == "/api/info":
             self._handle_info()
+        elif self.path.startswith("/api/discover"):
+            self._handle_discover()
         elif self.path == "/api/refresh":
             self.send_error(405, "Method Not Allowed")
         else:
@@ -150,6 +152,47 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             scan_root = str(Path.home())
 
         self._json_response(200, {"status": "ok", "scanRoot": scan_root})
+
+    def _handle_discover(self) -> None:
+        """GET /api/discover?root=<path> — scan immediate children for valid projects."""
+        from urllib.parse import parse_qs, urlparse
+
+        qs = parse_qs(urlparse(self.path).query)
+        root = qs.get("root", [None])[0]
+
+        if root is None:
+            self._json_response(400, {"status": "error", "message": "Missing required parameter: root"})
+            return
+        root_path = Path(root)
+        if not root_path.exists():
+            self._json_response(400, {"status": "error", "message": f"Path does not exist: {root}"})
+            return
+        if not root_path.is_dir():
+            self._json_response(400, {"status": "error", "message": f"Not a directory: {root}"})
+            return
+
+        sys.path.insert(0, str(self._parse_py().parent))
+        try:
+            from parse import build_model, find_user_dir
+        except ImportError as exc:
+            self._json_response(500, {"status": "error", "message": f"Cannot import parse.py: {exc}"})
+            return
+
+        candidates: list[dict] = []
+        for child in root_path.iterdir():
+            if not child.is_dir():
+                continue
+            user_dir = find_user_dir(child)
+            if user_dir is None:
+                continue
+            try:
+                display_name = build_model(user_dir).get("name", child.name)
+            except Exception:
+                display_name = child.name
+            candidates.append({"path": str(child), "displayName": display_name})
+
+        candidates.sort(key=lambda c: c["displayName"])
+        self._json_response(200, {"status": "ok", "candidates": candidates[:30]})
 
     def _handle_list_projects(self) -> None:
         """GET /api/projects — return all manifest entries."""
