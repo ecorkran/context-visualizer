@@ -58,6 +58,7 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 108. [ ] **MCP client integration** — Add a minimal stdlib-only MCP client so context-visualizer can consume project structure data from context-forge's MCP server. Dual-mode operation: MCP mode when connected, local mode (parse.py) as fallback. New `GET /api/structures` endpoint, updated `loadProjects()`, mode indicator in panel. Depends on context-forge slice 164 (MCP Introspection Tools). Risk: Medium. Effort: 3/5.
 
 
+
 ## Notes
 
 - **No migration slices needed** — Both slices add new capabilities rather than restructuring existing behavior. The tab bar removal in Slice 106 is a direct replacement, not a migration.

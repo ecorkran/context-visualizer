@@ -1,0 +1,8 @@
+{
+  "_comment": "Copy this file to mcp-config.json and update the path to your context-forge MCP server.",
+  "server": {
+    "command": "node",
+    "args": ["/path/to/context-forge/packages/mcp-server/dist/index.js"],
+    "env": {}
+  }
+}

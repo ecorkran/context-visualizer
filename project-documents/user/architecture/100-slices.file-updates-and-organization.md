@@ -49,6 +49,19 @@ dateUpdated: 20260224
    - **Risk:** Medium — the browser-to-Python bridge is the one area requiring a design decision. The current static-site setup has no server component, so this slice introduces one (even if minimal).
    - **Effort:** 3/5
 
+3. [ ] (108) **MCP Client**
+Become an MCP client and consume context-forge output.  context-forge aggregate project tool was built using our parse.py as a reference spec. 
+
+- **Benefits:** This will allow us to use advanced features that context-forge may provide, and having the features provided by MCP server allows other clients to use them.  Advanced features may include things such as consistency checks and writeback updates.
+
+We also want to keep our parse.py, because (1) we developed the functionality and it works very well and (2) we want to be able to continue functioning if the MCP server is not available.
+
+- **Risk:** We've never made an MCP client.  Still considered low risk as the process is well-documented.  We increase complexity somewhat by also maintaining our existing path.
+
+- **Effort:** 4/5
+
+
+
 ## Notes
 - **Implementation order** is sequential: Data Externalization first, then Refresh Mechanism. The refresh slice depends on external JSON files being in place.
 - **No foundation work needed** — the project already has a working parser and visualizer. This is restructuring existing code.
