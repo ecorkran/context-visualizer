@@ -70,4 +70,4 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 
 ## Future Work
 
-- [ ] **GitHub source support** — Extend manifest schema with `source`, `repoUrl`, `branch` fields; add `git clone`/`git pull` step to the add/refresh flow for GitHub-sourced projects; auth token handling. Depends on Project Management API. Risk: Medium. Effort: 3/5.
+1. [ ] **GitHub source support** — Extend manifest schema with `source`, `repoUrl`, `branch` fields; add `git clone`/`git pull` step to the add/refresh flow for GitHub-sourced projects; auth token handling. Depends on Project Management API. Risk: Medium. Effort: 3/5.
