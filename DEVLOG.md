@@ -176,3 +176,20 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 - 55 tests passing (no regressions)
 
 **Next:** Implementation of slice 106 tasks.
+
+###### Slice 107: Local Project Discovery — Design Complete
+
+**Document created:**
+- `user/slices/107-slice.local-project-discovery.md`
+
+**Scope:** Two new server endpoints (`GET /api/discover`, `GET /api/validate`) plus companion UI in `ProjectPanel`: inline path validation feedback on the Add input (debounced, non-blocking) and a Scan flow that lets users discover valid project paths under a root directory they specify.
+
+**Key decisions:**
+- Scan depth limited to 3 levels; results capped at 50 to bound filesystem traversal cost
+- `GET /api/validate` always returns HTTP 200 — validity is in the body (`valid: true/false`), not the status code
+- `build_model()` used for `displayName` extraction in discover; fall back to frontmatter-only scan if performance is a concern during implementation
+- Inline validation is advisory only — Add button remains enabled; server returns an error on submit if invalid
+- All state local to `ProjectPanel`; no new props on root component
+- All changes in `serve.py` and `project-structure-viz.jsx` — no new files
+
+**Next:** Task breakdown for slice 107, then implementation.
