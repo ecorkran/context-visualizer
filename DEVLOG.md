@@ -193,3 +193,29 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 - All changes in `serve.py` and `project-structure-viz.jsx` — no new files
 
 **Next:** Task breakdown for slice 107, then implementation.
+
+## 20260228
+
+###### Slice 107: Local Project Discovery — Implementation Complete
+
+**Commits:**
+- `f98314d` feat: add GET /api/info endpoint for smart scan root
+- `5e03b92` test: add tests for GET /api/info
+- `01cfb26` feat: add GET /api/discover endpoint for depth-1 project scan
+- `7a8cafc` test: add tests for GET /api/discover
+- `104879e` feat: add Find projects toggle to ProjectPanel
+- `67acd7d` fix: merge sourcePath from manifest into project data for tracked detection
+- `88ddaea` test: add E2E tests for discover section
+
+**What was delivered:**
+- `GET /api/info` — returns suggested `scanRoot` derived from `os.path.commonpath` of tracked project paths; falls back to `Path.home()` when manifest is empty or missing; always 200
+- `GET /api/discover?root=<path>` — scans immediate children (depth 1) of `root`, validates each via `find_user_dir()`, extracts display name via `build_model()`, returns sorted cap-30 candidate list; 400 errors for missing/invalid root
+- "Find projects" collapsible section in `ProjectPanel`: toggle button, editable root input pre-populated from `GET /api/info` on first open, Find button with scanning state, results list with `●`/`○` indicators, per-row Add buttons, empty state, auto-clearing error display
+- Already-tracked detection: client-side comparison of candidate paths to `sourcePath` values in `projects` prop; required merging `sourcePath` from manifest into project data in `index.html` `__loadProjects()`
+- 10 new unit tests in `tests/test_serve.py` (4 for `/api/info`, 6 for `/api/discover`)
+- 2 new E2E tests in `tests/test_ui_discover.py` (section expands, Find populates results)
+- Total: 67 tests passing
+
+**Notable finding:** `sourcePath` was present in `manifest.json` but not merged into the per-project JSON data loaded by `__loadProjects()`. The tracked-detection check in `ProjectPanel` (comparing candidate paths to `projects[k].sourcePath`) silently failed because the field was undefined. Fixed in `index.html` by copying `entry.sourcePath` into each loaded project entry.
+
+**Next:** No further slices currently planned in initiative 105.

@@ -53,6 +53,9 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
    - **Risk:** Low-Medium — layout change touches the root component; collapsed/expanded animation and responsive resizing need care
    - **Effort:** 3/5
 
+107. [x] **Local project discovery (scan)** — Endpoint that walks a root directory looking for `project-documents/user/` patterns and returns candidate project paths for the user to confirm-add. Depends on Project Management API. Additionally, for the existing Add button on project path (if it remains), allow the user to browse for the path.  Risk: Low. Effort: 2/5.
+
+
 ## Notes
 
 - **No migration slices needed** — Both slices add new capabilities rather than restructuring existing behavior. The tab bar removal in Slice 106 is a direct replacement, not a migration.
@@ -64,6 +67,4 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 
 ## Future Work
 
-1. [ ] **Local project discovery (scan)** — Endpoint that walks a root directory looking for `project-documents/user/` patterns and returns candidate project paths for the user to confirm-add. Depends on Project Management API. Risk: Low. Effort: 2/5.
-
-2. [ ] **GitHub source support** — Extend manifest schema with `source`, `repoUrl`, `branch` fields; add `git clone`/`git pull` step to the add/refresh flow for GitHub-sourced projects; auth token handling. Depends on Project Management API. Risk: Medium. Effort: 3/5.
+- [ ] **GitHub source support** — Extend manifest schema with `source`, `repoUrl`, `branch` fields; add `git clone`/`git pull` step to the add/refresh flow for GitHub-sourced projects; auth token handling. Depends on Project Management API. Risk: Medium. Effort: 3/5.
