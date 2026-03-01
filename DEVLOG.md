@@ -38,6 +38,12 @@
 
 **Test count:** 98 (was 67 — added 31 new tests across unit, integration, and E2E)
 
+###### Slice 108: Addendum — `prefer` config key
+
+Post-completion addition: `"prefer": "mcp"|"local"` top-level key in `mcp-config.json`. When set to `"local"`, server starts in local mode even with a valid config file — useful when MCP server is unavailable or user wants to test local behavior without removing the config. Default is `"mcp"` (existing behavior unchanged). 2 new tests in `TestMcpClientStartup`; 96 non-E2E tests passing.
+
+**Commit:** `feat: add prefer config key to skip MCP connect in local mode`
+
 ## 20260224
 
 ###### Initiative 100: File Updates and Organization — Design Complete

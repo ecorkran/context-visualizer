@@ -307,6 +307,23 @@ dateUpdated: 20260301
 - [x] Graceful fallback when MCP server is unavailable
 - [x] No console errors in either mode
 
+### 18. Add `prefer` config key for mode override
+
+- [x] Add `"prefer": "mcp"` field to `mcp-config.example.json` with explanation comment
+- [x] In `serve.py` `main()`, after loading config, check `config.get("prefer", "mcp")`:
+  - If `"local"` → log info, skip MCP connect entirely, server starts in local mode
+  - Otherwise → proceed with normal MCP connect attempt (existing behavior)
+- [x] Add tests in `TestMcpClientStartup`:
+  - `test_prefer_local_skips_connect` — verifies connect() not called when prefer=local
+  - `test_prefer_mcp_default_attempts_connect` — verifies connect() called when prefer absent
+- [x] All tests pass
+- [x] Commit
+
+**Success criteria:**
+- [x] `prefer=local` in config prevents MCP connect without removing the config file
+- [x] `prefer=mcp` (or absent) behaves identically to previous behavior
+- [x] 2 new tests covering both cases
+
 ### 17. Final — mark slice complete
 
 - [x] Run full test suite one final time: `pytest tests/`

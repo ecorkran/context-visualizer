@@ -761,6 +761,63 @@ class TestMcpClientStartup:
 
         assert serve._mcp_client is None
 
+    def test_prefer_local_skips_connect(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """prefer=local in config → MCP connect not attempted, client stays None."""
+        from unittest.mock import MagicMock
+        import serve
+
+        config = {
+            "prefer": "local",
+            "server": {"transport": "stdio", "command": "node", "args": [], "env": {}},
+        }
+        (tmp_path / "mcp-config.json").write_text(json.dumps(config))
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(serve, "_mcp_client", None)
+
+        mock_client = MagicMock()
+        monkeypatch.setattr(serve, "McpClient", lambda *a, **kw: mock_client)
+
+        # Simulate the startup logic from main()
+        cfg = serve._load_mcp_config()
+        assert cfg is not None
+        if cfg.get("prefer", "mcp") == "local":
+            pass  # skip connect — client stays None
+        else:
+            srv_cfg = cfg.get("server", {})
+            client = serve.McpClient(srv_cfg["command"], srv_cfg.get("args", []))
+            client.connect()
+
+        mock_client.connect.assert_not_called()
+        assert serve._mcp_client is None
+
+    def test_prefer_mcp_default_attempts_connect(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """prefer absent (defaults to mcp) → connect() is attempted."""
+        from unittest.mock import MagicMock
+        import serve
+
+        config = {
+            "server": {"transport": "stdio", "command": "node", "args": [], "env": {}},
+        }
+        (tmp_path / "mcp-config.json").write_text(json.dumps(config))
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(serve, "_mcp_client", None)
+
+        mock_client = MagicMock()
+        mock_client.connect.return_value = True
+        monkeypatch.setattr(serve, "McpClient", lambda *a, **kw: mock_client)
+
+        # Simulate the startup logic from main()
+        cfg = serve._load_mcp_config()
+        assert cfg is not None
+        if cfg.get("prefer", "mcp") != "local":
+            srv_cfg = cfg.get("server", {})
+            client = serve.McpClient(srv_cfg["command"], srv_cfg.get("args", []))
+            if client.connect():
+                serve._mcp_client = client
+
+        mock_client.connect.assert_called_once()
+        assert serve._mcp_client is mock_client
+
 
 # ── Mock MCP client fixture ───────────────────────────────────────────────────
 

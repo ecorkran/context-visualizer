@@ -445,19 +445,23 @@ def main() -> None:
     # Attempt MCP client connection if config is present
     config = _load_mcp_config()
     if config is not None:
-        srv = config.get("server", {})
-        command = srv.get("command", "")
-        srv_args = srv.get("args", [])
-        env = srv.get("env") or None
-        if command:
-            client = McpClient(command, srv_args, env)
-            if client.connect():
-                _mcp_client = client
-                logger.info("MCP mode active")
-            else:
-                logger.warning("MCP connection failed — running in local mode")
+        prefer = config.get("prefer", "mcp")
+        if prefer == "local":
+            logger.info("mcp-config.json prefer=local — running in local mode")
         else:
-            logger.warning("mcp-config.json missing server.command — running in local mode")
+            srv = config.get("server", {})
+            command = srv.get("command", "")
+            srv_args = srv.get("args", [])
+            env = srv.get("env") or None
+            if command:
+                client = McpClient(command, srv_args, env)
+                if client.connect():
+                    _mcp_client = client
+                    logger.info("MCP mode active")
+                else:
+                    logger.warning("MCP connection failed — running in local mode")
+            else:
+                logger.warning("mcp-config.json missing server.command — running in local mode")
 
     server = http.server.HTTPServer(("", args.port), Handler)
     print(f"Serving at http://localhost:{args.port}", flush=True)
