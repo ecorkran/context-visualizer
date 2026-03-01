@@ -840,8 +840,21 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
         padding: `${THEME.sp.md}px ${THEME.sp.md}px`,
         borderBottom: "1px solid #1E1E3A", flexShrink: 0,
       }}>
-        <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-          Projects
+        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+            Projects
+          </span>
+          {window.__projectsMode === 'mcp' && (
+            <span title="Data sourced from MCP server" style={{
+              fontFamily: THEME.fonts.mono, fontSize: 9, fontWeight: 700,
+              color: "#7B68EE", background: "#7B68EE18",
+              border: "1px solid #7B68EE44",
+              borderRadius: 3, padding: "1px 4px", letterSpacing: "0.05em",
+              textTransform: "uppercase",
+            }}>
+              MCP
+            </span>
+          )}
         </span>
         <div style={{ display: "flex", gap: THEME.sp.xs, alignItems: "center" }}>
           <button
