@@ -219,3 +219,24 @@ Initiative 100 covers migrating inline project data out of the JSX component int
 **Notable finding:** `sourcePath` was present in `manifest.json` but not merged into the per-project JSON data loaded by `__loadProjects()`. The tracked-detection check in `ProjectPanel` (comparing candidate paths to `projects[k].sourcePath`) silently failed because the field was undefined. Fixed in `index.html` by copying `entry.sourcePath` into each loaded project entry.
 
 **Next:** No further slices currently planned in initiative 105.
+
+## 20260301
+
+###### Slice 108: MCP Client — Design Complete
+
+**Document created:**
+- `user/slices/108-slice.mcp-client.md` — Slice design for MCP client integration
+
+**Scope:** Add a minimal stdlib-only MCP client (`mcp_client.py`) so context-visualizer can consume project structure data from context-forge's MCP server. Dual-mode operation: MCP mode when connected to context-forge, local mode (parse.py) as automatic fallback. New `GET /api/structures` endpoint returns all project models in one response; `loadProjects()` updated to try it first. `GET /api/status` reports connection mode. Mode indicator in panel header. All write operations (add/remove/discover) remain local in v1.
+
+**Key decisions:**
+- **Stdlib-only MCP client** — implements JSON-RPC 2.0 over stdio using only `subprocess`, `json`, `threading`. Avoids pulling in the `mcp` SDK (which brings `anyio`, `httpx`, `pydantic`, etc.), preserving the project's zero runtime dependency philosophy.
+- **Read-only MCP integration** — MCP used only for reading project structure via `project_list` and `project_structure` tools. Catalog management (add/remove) stays local to avoid complex catalog synchronization between context-forge and local manifest.
+- **`mcp-config.json` configuration** — server command/args stored in a gitignored config file at project root. Absent config → local-only mode with no warnings.
+- **Key-envelope wrapping in adapter** — context-forge returns models directly; serve.py wraps them in `{ key: model }` to match frontend expectations.
+- **New `GET /api/structures` endpoint** — single HTTP call returns all project data (vs current N+1 fetches). Serves MCP data when connected, can also serve local data.
+- **Per-request fallback** — if MCP call fails, `loadProjects()` falls back to manifest+JSON path automatically.
+
+**Dependencies:** Context-forge slice 164 (MCP Introspection Tools) — provides `project_structure` and `project_list` MCP tools.
+
+**Next:** Task breakdown for slice 108 (Phase 5), then implementation after context-forge slice 164 is complete.

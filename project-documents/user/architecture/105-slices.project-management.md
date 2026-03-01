@@ -55,6 +55,8 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 
 107. [x] **Local project discovery (scan)** — Endpoint that walks a root directory looking for `project-documents/user/` patterns and returns candidate project paths for the user to confirm-add. Depends on Project Management API. Additionally, for the existing Add button on project path (if it remains), allow the user to browse for the path.  Risk: Low. Effort: 2/5.
 
+108. [ ] **MCP client integration** — Add a minimal stdlib-only MCP client so context-visualizer can consume project structure data from context-forge's MCP server. Dual-mode operation: MCP mode when connected, local mode (parse.py) as fallback. New `GET /api/structures` endpoint, updated `loadProjects()`, mode indicator in panel. Depends on context-forge slice 164 (MCP Introspection Tools). Risk: Medium. Effort: 3/5.
+
 
 ## Notes
 
