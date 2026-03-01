@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import http.server
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -32,6 +33,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path == "/api/projects":
             self._handle_list_projects()
+        elif self.path == "/api/info":
+            self._handle_info()
         elif self.path == "/api/refresh":
             self.send_error(405, "Method Not Allowed")
         else:
@@ -125,6 +128,27 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def _write_manifest(self, manifest: dict) -> None:
         mp = self._manifest_path()
         mp.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    def _handle_info(self) -> None:
+        """GET /api/info — return suggested scan root derived from tracked project paths."""
+        manifest, _ = self._read_manifest()
+        source_paths: list[str] = []
+        if manifest:
+            source_paths = [
+                p["sourcePath"] for p in manifest.get("projects", [])
+                if p.get("sourcePath")
+            ]
+
+        if len(source_paths) >= 2:
+            common = os.path.commonpath(source_paths)
+            # commonpath may return a file-like prefix rather than a directory
+            scan_root = common if Path(common).is_dir() else str(Path(common).parent)
+        elif len(source_paths) == 1:
+            scan_root = str(Path(source_paths[0]).parent)
+        else:
+            scan_root = str(Path.home())
+
+        self._json_response(200, {"status": "ok", "scanRoot": scan_root})
 
     def _handle_list_projects(self) -> None:
         """GET /api/projects — return all manifest entries."""
