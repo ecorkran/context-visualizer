@@ -28,6 +28,7 @@ out/*
 
 # Sensitive / internal-only files
 project-documents/user/slices/120-slice.plugins-1.md
+mcp-config.json
 
 # Python
 __pycache__/
