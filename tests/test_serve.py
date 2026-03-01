@@ -553,3 +553,108 @@ class TestInfo:
             assert data["scanRoot"] == str(Path.home())
         finally:
             srv.stop()
+
+
+# ── GET /api/discover tests ──────────────────────────────────────────────────
+
+
+class TestDiscover:
+    """Tests for GET /api/discover?root=<path>."""
+
+    def setup_method(self) -> None:
+        self.tmp_dir = Path(f"/tmp/test_discover_{id(self)}")
+        self.tmp_dir.mkdir(exist_ok=True)
+        (self.tmp_dir / "manifest.json").write_text(json.dumps({"projects": []}))
+
+    def teardown_method(self) -> None:
+        import shutil
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def _srv(self) -> ServerFixture:
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        return srv
+
+    def test_discover_missing_root(self) -> None:
+        srv = self._srv()
+        try:
+            status, body = srv.get("/api/discover")
+            assert status == 400
+            data = json.loads(body)
+            assert data["status"] == "error"
+            assert "root" in data["message"].lower()
+        finally:
+            srv.stop()
+
+    def test_discover_nonexistent_path(self) -> None:
+        srv = self._srv()
+        try:
+            status, body = srv.get("/api/discover?root=/nonexistent/path/xyz")
+            assert status == 400
+            data = json.loads(body)
+            assert data["status"] == "error"
+            assert "does not exist" in data["message"]
+        finally:
+            srv.stop()
+
+    def test_discover_not_a_directory(self) -> None:
+        import urllib.parse
+        f = self.tmp_dir / "somefile.txt"
+        f.write_text("hi")
+        srv = self._srv()
+        try:
+            status, body = srv.get(f"/api/discover?root={urllib.parse.quote(str(f))}")
+            assert status == 400
+            data = json.loads(body)
+            assert data["status"] == "error"
+            assert "not a directory" in data["message"].lower()
+        finally:
+            srv.stop()
+
+    def test_discover_empty_dir(self) -> None:
+        import urllib.parse
+        scan_root = self.tmp_dir / "empty_scan"
+        scan_root.mkdir()
+        srv = self._srv()
+        try:
+            status, body = srv.get(f"/api/discover?root={urllib.parse.quote(str(scan_root))}")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            assert data["candidates"] == []
+        finally:
+            srv.stop()
+
+    def test_discover_finds_candidates(self) -> None:
+        import urllib.parse
+        scan_root = self.tmp_dir / "scan"
+        scan_root.mkdir()
+        proj = _make_project(scan_root, "my-proj")
+        srv = self._srv()
+        try:
+            status, body = srv.get(f"/api/discover?root={urllib.parse.quote(str(scan_root))}")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            assert len(data["candidates"]) == 1
+            assert data["candidates"][0]["path"] == str(proj)
+            assert isinstance(data["candidates"][0]["displayName"], str)
+        finally:
+            srv.stop()
+
+    def test_discover_excludes_non_projects(self) -> None:
+        import urllib.parse
+        scan_root = self.tmp_dir / "scan_mixed"
+        scan_root.mkdir()
+        _make_project(scan_root, "valid-proj")
+        (scan_root / "not-a-project").mkdir()
+        srv = self._srv()
+        try:
+            status, body = srv.get(f"/api/discover?root={urllib.parse.quote(str(scan_root))}")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            assert len(data["candidates"]) == 1
+            assert "valid-proj" in data["candidates"][0]["path"]
+        finally:
+            srv.stop()
