@@ -78,7 +78,64 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_error(404, "Not Found")
 
     def _handle_refresh(self) -> None:
-        """Re-parse all projects listed in projects/manifest.json."""
+        """Re-fetch project data for all (or a subset of) tracked projects.
+
+        MCP mode: calls project_structure for each project via the MCP client.
+        Local mode: re-runs parse.py for each project in the manifest.
+        """
+        # Parse optional body to get a requested subset of project keys
+        requested: list[str] | None = None
+        content_length = int(self.headers.get("Content-Length", 0))
+        if content_length > 0:
+            try:
+                body = json.loads(self.rfile.read(content_length))
+                requested = body.get("projects")
+            except Exception:
+                pass  # Ignore malformed body — refresh all
+
+        client = _mcp_client
+        if client is not None and client.connected:
+            self._handle_refresh_mcp(client, requested)
+        else:
+            self._handle_refresh_local(requested)
+
+    def _handle_refresh_mcp(self, client: McpClient, requested: list[str] | None) -> None:
+        """Refresh via MCP: re-fetch project_structure for each project."""
+        try:
+            project_list_result = client.call_tool("project_list", {})
+            all_projects = project_list_result.get("projects", [])
+        except Exception as exc:
+            self._json_response(500, {"status": "error", "message": f"MCP project_list failed: {exc}"})
+            return
+
+        # Filter to requested subset if specified
+        if requested is not None:
+            all_projects = [
+                p for p in all_projects
+                if p.get("name", "").lower().replace(" ", "-") in requested
+            ]
+
+        refreshed: list[str] = []
+        errors: list[str] = []
+
+        for proj in all_projects:
+            proj_id = proj.get("id", "")
+            key = proj.get("name", proj_id).lower().replace(" ", "-")
+            try:
+                client.call_tool("project_structure", {"projectId": proj_id})
+                refreshed.append(key)
+            except Exception as exc:
+                errors.append(f"{key}: {exc}")
+
+        if errors and not refreshed:
+            self._json_response(500, {"status": "error", "message": "; ".join(errors)})
+        elif errors:
+            self._json_response(200, {"status": "ok", "projects": refreshed, "warnings": errors})
+        else:
+            self._json_response(200, {"status": "ok", "projects": refreshed})
+
+    def _handle_refresh_local(self, requested: list[str] | None) -> None:
+        """Refresh via local parse.py for each project in the manifest."""
         manifest_path = Path("projects/manifest.json")
 
         if not manifest_path.exists():
@@ -90,16 +147,6 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         except Exception as exc:
             self._json_response(500, {"status": "error", "message": f"Failed to read manifest: {exc}"})
             return
-
-        # Optionally filter to a subset of projects specified in the POST body
-        requested: list[str] | None = None
-        content_length = int(self.headers.get("Content-Length", 0))
-        if content_length > 0:
-            try:
-                body = json.loads(self.rfile.read(content_length))
-                requested = body.get("projects")
-            except Exception:
-                pass  # Ignore malformed body — refresh all
 
         entries = manifest.get("projects", [])
         if requested is not None:

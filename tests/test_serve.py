@@ -47,8 +47,8 @@ class ServerFixture:
                 def _parse_py(self) -> Path:
                     return PROJECT_ROOT / "parse.py"
 
-                def _handle_refresh(self) -> None:
-                    # Patch manifest path in refresh handler for isolation
+                def _handle_refresh_local(self, requested: list[str] | None) -> None:
+                    # Redirect manifest and parse.py paths to the test directory
                     manifest_path = projects_dir / "manifest.json"
                     if not manifest_path.exists():
                         self._json_response(
@@ -61,15 +61,6 @@ class ServerFixture:
                     except Exception as exc:
                         self._json_response(500, {"status": "error", "message": f"Failed to read manifest: {exc}"})
                         return
-
-                    content_length = int(self.headers.get("Content-Length", 0))
-                    requested: list[str] | None = None
-                    if content_length > 0:
-                        try:
-                            body = json.loads(self.rfile.read(content_length))
-                            requested = body.get("projects")
-                        except Exception:
-                            pass
 
                     entries = manifest.get("projects", [])
                     if requested is not None:
@@ -969,5 +960,110 @@ class TestStatusEndpoint:
             assert data["mode"] == "local"
             assert data["mcpConnected"] is False
             assert data["serverInfo"] is None
+        finally:
+            srv.stop()
+
+
+# ── POST /api/refresh MCP-mode tests ─────────────────────────────────────────
+
+
+class TestRefreshMcpMode:
+    """Tests for POST /api/refresh when MCP client is active."""
+
+    def setup_method(self) -> None:
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+        self._orig_client = serve._mcp_client
+        self.tmp_dir = Path(f"/tmp/test_refresh_mcp_{id(self)}")
+        self.tmp_dir.mkdir(exist_ok=True)
+        (self.tmp_dir / "manifest.json").write_text(json.dumps({"projects": []}))
+
+    def teardown_method(self) -> None:
+        import serve
+        serve._mcp_client = self._orig_client
+        import shutil
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def _srv(self) -> "ServerFixture":
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        return srv
+
+    def test_refresh_mcp_mode_returns_success(self) -> None:
+        """MCP mode refresh calls project_structure and returns refreshed keys."""
+        import serve
+
+        projects = [
+            {"id": "p1", "name": "My Project", "projectPath": "/repos/my-project"},
+            {"id": "p2", "name": "Other App", "projectPath": "/repos/other-app"},
+        ]
+        serve._mcp_client = _make_mock_mcp_client(projects=projects)
+        srv = self._srv()
+        try:
+            status, resp = srv.post("/api/refresh")
+            assert status == 200
+            data = json.loads(resp) if isinstance(resp, str) else resp
+            assert data["status"] == "ok"
+            assert "my-project" in data["projects"]
+            assert "other-app" in data["projects"]
+        finally:
+            srv.stop()
+
+    def test_refresh_local_mode_unchanged(self) -> None:
+        """Without MCP client, refresh falls back to parse.py path (existing behavior)."""
+        import serve
+
+        serve._mcp_client = None
+        manifest = {"projects": []}  # empty — nothing to refresh, returns ok
+        (self.tmp_dir / "manifest.json").write_text(json.dumps(manifest))
+        srv = self._srv()
+        try:
+            status, resp = srv.post("/api/refresh")
+            data = json.loads(resp) if isinstance(resp, str) else resp
+            assert status == 200
+            assert data["status"] == "ok"
+            assert data["projects"] == []
+        finally:
+            srv.stop()
+
+    def test_refresh_mcp_partial_failure_returns_warnings(self) -> None:
+        """When one MCP project_structure call fails, return partial success with warnings."""
+        from unittest.mock import MagicMock
+        from mcp_client import McpError
+        import serve
+
+        projects = [
+            {"id": "p1", "name": "Good Project", "projectPath": "/repos/good"},
+            {"id": "p2", "name": "Bad Project", "projectPath": "/repos/bad"},
+        ]
+
+        call_count = {"n": 0}
+
+        def _call_tool(name: str, arguments: dict) -> dict:
+            if name == "project_list":
+                return {"projects": projects}
+            if name == "project_structure":
+                call_count["n"] += 1
+                if arguments.get("projectId") == "p2":
+                    raise McpError(-1, "Simulated failure")
+                return {"name": "Good Project", "initiatives": {}}
+            raise McpError(-32601, f"Unknown: {name}")
+
+        mock = MagicMock()
+        mock.connected = True
+        mock.server_info = {"name": "test"}
+        mock.call_tool.side_effect = _call_tool
+        serve._mcp_client = mock
+
+        srv = self._srv()
+        try:
+            status, resp = srv.post("/api/refresh")
+            data = json.loads(resp) if isinstance(resp, str) else resp
+            assert status == 200
+            assert data["status"] == "ok"
+            assert "good-project" in data["projects"]
+            assert "warnings" in data
+            assert any("bad-project" in w for w in data["warnings"])
         finally:
             srv.stop()
