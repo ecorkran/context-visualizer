@@ -648,6 +648,7 @@ const Legend = () => (
 const PANEL_COLORS = ["#5BA4D9", "#5CCFB9", "#D4B45A", "#C9A8E8", "#D48A8A", "#A0C880", "#A0A0D4", "#FFB84D"];
 
 function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState, onProjectsChanged, expanded, onToggle }) {
+  const isMcp = window.__projectsMode === 'mcp';
   const projectList = Object.keys(projects).map((k, i) => ({
     key: k,
     name: projects[k].name || k,
@@ -933,19 +934,22 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
                 &#x21bb;
               </span>
             </button>
-            {/* Remove */}
+            {/* Remove — disabled in MCP mode (project list is managed by context-forge) */}
             <button
-              onClick={(e) => { e.stopPropagation(); handleRemove(key); }}
-              title="Remove this project"
+              onClick={(e) => { e.stopPropagation(); if (!isMcp) handleRemove(key); }}
+              title={isMcp ? "Projects are managed by MCP — remove via context-forge" : "Remove this project"}
+              disabled={isMcp}
               style={{
                 display: "inline-flex", alignItems: "center", justifyContent: "center",
                 width: 20, height: 20, borderRadius: 4, border: "1px solid transparent",
-                backgroundColor: "transparent", color: "#555577",
-                cursor: "pointer", flexShrink: 0, fontSize: 14, padding: 0,
+                backgroundColor: "transparent",
+                color: isMcp ? "#333350" : "#555577",
+                cursor: isMcp ? "not-allowed" : "pointer",
+                flexShrink: 0, fontSize: 14, padding: 0,
                 transition: "color 0.15s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "#FF6B6B"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "#555577"; }}
+              onMouseEnter={(e) => { if (!isMcp) e.currentTarget.style.color = "#FF6B6B"; }}
+              onMouseLeave={(e) => { if (!isMcp) e.currentTarget.style.color = "#555577"; }}
             >
               ×
             </button>
@@ -961,19 +965,21 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
             value={addPath}
             onChange={(e) => setAddPath(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
-            placeholder="Project path..."
-            disabled={addState === 'adding'}
+            placeholder={isMcp ? "Managed by MCP" : "Project path..."}
+            disabled={addState === 'adding' || isMcp}
+            title={isMcp ? "Projects are managed by MCP — add via context-forge" : undefined}
             style={{
               flex: 1, fontFamily: THEME.fonts.body, fontSize: 12,
               padding: `${THEME.sp.xs}px ${THEME.sp.sm}px`,
               backgroundColor: "#0D0D1A", border: "1px solid #2A2A4E",
               borderRadius: 6, color: "#C0C0D0", outline: "none",
-              opacity: addState === 'adding' ? 0.6 : 1,
+              opacity: addState === 'adding' || isMcp ? 0.4 : 1,
+              cursor: isMcp ? "not-allowed" : undefined,
             }}
           />
           <button
             onClick={handleAdd}
-            disabled={addState === 'adding' || !addPath.trim()}
+            disabled={addState === 'adding' || !addPath.trim() || isMcp}
             style={{
               fontFamily: THEME.fonts.heading, fontSize: 11,
               padding: `${THEME.sp.xs}px ${THEME.sp.sm}px`,
@@ -995,8 +1001,8 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
         )}
       </div>
 
-      {/* Find projects section */}
-      <div style={{ borderTop: "1px solid #1E1E3A", flexShrink: 0 }}>
+      {/* Find projects section — hidden in MCP mode (project list managed by context-forge) */}
+      {!isMcp && <div style={{ borderTop: "1px solid #1E1E3A", flexShrink: 0 }}>
         {/* Toggle button */}
         <button
           onClick={handleToggleDiscover}
@@ -1109,7 +1115,7 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
             })()}
           </div>
         )}
-      </div>
+      </div>}
     </div>
   );
 }
