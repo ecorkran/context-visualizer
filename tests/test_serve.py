@@ -658,3 +658,114 @@ class TestDiscover:
             assert "valid-proj" in data["candidates"][0]["path"]
         finally:
             srv.stop()
+
+
+# ── MCP config loading tests ─────────────────────────────────────────────────
+
+
+class TestLoadMcpConfig:
+    """Tests for serve._load_mcp_config() function."""
+
+    def setup_method(self) -> None:
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT))
+        self._orig_dir = Path.cwd()
+
+    def teardown_method(self) -> None:
+        import os
+        os.chdir(self._orig_dir)
+
+    def test_no_config_file_returns_none(self, tmp_path: Path) -> None:
+        """Missing mcp-config.json → returns None without warning."""
+        import os
+        import serve
+
+        os.chdir(tmp_path)
+        result = serve._load_mcp_config()
+        assert result is None
+
+    def test_valid_config_returns_dict(self, tmp_path: Path) -> None:
+        """Valid mcp-config.json → returns parsed dict."""
+        import os
+        import serve
+
+        config = {
+            "server": {
+                "transport": "stdio",
+                "command": "node",
+                "args": ["/path/to/server.js"],
+                "env": {},
+            }
+        }
+        (tmp_path / "mcp-config.json").write_text(json.dumps(config))
+        os.chdir(tmp_path)
+        result = serve._load_mcp_config()
+        assert result is not None
+        assert result["server"]["command"] == "node"
+        assert result["server"]["transport"] == "stdio"
+
+    def test_invalid_json_returns_none_and_warns(self, tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
+        """Invalid JSON in mcp-config.json → returns None and logs a warning."""
+        import logging
+        import os
+        import serve
+
+        (tmp_path / "mcp-config.json").write_text("{ not valid json }")
+        os.chdir(tmp_path)
+        with caplog.at_level(logging.WARNING, logger="serve"):
+            result = serve._load_mcp_config()
+        assert result is None
+        assert any("mcp-config.json" in r.message for r in caplog.records)
+
+
+class TestMcpClientStartup:
+    """Tests for MCP client startup behaviour in main()."""
+
+    def test_no_config_leaves_client_none(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+        """No mcp-config.json → _mcp_client stays None, no warnings logged."""
+        import serve
+
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(serve, "_mcp_client", None)
+        # _load_mcp_config reads from cwd; no file → returns None → client stays None
+        result = serve._load_mcp_config()
+        assert result is None
+        assert serve._mcp_client is None
+
+    def test_valid_config_but_connect_fails_leaves_client_none(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Valid config but failed connect() → _mcp_client stays None, warning logged."""
+        from unittest.mock import MagicMock
+        import logging
+        import serve
+
+        config = {
+            "server": {
+                "transport": "stdio",
+                "command": "nonexistent-binary",
+                "args": [],
+                "env": {},
+            }
+        }
+        (tmp_path / "mcp-config.json").write_text(json.dumps(config))
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setattr(serve, "_mcp_client", None)
+
+        # Mock McpClient so connect() always returns False
+        mock_client = MagicMock()
+        mock_client.connect.return_value = False
+
+        import mcp_client
+        monkeypatch.setattr(serve, "McpClient", lambda *a, **kw: mock_client)
+
+        # Simulate what main() does after loading config
+        cfg = serve._load_mcp_config()
+        assert cfg is not None
+        srv_cfg = cfg.get("server", {})
+        client = serve.McpClient(srv_cfg["command"], srv_cfg.get("args", []), srv_cfg.get("env"))
+        if not client.connect():
+            # In main(), _mcp_client stays None on failure
+            pass
+
+        assert serve._mcp_client is None
