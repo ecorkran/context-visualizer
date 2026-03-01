@@ -11,6 +11,12 @@
       "file": "context-forge-structure.json",
       "sourcePath": "/Users/manta/source/repos/manta/context-forge",
       "displayName": "Context Forge"
+    },
+    {
+      "key": "context-visualizer",
+      "file": "context-visualizer-structure.json",
+      "sourcePath": "/Users/manta/source/repos/manta/context-visualizer",
+      "displayName": "Context Visualizer"
     }
   ]
 }
