@@ -1,5 +1,43 @@
 # DEVLOG — context-visualizer
 
+## 20260301
+
+###### Slice 108: MCP Client Integration — Implementation Complete
+
+**Commits:**
+- `bceee01` chore: add mcp-config.json to gitignore, add transport field to example
+- `d2f8bdf` feat: add McpClient — stdlib-only JSON-RPC 2.0 over stdio transport
+- `a673725` test: add unit tests for McpClient; fix _readline_with_timeout for mock compat
+- `c2fa447` feat: add MCP config loading and client startup to serve.py
+- `540d1ab` test: add integration tests for MCP config loading in serve.py
+- `fff6f0c` feat: add GET /api/structures and GET /api/status endpoints
+- `eabefd7` test: add integration tests for /api/structures and /api/status endpoints
+- `ea7f7d4` feat: update loadProjects() to try /api/structures first, fall back to manifest
+- `f337206` feat: add MCP-mode refresh, update loadProjects fallback; add refresh tests
+- `08e2043` feat: add MCP mode indicator badge in ProjectPanel header
+- `6a38854` test: update E2E smoke test for local-mode 503 fallback; add MCP badge check
+
+**New files:**
+- `mcp_client.py` — stdlib-only JSON-RPC 2.0 MCP client (McpClient, McpError); stdio transport via subprocess.Popen; connect/disconnect, call_tool, list_tools, auto-reconnect
+- `tests/test_mcp_client.py` — 15 unit tests for transport, handshake, tool calls, error handling, reconnect
+
+**Modified files:**
+- `serve.py` — MCP config loading (_load_mcp_config), startup connect, GET /api/structures, GET /api/status, MCP-mode POST /api/refresh, shutdown hook
+- `index.html` — loadProjects() tries /api/structures first; falls back to manifest+JSON; sets window.__projectsMode
+- `project-structure-viz.jsx` — MCP badge in ProjectPanel header (visible only in MCP mode)
+- `tests/test_serve.py` — 20 new tests (config loading, /api/structures, /api/status, MCP refresh)
+- `tests/test_ui_smoke.py` — updated for local-mode 503 fallback; added MCP badge absence test
+- `.gitignore` — added mcp-config.json
+- `mcp-config.example.json` — added transport: "stdio" field (future-proofing for HTTP transport)
+
+**Key decisions:**
+- stdlib-only MCP client (no `mcp` SDK) — preserves zero-dependency policy; only 3 RPC operations needed
+- transport: "stdio" in example config shape — future-proof for slice 109 HTTP transport without breaking changes
+- MCP is read-only in v1 — write operations (add/remove/discover) remain local
+- 503 from /api/structures in local mode is expected fallback signal to frontend; E2E test updated accordingly
+
+**Test count:** 98 (was 67 — added 31 new tests across unit, integration, and E2E)
+
 ## 20260224
 
 ###### Initiative 100: File Updates and Organization — Design Complete

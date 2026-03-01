@@ -286,31 +286,31 @@ dateUpdated: 20260301
 
 ### 16. End-to-end verification and polish
 
-- [ ] Run full test suite: `pytest tests/`
-- [ ] Manual verification with MCP (if context-forge server is available):
-  - [ ] Create `mcp-config.json` pointing to context-forge MCP server
-  - [ ] Start `python serve.py` — verify MCP connection in server logs
-  - [ ] Open browser — verify projects load from MCP
-  - [ ] Verify "MCP" indicator in panel header
-  - [ ] Verify per-project refresh re-fetches from MCP
-  - [ ] Stop context-forge server — verify app falls back to local mode on next load
-- [ ] Manual verification without MCP:
-  - [ ] Remove/rename `mcp-config.json`
-  - [ ] Start `python serve.py` — verify no errors or warnings
-  - [ ] Open browser — verify app loads exactly as before
-- [ ] Fix any issues found
-- [ ] Commit
+- [x] Run full test suite: `pytest tests/`
+- [x] Manual verification with MCP (if context-forge server is available):
+  - [x] Create `mcp-config.json` pointing to context-forge MCP server
+  - [x] Start `python serve.py` — verify MCP connection in server logs
+  - [x] Open browser — verify projects load from MCP
+  - [x] Verify "MCP" indicator in panel header
+  - [x] Verify per-project refresh re-fetches from MCP
+  - [x] Stop context-forge server — verify app falls back to local mode on next load
+- [x] Manual verification without MCP:
+  - [x] Remove/rename `mcp-config.json`
+  - [x] Start `python serve.py` — verify no errors or warnings
+  - [x] Open browser — verify app loads exactly as before
+- [x] Fix any issues found
+- [x] Commit
 
 **Success criteria:**
-- [ ] All tests pass
-- [ ] Both MCP and local modes work end-to-end
-- [ ] Graceful fallback when MCP server is unavailable
-- [ ] No console errors in either mode
+- [x] All tests pass
+- [x] Both MCP and local modes work end-to-end
+- [x] Graceful fallback when MCP server is unavailable
+- [x] No console errors in either mode
 
 ### 17. Final — mark slice complete
 
-- [ ] Run full test suite one final time: `pytest tests/`
-- [ ] Update slice status to `complete` in `108-slice.mcp-client.md`
-- [ ] Check off slice 108 in `105-slices.project-management.md` (slice plan)
-- [ ] Write DEVLOG entry for slice 108 completion
-- [ ] Commit
+- [x] Run full test suite one final time: `pytest tests/`
+- [x] Update slice status to `complete` in `108-slice.mcp-client.md`
+- [x] Check off slice 108 in `105-slices.project-management.md` (slice plan)
+- [x] Write DEVLOG entry for slice 108 completion
+- [x] Commit
