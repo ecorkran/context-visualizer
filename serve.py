@@ -141,8 +141,9 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         if len(source_paths) >= 2:
             common = os.path.commonpath(source_paths)
-            # commonpath may return a file-like prefix rather than a directory
-            scan_root = common if Path(common).is_dir() else str(Path(common).parent)
+            # commonpath of directory paths is the shared parent; if it equals
+            # one of the source paths exactly, go one level higher
+            scan_root = str(Path(common).parent) if common in source_paths else common
         elif len(source_paths) == 1:
             scan_root = str(Path(source_paths[0]).parent)
         else:

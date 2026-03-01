@@ -483,3 +483,73 @@ class TestRemoveProject:
         manifest = json.loads((self.tmp_dir / "manifest.json").read_text())
         keys = [p["key"] for p in manifest["projects"]]
         assert "proj-b" not in keys
+
+
+# ── GET /api/info tests ──────────────────────────────────────────────────────
+
+
+class TestInfo:
+    def setup_method(self) -> None:
+        self.tmp_dir = Path(f"/tmp/test_info_{id(self)}")
+        self.tmp_dir.mkdir(exist_ok=True)
+
+    def teardown_method(self) -> None:
+        import shutil
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def test_info_no_projects(self) -> None:
+        (self.tmp_dir / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        try:
+            status, body = srv.get("/api/info")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            assert data["scanRoot"] == str(Path.home())
+        finally:
+            srv.stop()
+
+    def test_info_one_project(self) -> None:
+        manifest = {"projects": [{"key": "p", "file": "p.json", "sourcePath": "/a/b/c"}]}
+        (self.tmp_dir / "manifest.json").write_text(json.dumps(manifest))
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        try:
+            status, body = srv.get("/api/info")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            assert data["scanRoot"] == "/a/b"
+        finally:
+            srv.stop()
+
+    def test_info_two_projects_common_parent(self) -> None:
+        manifest = {"projects": [
+            {"key": "p1", "file": "p1.json", "sourcePath": "/a/b/proj1"},
+            {"key": "p2", "file": "p2.json", "sourcePath": "/a/b/proj2"},
+        ]}
+        (self.tmp_dir / "manifest.json").write_text(json.dumps(manifest))
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        try:
+            status, body = srv.get("/api/info")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            assert data["scanRoot"] == "/a/b"
+        finally:
+            srv.stop()
+
+    def test_info_manifest_missing(self) -> None:
+        # No manifest file at all — falls back to home directory
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        try:
+            status, body = srv.get("/api/info")
+            assert status == 200
+            data = json.loads(body)
+            assert data["status"] == "ok"
+            assert data["scanRoot"] == str(Path.home())
+        finally:
+            srv.stop()
