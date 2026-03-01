@@ -35,9 +35,24 @@
         </div>`;
     }
 
-    // Load all project data from external JSON files via manifest.
-    // cache: 'no-store' ensures re-fetches (e.g. after refresh) bypass the browser cache.
+    // Load all project data. Tries /api/structures (MCP mode) first;
+    // falls back to manifest+JSON (local mode) if unavailable.
+    // cache: 'no-store' ensures re-fetches bypass the browser cache.
     async function loadProjects() {
+      // --- MCP path ---
+      try {
+        const structResp = await fetch('/api/structures', { cache: 'no-store' });
+        if (structResp.ok) {
+          const data = await structResp.json();
+          window.__projectsMode = data.mode || 'mcp';
+          return data.projects || {};
+        }
+      } catch (_) {
+        // fetch error (e.g. server not running /api/structures) → fall through
+      }
+
+      // --- Local fallback path ---
+      window.__projectsMode = 'local';
       const manifestResp = await fetch('./projects/manifest.json', { cache: 'no-store' });
       if (!manifestResp.ok) {
         throw new Error(`Failed to load manifest: ${manifestResp.status} ${manifestResp.statusText}`);
