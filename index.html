@@ -55,6 +55,10 @@
           const data = await resp.json();
           // Each file is keyed by project key: { "key": { ...model... } }
           Object.assign(projects, data);
+          // Merge manifest metadata (sourcePath) so the UI can identify tracked projects
+          if (entry.sourcePath && projects[entry.key]) {
+            projects[entry.key].sourcePath = entry.sourcePath;
+          }
         } catch (err) {
           console.warn(`Skipping ${entry.key}: ${err.message}`);
         }
