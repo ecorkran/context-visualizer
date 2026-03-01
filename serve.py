@@ -14,9 +14,33 @@ from __future__ import annotations
 import argparse
 import http.server
 import json
+import logging
 import os
 import sys
 from pathlib import Path
+
+from mcp_client import McpClient
+
+logger = logging.getLogger(__name__)
+
+# Module-level MCP client instance; None when operating in local-only mode.
+_mcp_client: McpClient | None = None
+
+
+def _load_mcp_config() -> dict | None:
+    """Read mcp-config.json from the working directory.
+
+    Returns the parsed config dict on success, or None if the file is absent
+    or invalid (logs a warning on invalid JSON).
+    """
+    config_path = Path("mcp-config.json")
+    if not config_path.exists():
+        return None
+    try:
+        return json.loads(config_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("mcp-config.json is present but could not be parsed: %s", exc)
+        return None
 
 
 class Handler(http.server.SimpleHTTPRequestHandler):
@@ -300,9 +324,30 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 def main() -> None:
+    global _mcp_client
+
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
+
     ap = argparse.ArgumentParser(description="Serve the project-structure-viz site locally.")
     ap.add_argument("--port", type=int, default=8000, help="Port to listen on (default: 8000)")
     args = ap.parse_args()
+
+    # Attempt MCP client connection if config is present
+    config = _load_mcp_config()
+    if config is not None:
+        srv = config.get("server", {})
+        command = srv.get("command", "")
+        srv_args = srv.get("args", [])
+        env = srv.get("env") or None
+        if command:
+            client = McpClient(command, srv_args, env)
+            if client.connect():
+                _mcp_client = client
+                logger.info("MCP mode active")
+            else:
+                logger.warning("MCP connection failed — running in local mode")
+        else:
+            logger.warning("mcp-config.json missing server.command — running in local mode")
 
     server = http.server.HTTPServer(("", args.port), Handler)
     print(f"Serving at http://localhost:{args.port}", flush=True)
@@ -310,6 +355,9 @@ def main() -> None:
         server.serve_forever()
     except KeyboardInterrupt:
         print("\nStopped.", flush=True)
+    finally:
+        if _mcp_client is not None:
+            _mcp_client.disconnect()
 
 
 if __name__ == "__main__":
