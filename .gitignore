@@ -37,6 +37,7 @@ __pycache__/
 # Playwright
 test-results/
 playwright-report/
+.playwright-mcp/
 
 # Editor directories and files
 .vscode/*
