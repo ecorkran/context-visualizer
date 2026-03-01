@@ -298,6 +298,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
                 model = client.call_tool("project_structure", {"projectId": proj_id})
 
+                # Skip projects where the MCP server returned an error envelope
+                if model.get("isError"):
+                    logger.debug("project_structure returned error for %s — skipping", proj_name)
+                    continue
+
                 # Derive key: lowercase, spaces → hyphens
                 key = proj_name.lower().replace(" ", "-")
                 model["sourcePath"] = proj_path

@@ -1119,7 +1119,13 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
 // ============================================================================
 export default function ProjectStructureVisualizer() {
   const [projects, setProjects] = useState(PROJECTS);
-  const [active, setActive] = useState(() => Object.keys(PROJECTS)[0]);
+  const [active, setActive] = useState(() => {
+    try {
+      const saved = localStorage.getItem('active-project');
+      if (saved && PROJECTS[saved]) return saved;
+    } catch { /* ignore */ }
+    return Object.keys(PROJECTS)[0];
+  });
   // 'idle' | 'refreshing' | 'error'
   const [refreshState, setRefreshState] = useState('idle');
   const [panelExpanded, setPanelExpanded] = useState(() => {
@@ -1127,6 +1133,10 @@ export default function ProjectStructureVisualizer() {
   });
   const handlePanelToggle = useCallback(() => {
     setPanelExpanded((v) => { const next = !v; localStorage.setItem('panel-expanded', JSON.stringify(next)); return next; });
+  }, []);
+  const handleActivate = useCallback((key) => {
+    try { localStorage.setItem('active-project', key); } catch { /* ignore */ }
+    setActive(key);
   }, []);
 
   // Called after add/remove/per-row refresh — reloads project data and updates state
@@ -1189,7 +1199,7 @@ export default function ProjectStructureVisualizer() {
         <ProjectPanel
           projects={projects}
           active={active}
-          onActivate={setActive}
+          onActivate={handleActivate}
           onRefreshAll={handleRefresh}
           refreshState={refreshState}
           onProjectsChanged={handleProjectsChanged}
