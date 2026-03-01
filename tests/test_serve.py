@@ -769,3 +769,205 @@ class TestMcpClientStartup:
             pass
 
         assert serve._mcp_client is None
+
+
+# ── Mock MCP client fixture ───────────────────────────────────────────────────
+
+def _make_mock_mcp_client(projects: list[dict] | None = None, fail_tool: str | None = None):
+    """Build a mock McpClient that returns canned data.
+
+    Args:
+        projects: List of project dicts for project_list response.
+                  Each dict: {id, name, projectPath}
+        fail_tool: If set, calling call_tool with this name raises McpError.
+    """
+    from unittest.mock import MagicMock
+    from mcp_client import McpError
+
+    if projects is None:
+        projects = [
+            {"id": "p1", "name": "My Project", "projectPath": "/home/user/my-project"},
+            {"id": "p2", "name": "Another App", "projectPath": "/home/user/another-app"},
+        ]
+
+    def _call_tool(name: str, arguments: dict) -> dict:
+        if fail_tool and name == fail_tool:
+            raise McpError(-1, f"Simulated failure for {name}")
+        if name == "project_list":
+            return {"projects": projects}
+        if name == "project_structure":
+            proj_id = arguments.get("projectId", "")
+            proj = next((p for p in projects if p["id"] == proj_id), {})
+            return {
+                "name": proj.get("name", "Unknown"),
+                "description": "A test project",
+                "initiatives": {},
+            }
+        raise McpError(-32601, f"Unknown tool: {name}")
+
+    mock = MagicMock()
+    mock.connected = True
+    mock.server_info = {"name": "context-forge-mcp", "version": "1.0.0"}
+    mock.call_tool.side_effect = _call_tool
+    return mock
+
+
+# ── GET /api/structures tests ─────────────────────────────────────────────────
+
+
+class TestStructuresEndpoint:
+    """Tests for GET /api/structures."""
+
+    def setup_method(self) -> None:
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+        self._orig_client = serve._mcp_client
+
+    def teardown_method(self) -> None:
+        import serve
+        serve._mcp_client = self._orig_client
+
+    def _srv(self, tmp_dir: Path) -> "ServerFixture":
+        srv = ServerFixture(projects_dir=tmp_dir)
+        srv.start()
+        return srv
+
+    def test_structures_with_mcp_returns_200(self, tmp_path: Path) -> None:
+        """MCP connected → 200 with project data."""
+        import serve
+
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        serve._mcp_client = _make_mock_mcp_client()
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/structures")
+            data = json.loads(body)
+            assert status == 200
+            assert data["status"] == "ok"
+            assert data["mode"] == "mcp"
+            assert "my-project" in data["projects"]
+            assert "another-app" in data["projects"]
+        finally:
+            srv.stop()
+
+    def test_structures_key_envelope_lowercased_hyphenated(self, tmp_path: Path) -> None:
+        """Keys are lowercased and spaces replaced with hyphens."""
+        import serve
+
+        projects = [{"id": "x1", "name": "Hello World App", "projectPath": "/x"}]
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        serve._mcp_client = _make_mock_mcp_client(projects=projects)
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/structures")
+            data = json.loads(body)
+            assert status == 200
+            assert "hello-world-app" in data["projects"]
+        finally:
+            srv.stop()
+
+    def test_structures_source_path_populated(self, tmp_path: Path) -> None:
+        """sourcePath comes from context-forge's projectPath."""
+        import serve
+
+        projects = [{"id": "x1", "name": "MyApp", "projectPath": "/repos/myapp"}]
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        serve._mcp_client = _make_mock_mcp_client(projects=projects)
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/structures")
+            data = json.loads(body)
+            assert status == 200
+            assert data["projects"]["myapp"]["sourcePath"] == "/repos/myapp"
+        finally:
+            srv.stop()
+
+    def test_structures_without_mcp_returns_503(self, tmp_path: Path) -> None:
+        """No MCP client → 503 with error."""
+        import serve
+
+        serve._mcp_client = None
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/structures")
+            data = json.loads(body)
+            assert status == 503
+            assert data["status"] == "error"
+            assert data["mode"] == "local"
+        finally:
+            srv.stop()
+
+    def test_structures_mcp_tool_failure_returns_503(self, tmp_path: Path) -> None:
+        """MCP tool call raises mid-request → 503 with error message."""
+        import serve
+
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        serve._mcp_client = _make_mock_mcp_client(fail_tool="project_list")
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/structures")
+            data = json.loads(body)
+            assert status == 503
+            assert data["status"] == "error"
+        finally:
+            srv.stop()
+
+
+# ── GET /api/status tests ─────────────────────────────────────────────────────
+
+
+class TestStatusEndpoint:
+    """Tests for GET /api/status."""
+
+    def setup_method(self) -> None:
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+        self._orig_client = serve._mcp_client
+
+    def teardown_method(self) -> None:
+        import serve
+        serve._mcp_client = self._orig_client
+
+    def _srv(self, tmp_dir: Path) -> "ServerFixture":
+        srv = ServerFixture(projects_dir=tmp_dir)
+        srv.start()
+        return srv
+
+    def test_status_mcp_connected(self, tmp_path: Path) -> None:
+        """MCP connected → mode=mcp, mcpConnected=True, serverInfo populated."""
+        import serve
+
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        serve._mcp_client = _make_mock_mcp_client()
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/status")
+            data = json.loads(body)
+            assert status == 200
+            assert data["status"] == "ok"
+            assert data["mode"] == "mcp"
+            assert data["mcpConnected"] is True
+            assert data["serverInfo"] == {"name": "context-forge-mcp", "version": "1.0.0"}
+        finally:
+            srv.stop()
+
+    def test_status_local_mode(self, tmp_path: Path) -> None:
+        """No MCP client → mode=local, mcpConnected=False, serverInfo=None."""
+        import serve
+
+        serve._mcp_client = None
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/status")
+            data = json.loads(body)
+            assert status == 200
+            assert data["status"] == "ok"
+            assert data["mode"] == "local"
+            assert data["mcpConnected"] is False
+            assert data["serverInfo"] is None
+        finally:
+            srv.stop()
