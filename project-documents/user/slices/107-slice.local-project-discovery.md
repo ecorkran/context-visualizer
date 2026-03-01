@@ -14,39 +14,39 @@ dateUpdated: 20260228
 
 ## Overview
 
-Add a scan endpoint and companion UI that helps users locate valid project paths on their local filesystem, removing the need to know and type exact paths when adding projects to the panel. The user provides a root directory to scan; the server walks it looking for the `project-documents/user/` structure pattern and returns candidate paths; the user confirms which to add.
+Add a "Find projects" flow to the Project Panel that scans a user-specified root directory for valid project paths and lets the user add any discovered candidate with a single click. The user edits a pre-populated root path (derived from the manifest) and clicks "Find"; the server scans one level deep and returns candidates; each result row has an inline Add button.
 
-Additionally, when the user types a path in the existing Add input in the Project Panel, provide a quick-validate feedback so they know immediately whether the path looks like a valid project before submitting.
+The existing Add input from slice 106 (type a path → Enter/Add) is unchanged. This slice adds discovery on top of it, making the panel self-sufficient for users who want to browse rather than type.
 
 ## Value
 
-Reduces friction for users who want to add a project but don't remember the exact path. Discovery replaces trial-and-error path typing with a list of confirmed candidates. This completes the "local project management" surface: slice 105 provided the API, slice 106 provided the panel UI, and this slice makes the panel genuinely self-sufficient for local project onboarding.
+Eliminates the "what is the exact path?" friction when onboarding new projects. A user who has `~/source/repos/manta/context-visualizer` tracked can point the scanner at `~/source/repos/manta` and immediately see all sibling projects to add. The smart default removes most typing for the common case.
 
 ## Technical Scope
 
 **Included:**
-- `GET /api/discover?root=<path>` — scans a given root directory (non-recursively at depth 1–3) for directories containing the `project-documents/user/` pattern; returns a list of candidate paths with their display names
-- `GET /api/validate?path=<path>` — lightweight check: does the path exist and does it contain a valid `project-documents/user/` structure? Returns `{ valid: bool, displayName?: string, message?: string }`
-- Discovery UI in the Project Panel: a small "Scan" flow — user types (or defaults to home directory) a root path, clicks Scan, sees a list of discovered projects to add
-- Path validation feedback on the existing Add input: after the user stops typing (debounce ~500 ms), call `/api/validate` and show a green check or red × inline
+- `GET /api/discover?root=<path>` — scans immediate children (depth 1) of `root` for directories containing the `project-documents/user/` pattern; returns candidates with display names
+- `GET /api/info` — returns server-side context useful to the UI: `{ "scanRoot": "<suggested default>" }`. The suggested default is derived from the common ancestor of manifest `sourcePath` values; falls back to the user's home directory
+- Discovery UI in the Project Panel: a collapsible "Find projects" section below the Add input — root path input pre-populated from `GET /api/info`, "Find" button, inline results list with per-row Add buttons
+- Already-tracked projects shown as disabled (grayed out, no Add button) in results
 
 **Excluded:**
-- Recursive deep scan (> depth 3) — performance risk on large filesystems
-- File browser / native OS picker dialog — outside browser security model without an Electron wrapper
-- Remote or network paths
-- Auto-add (user must explicitly confirm each candidate)
-- Background watching / filesystem events
+- Depth > 1 scanning — user provides a meaningful parent directory
+- Inline path validation on the Add input — the POST already returns an error on invalid paths; advisory validation adds complexity without much benefit given the Add input already has error feedback
+- Native OS file picker — browser sandbox prevents getting a real filesystem path from `showDirectoryPicker()`
+- Auto-add without confirmation
+- Background filesystem watching
 
 ## Dependencies
 
 ### Prerequisites
-- Slice 105 (Project Management API) — provides `find_user_dir()` in `parse.py` (already importable from `serve.py`) and `POST /api/projects` for the actual add
-- Slice 106 (Project Panel UI) — provides the `ProjectPanel` component and `AddProjectInput` area where the new UI will live
+- Slice 105 — provides `find_user_dir()` in `parse.py` (reused for validation) and `POST /api/projects`
+- Slice 106 — provides `ProjectPanel` where the discovery UI lives
 
 ### Interfaces Consumed
-- `parse.find_user_dir(path)` — reused for candidate validation (already imported in `serve.py`)
-- `build_model()` from `parse.py` — used only to extract `displayName` for discovered candidates
-- `POST /api/projects { path }` — existing endpoint for the actual add-project action, unchanged
+- `parse.find_user_dir(path)` — already imported in `serve.py`; reused to check each candidate
+- `POST /api/projects { path }` — existing endpoint, unchanged; used for per-row Add
+- `GET /api/projects` response — `sourcePath` fields used server-side to compute suggested scan root
 
 ## Architecture
 
@@ -55,89 +55,86 @@ Reduces friction for users who want to add a project but don't remember the exac
 Two new GET endpoints added to `do_GET`:
 
 ```
-GET /api/discover?root=/some/path
-→ { status: "ok", candidates: [{ path, displayName }] }
-→ { status: "error", message: "..." }
+GET /api/info
+→ { "status": "ok", "scanRoot": "/Users/manta/source/repos/manta" }
 
-GET /api/validate?path=/some/path
-→ { status: "ok", valid: true, displayName: "My Project" }
-→ { status: "ok", valid: false, message: "No project-documents/user/ found" }
-→ { status: "error", message: "..." }
+GET /api/discover?root=/some/path
+→ { "status": "ok", "candidates": [{ "path": "...", "displayName": "..." }] }
+→ { "status": "error", "message": "..." }
 ```
 
-**Discover implementation:**
-1. Parse `root` query parameter from `self.path` (urllib.parse.urlparse + parse_qs)
-2. Validate `root` exists and is a directory
-3. Walk subdirectories at depth 1–3 only (avoid `os.walk` unbounded; use explicit depth-limited traversal)
-4. For each candidate subdir, call `find_user_dir(candidate)` — if non-None, it's a valid project
-5. For each valid candidate, extract `displayName` from its parsed model (call `build_model(user_dir).get("name", candidate.name)`)
-6. Return candidates sorted by `displayName`
-7. Cap results at 50 candidates to avoid oversized responses
+**`_handle_info` implementation:**
+1. Read manifest via `_read_manifest()`
+2. Collect all `sourcePath` values from manifest entries
+3. Find the longest common path prefix across all source paths using `os.path.commonpath()`. If only one project, use its parent directory. If no projects, fall back to `Path.home()`
+4. Return `{ "status": "ok", "scanRoot": str(common_parent) }`
 
-**Validate implementation:**
-1. Parse `path` query parameter
-2. Check path exists; if not, return `{ valid: false, message: "Path does not exist" }`
-3. Call `find_user_dir(Path(path))` — if None, return `{ valid: false, message: "No project-documents/user/ found" }`
-4. Extract displayName via `build_model(user_dir).get("name", Path(path).name)`
-5. Return `{ valid: true, displayName: "..." }`
+**`_handle_discover` implementation:**
+1. Parse `root` query parameter (`urllib.parse.urlparse` + `parse_qs` — stdlib, no new imports)
+2. Validate: `root` param present, path exists, path is a directory → 400 errors if not
+3. Iterate `Path(root).iterdir()` — only immediate children, no recursion
+4. For each child that is a directory: call `find_user_dir(child)` — if non-None, it's a valid candidate
+5. For each valid candidate, extract `displayName`: call `build_model(user_dir).get("name", child.name)`
+6. Return candidates sorted by `displayName`, capped at 30
+7. Exclude the `root` directory itself (don't include the scan root as a result)
 
-**Performance note:** `build_model()` does full file I/O for each candidate. For discover, this is acceptable at ≤ 50 candidates with depth-3 limit. If performance is an issue during implementation, fall back to extracting `displayName` from frontmatter only (no full parse needed — just read one file).
+**Performance note:** `build_model()` does full file I/O per candidate. At depth 1 with a typical source directory, this is 5–20 directories — fast in practice (< 1 s). The cap-30 bound prevents pathological cases. If this proves slow during implementation, fall back to frontmatter-only extraction: scan `project-documents/user/` for the first `.md` with a `project:` key.
 
 ### UI Changes (`project-structure-viz.jsx`)
 
-Two additions to `ProjectPanel`:
+One new section added to the expanded `ProjectPanel`, below the existing Add input area.
 
-#### 1. Inline path validation on the Add input
-
-Debounce the `addPath` value with a 500 ms delay. When the debounced value is non-empty and not currently submitting, fire `GET /api/validate?path=<value>`. Show result inline:
-- Valid: small green checkmark + project name beside the input
-- Invalid: small red × + short message
-- Pending (while fetching): neutral indicator
-
-State: `validateState` (`idle` | `validating` | `valid` | `invalid`), `validateName` (string), `validateMsg` (string).
-
-Implementation note: use `useEffect` with a `setTimeout`/`clearTimeout` pattern for debounce — no external library needed.
-
-#### 2. Discover flow
-
-Add a "Scan" button (or link-style text button) below or beside the Add input. Click opens an inline scan area (not a modal — consistent with the existing lightweight UI pattern):
+**Layout (panel bottom, expanded state only):**
 
 ```
-┌─────────────────────────────────┐
-│ [/Users/manta         ] [Scan]  │
-│ ✓ context-visualizer    [Add]   │
-│ ✓ my-other-project      [Add]   │
-│ ○ already-tracked              │
-└─────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ [Project path...        ] [Add]     │  ← existing (slice 106, unchanged)
+│ ─────────────────────────────────── │
+│ Find projects                    ▼  │  ← toggle button (collapsed by default)
+│ [/Users/manta/source    ] [Find]    │  ← root input + Find button
+│                                     │
+│ ● Context Forge            [Add]    │  ← candidate rows
+│   /Users/manta/source/context-forge │
+│ ● Already Tracked                   │  ← grayed, no Add button
+│                                     │
+│ No projects found in this directory │  ← empty state
+└─────────────────────────────────────┘
 ```
 
-- Default scan root: `~` (home directory) — derive from a new `GET /api/info` endpoint or hard-code empty (user fills in)
-- Actually: default the scan root input to empty, placeholder `"Root path to scan..."`
-- Each result row shows the project `displayName` and path (truncated)
-- Already-tracked projects (keys present in current `projects` prop) are shown as grayed-out "already added"
-- Clicking Add on a row calls `POST /api/projects { path }` → success reloads panel via `onProjectsChanged` and `onActivate`
-- A loading indicator per row during the add operation
-- Scan state: `scanRoot` (string), `scanState` (`idle` | `scanning` | `done` | `error`), `scanResults` (array), `scanError` (string)
+**Behavior:**
+- "Find projects" toggle is collapsed by default; clicking it expands the section
+- On expand: fire `GET /api/info` to fetch the suggested `scanRoot` and populate the root input (only if input is currently empty)
+- Root input is editable — user can change it before scanning
+- "Find" button: fires `GET /api/discover?root=<value>`. Disabled while scanning or if input is empty
+- Results: each row shows display name (full) and path (small, gray, truncated). Already-tracked projects (matched by comparing candidate path to manifest `sourcePath` values available in the `projects` prop) show with a muted style and no Add button
+- Per-row Add button: calls `POST /api/projects { path }` → on success: `onProjectsChanged()` + `onActivate(key)`. Row Add button shows spinner during add; after success the row transitions to "Already Tracked" state
+- Scan error: shown inline below the Find button, auto-cleared after 3 s (consistent with existing error pattern)
+- "Find projects" section stays visible after adding — user can continue adding more from the same scan
 
-The discover area is toggled visible/hidden by the Scan button — starts hidden. Hide it again after adding a project or on an explicit close.
-
-### State Summary
-
-All new state lives in `ProjectPanel` (local, no new props needed except what already exists):
+**State (all local to `ProjectPanel`):**
 
 | State | Type | Purpose |
 |---|---|---|
-| `validateState` | `idle\|validating\|valid\|invalid` | Inline add-path feedback |
-| `validateName` | string | Display name from validate response |
-| `validateMsg` | string | Error message from validate response |
-| `showDiscover` | boolean | Toggle discover area visibility |
-| `scanRoot` | string | Root path input for scan |
-| `scanState` | `idle\|scanning\|done\|error` | Discover fetch state |
-| `scanResults` | array | `[{ path, displayName }]` |
-| `scanError` | string | Error message for scan |
+| `showDiscover` | boolean | Toggle discover section open/closed |
+| `scanRoot` | string | Editable root path input |
+| `scanState` | `idle\|scanning\|done\|error` | Find button state |
+| `scanResults` | array | `[{ path, displayName }]` from server |
+| `scanError` | string | Error message, auto-clears 3 s |
 | `rowAddState` | object | `{ [path]: 'idle'\|'adding' }` per result row |
 
+No new props on the root component.
+
+**Already-tracked detection:** compare each candidate `path` to the `sourcePath` values in the `projects` prop (which is the loaded PROJECTS object containing `sourcePath` per entry). This is a client-side check — no extra server call needed.
+
 ## API Contracts
+
+### `GET /api/info`
+
+```json
+{ "status": "ok", "scanRoot": "/Users/manta/source/repos/manta" }
+```
+
+Falls back gracefully: if manifest is missing or empty, `scanRoot` is the server process's home directory (`str(Path.home())`). No error responses — always returns 200 with a usable default.
 
 ### `GET /api/discover?root=<encoded-path>`
 
@@ -146,10 +143,15 @@ All new state lives in `ProjectPanel` (local, no new props needed except what al
 {
   "status": "ok",
   "candidates": [
-    { "path": "/Users/manta/source/repos/myproject", "displayName": "My Project" },
-    { "path": "/Users/manta/source/repos/other", "displayName": "Other Project" }
+    { "path": "/Users/manta/source/repos/context-forge", "displayName": "Context Forge" },
+    { "path": "/Users/manta/source/repos/orchestration", "displayName": "Orchestration" }
   ]
 }
+```
+
+Empty candidates list is valid (no projects found):
+```json
+{ "status": "ok", "candidates": [] }
 ```
 
 **Response 400:**
@@ -159,109 +161,129 @@ All new state lives in `ProjectPanel` (local, no new props needed except what al
 { "status": "error", "message": "Not a directory: /some/file.txt" }
 ```
 
-### `GET /api/validate?path=<encoded-path>`
-
-**Response 200 (always 200 — validity is in the body):**
-```json
-{ "status": "ok", "valid": true, "displayName": "My Project" }
-{ "status": "ok", "valid": false, "message": "No project-documents/user/ found" }
-{ "status": "ok", "valid": false, "message": "Path does not exist" }
-```
-
-**Response 400:**
-```json
-{ "status": "error", "message": "Missing required parameter: path" }
-```
-
 ## Technical Decisions
 
-### Depth-limited scan vs. `os.walk`
+### Depth 1 only
 
-`os.walk` with unbounded recursion on `/` or `~` could take minutes. A depth-limited approach (enumerate direct children at depth 1; check their children at depth 2; check those children at depth 3) is O(breadth^3) which is fast for typical source directory structures and bounded in the worst case by the 50-candidate cap.
+Depth 1 (immediate children of the root) is the right default. Users who organize projects under `~/source/repos/manta/` scan that directory and see all sibling projects. Going deeper risks scanning irrelevant directories (vendored deps, nested repos) and slows the response. The smart default means users rarely need to adjust the path, so depth 1 is not a hardship.
 
-### Query string parsing in `serve.py`
+### Smart default via `GET /api/info`
 
-`serve.py` uses stdlib only. Query string parsing: `urllib.parse.urlparse(self.path)` gives the path and query; `urllib.parse.parse_qs(query)` gives parameters. This is already available — no new imports required.
+Deriving the default scan root from `os.path.commonpath(source_paths)` is the most useful heuristic: if a user has `~/source/repos/manta/context-forge` and `~/source/repos/manta/orchestration` tracked, the common parent is `~/source/repos/manta` — exactly where their other projects likely live. This is a best-effort hint; the user can always edit it.
 
-### Validate always returns 200
+### No inline path validation on Add input
 
-The validate endpoint is a query, not a command. A path that isn't a valid project is a normal answer, not an error. Returning 200 with `valid: false` lets the client distinguish "bad request" from "not a project" without special-casing HTTP status codes.
+The existing Add input already shows an error message on failed submission (slice 106). Adding debounced validation would duplicate the feedback and add state complexity for a case (typing a wrong path) that the existing error handling already covers adequately.
 
-### No server-side debounce
+### `GET /api/info` is always 200
 
-Debounce is a client-side concern. The server validate endpoint is idempotent and fast (no subprocess). The client debounces at 500 ms to avoid flooding the server while the user is typing.
+`/api/info` returns metadata, not a command result. If the manifest is absent or unreadable, the home directory is still a useful default. Returning an error would require the UI to handle a failure case for something that should silently degrade.
 
-### `build_model` for display name extraction
+### Already-tracked detection on client
 
-During discover, calling `build_model()` per candidate adds I/O for each project. For depth-3 scans with cap-50, this is typically under a second on local filesystems. If implementation shows this to be slow, the fallback is: read only `project-documents/user/architecture/` or `slices/` directory; find the first `.md` file with a `project:` frontmatter key; use that as `displayName`. This optimization is deferred to implementation.
+The `projects` prop already contains `sourcePath` per entry (loaded from manifest). Checking candidate paths against these values is O(n×m) where n = candidates (≤ 30) and m = tracked projects (typically < 20) — negligible. No extra server round-trip needed.
 
 ## UI Specification
 
-### Add Input with Validation Feedback (expanded panel)
+### Collapsed state (default)
 
 ```
-┌──────────────────────────────────────┐
-│ [/path/to/proj...     ] ✓ My Project │
-│ [Add]  [Scan ▼]                      │
-└──────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ [Project path...        ] [Add]     │
+│ Find projects                    ›  │
+└─────────────────────────────────────┘
 ```
 
-- Validation indicator appears to the right of the input after debounce
-- Green `✓ Name` when valid; red `✗ message` when invalid; spinner when validating
-- Add button is enabled regardless of validation state — validation is advisory, not blocking (the POST will fail with an error anyway if invalid)
+"Find projects" is a full-width secondary button/label with a › chevron. Click expands.
 
-### Discover Area (expanded, scan done)
+### Expanded — idle (just opened)
 
 ```
-┌──────────────────────────────────────┐
-│ Scan for projects                    │
-│ [/Users/manta/source    ] [Scan]     │
-│                                      │
-│ ● My Project                [Add]   │
-│   /Users/manta/source/my-proj        │
-│ ● Other Project             [Add]   │
-│   /Users/manta/source/other          │
-│ ○ Already Added (context-viz)        │
-│                                      │
-│                          [✕ Close]   │
-└──────────────────────────────────────┘
+┌─────────────────────────────────────┐
+│ [Project path...        ] [Add]     │
+│ Find projects                    ‹  │
+│ [/Users/manta/source    ] [Find]    │
+└─────────────────────────────────────┘
 ```
 
-- Discover area appears below the Add input when Scan is clicked
-- Each row: color dot (matching panel palette), display name, path (small, gray), Add button
-- Already-tracked projects: dot + name only, "Already added" label, no Add button, grayed out
-- Per-row spinner while adding
-- Close button dismisses the discover area
+Root input pre-populated from `GET /api/info`. Find button enabled.
+
+### Expanded — results
+
+```
+┌─────────────────────────────────────┐
+│ [Project path...        ] [Add]     │
+│ Find projects                    ‹  │
+│ [/Users/manta/source    ] [Find]    │
+│                                     │
+│ ● Context Forge            [Add]    │
+│   /Users/manta/.../context-forge    │
+│ ● My Other Project         [Add]    │
+│   /Users/manta/.../my-other         │
+│ ○ Orchestration  already added      │
+└─────────────────────────────────────┘
+```
+
+- `●` = valid untracked project (add button active)
+- `○` = already tracked (grayed, no button, "already added" label)
+- Path shown in small gray text below the display name
+- Per-row Add shows spinner while adding, then transitions to "already added"
+
+### Expanded — empty results
+
+```
+┌─────────────────────────────────────┐
+│ [Project path...        ] [Add]     │
+│ Find projects                    ‹  │
+│ [/Users/manta/desktop   ] [Find]    │
+│ No projects found here              │
+└─────────────────────────────────────┘
+```
+
+### Expanded — error
+
+```
+┌─────────────────────────────────────┐
+│ [Project path...        ] [Add]     │
+│ Find projects                    ‹  │
+│ [/bad/path              ] [Find]    │
+│ Path does not exist                 │
+└─────────────────────────────────────┘
+```
+
+Error in small red text below input row; auto-clears after 3 s (consistent with existing pattern).
 
 ## Success Criteria
 
 ### Functional
-- `GET /api/discover?root=/some/path` returns valid project candidates found within 3 directory levels of `root`
-- `GET /api/validate?path=/some/path` correctly returns `valid: true/false` with display name or error message
-- Typing a valid path in the Add input shows green feedback with project name after ~500 ms
-- Typing an invalid path shows red feedback after ~500 ms
-- Clicking "Scan" reveals the discover area; entering a root path and clicking Scan returns candidates
-- Clicking "Add" on a discovered candidate adds it via `POST /api/projects` and it appears in the panel
-- Already-tracked projects appear as disabled in the results
-- Scan limited to depth ≤ 3; results capped at 50
-- Panel expanded/collapsed state is unaffected
+- `GET /api/info` returns a `scanRoot` derived from tracked project paths (or home directory fallback)
+- `GET /api/discover?root=<path>` returns valid candidates found among immediate children of `root`
+- "Find projects" section is collapsed by default; clicking it expands and fetches the suggested root
+- Editing the root input and clicking "Find" shows new results
+- Each candidate row shows `displayName` and truncated path
+- Already-tracked projects appear grayed with "already added", no Add button
+- Clicking a row's Add button adds the project and the row transitions to "already added" state
+- Empty results show a "No projects found here" message
+- Errors show inline, auto-clear after 3 s
+- No regressions to the existing Add input or any other panel behavior
 
 ### Technical
 - All changes in `serve.py` and `project-structure-viz.jsx` — no new files
-- New endpoints follow existing `_json_response` and `_read_manifest` patterns in `serve.py`
-- No new Python dependencies (stdlib only: `urllib.parse`)
-- New UI state is local to `ProjectPanel` — no new props on root component
+- New endpoints follow existing `_json_response` / `_read_manifest` patterns
+- No new Python dependencies (`urllib.parse` and `os.path` are stdlib)
+- All new UI state local to `ProjectPanel`; no new props on root
 - No console errors in normal operation
-- Existing tests continue to pass (`pytest tests/`)
+- `pytest tests/` continues to pass
 
 ## Implementation Notes
 
 ### Suggested Order
-1. Add `_handle_discover` and `_handle_validate` to `serve.py`; wire into `do_GET`; write tests
-2. Add inline validation to the Add input in `ProjectPanel` (`useEffect` debounce + fetch)
-3. Add the Scan button and discover area to `ProjectPanel`
-4. Manual E2E verification via browser (Playwright MCP available)
+1. Add `_handle_info` to `serve.py`; wire into `do_GET`; write tests
+2. Add `_handle_discover` to `serve.py`; wire into `do_GET`; write tests
+3. Add "Find projects" toggle + root input + Find button to `ProjectPanel` (collapsed by default; fetch `/api/info` on expand)
+4. Render candidate rows with already-tracked detection and per-row Add
+5. Manual E2E verification via Playwright MCP
 
 ### Testing
-- Unit tests in `test_serve.py` for both new endpoints: valid path, invalid path, missing param, non-directory, depth limit behavior
-- E2E: open Playwright, type a valid path → verify green checkmark appears; type invalid path → verify red indicator; run a scan → verify candidates appear; add one → verify it appears in panel
+- `test_serve.py`: `GET /api/info` with 0, 1, 2+ projects; `GET /api/discover` with valid root (no matches, some matches), missing `root`, non-existent path, non-directory path
+- E2E (Playwright): expand "Find projects", verify root pre-populated; click Find, verify results appear; click Add on a row, verify it appears in panel list and transitions to "already added"
