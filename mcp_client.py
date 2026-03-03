@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import select
 import subprocess
 import threading
 import time
@@ -214,25 +215,15 @@ class McpClient:
         """Read one line from stdout with a timeout.
 
         Returns the decoded line (without newline) or None on timeout/EOF.
-        Uses a background thread so it works with both real pipes and BytesIO.
+        Uses select() so no thread is left blocking on the fd after timeout.
         """
-        result: list[bytes | None] = [None]
-        done = threading.Event()
-
-        def _read() -> None:
-            try:
-                raw = self._process.stdout.readline()
-                result[0] = raw if raw else None
-            except OSError:
-                result[0] = None
-            finally:
-                done.set()
-
-        t = threading.Thread(target=_read, daemon=True)
-        t.start()
-        done.wait(timeout=timeout)
-
-        raw = result[0]
+        ready, _, _ = select.select([self._process.stdout], [], [], timeout)
+        if not ready:
+            return None
+        try:
+            raw = self._process.stdout.readline()
+        except OSError:
+            return None
         if not raw:
             return None
         return raw.decode(errors="replace").rstrip("\n")

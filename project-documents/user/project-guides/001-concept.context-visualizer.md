@@ -6,7 +6,7 @@ type: concept
 project: context-visualizer
 status: draft
 dateCreated: 20260224
-dateUpdated: 20260224
+dateUpdated: 20260303
 ---
 
 ## High-Level Project Concept
@@ -55,7 +55,7 @@ Visualizer technical notes: Supports viewport-aware tooltips, expandable task it
 
 ### Proposed Development Methodology
 
-Development will follow the ai-project-guide slice-based methodology as defined in `guide.ai-project.000-process`. Work will be organized into vertical slices delivering end-to-end functionality, with features extending existing slices as needed. This project will skip the standalone spec document (Phase 2) and instead organize work through architectural components, adding a project-wide HLD if needed.
+Development will follow the ai-project-guide slice-based methodology as defined in `guide.ai-project.000-process`. Work will be organized into vertical slices delivering end-to-end functionality, structured through architectural components: Concept -> Architectural Component -> Slice Plan -> Slices -> Tasks.
 
 In general, favor simplicity and avoid over-engineering. Remember the cliche about premature optimization. Use industry standard solutions where practical and available. Avoid reinventing wheels.
 
