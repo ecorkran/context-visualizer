@@ -1,5 +1,23 @@
 # DEVLOG — context-visualizer
 
+## 20260304
+
+###### Slice 109: Collectors — Design and Task Breakdown Complete
+
+**Documents created:**
+- `user/slices/109-slice.ui-collectors.md` — Slice design for maintenance and future work collectors
+- `user/tasks/109-tasks.ui-collectors.md` — Task breakdown: 16 tasks
+
+**Scope:** Two synthetic collector initiatives added to the visualizer UI. A maintenance collector reshapes existing `data.maintenance/quality/investigation` into a collapsible initiative card (replaces flat "Operational" section). A future work collector aggregates items from all slice plans via MCP `workflow_future` tool, displayed as a second collector card (MCP-only, config-gated).
+
+**Key decisions:**
+- Collectors are presentation-layer only — no changes to `parse.py` or `build_model()` output
+- Separate `GET /api/future-work` endpoint (not bundled into `/api/structures`) to avoid latency for users who don't want it
+- `enableFutureWorkCollector` config flag in `mcp-config.json` (default `false`) — feature value uncertain, so gated
+- Shared collector color set based on `#08A8F6` (saturated blue) for both cards
+
+**Next:** Implementation (Phase 7) of slice 109.
+
 ## 20260301
 
 ###### Slice 108: MCP Client Integration — Implementation Complete

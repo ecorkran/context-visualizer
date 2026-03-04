@@ -57,7 +57,19 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 
 108. [x] **MCP client integration** — Add a minimal stdlib-only MCP client so context-visualizer can consume project structure data from context-forge's MCP server. Dual-mode operation: MCP mode when connected, local mode (parse.py) as fallback. New `GET /api/structures` endpoint, updated `loadProjects()`, mode indicator in panel. Depends on context-forge slice 164 (MCP Introspection Tools). Risk: Medium. Effort: 3/5.
 
-
+109. [ ] **Collectors: Maintenance and Future Work** — Add two synthetic initiatives to the visualizer. A maintenance collector groups 9xx maintenance slices into a dedicated initiative. A future work collector aggregates future work items across all slice plans (via MCP `workflow_future` tool), displayed as an initiative with items grouped by source slice plan. Both are additive — existing slice plan views remain unchanged. Future work collector gated by internal config setting (not UI-exposed). Base color: saturated blue (~#08A8F6). Depends on MCP client integration.
+   - **Value:** Gives users a consolidated view of maintenance work and outstanding future items without navigating individual slice plans. The maintenance initiative surfaces 9xx slices that otherwise lack a natural home in the initiative list.
+   - **Success Criteria:**
+     - 9xx maintenance slices render under a dedicated "Maintenance" initiative
+     - Future work initiative aggregates items from all slice plans via `workflow_future` MCP tool
+     - Future work items are grouped by source slice plan, expandable one level
+     - Internal config setting controls whether future work initiative is displayed
+     - Existing slice plan future work sections remain unchanged
+     - Base color ~#08A8F6 applied to collector initiatives
+   - **Dependencies:** MCP client integration (slice 108)
+   - **Interfaces:** Consumes: MCP `workflow_future` tool, project structure data. Provides: synthetic initiative entries in the visualizer UI.
+   - **Risk:** Low-Medium — future work collector depends on MCP mode; maintenance collector is local-only
+   - **Effort:** 3/5
 
 ## Notes
 

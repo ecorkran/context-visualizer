@@ -83,6 +83,8 @@ This architectural component introduces user-controlled project catalog manageme
 
 - **Project Panel UI** — Two-column layout, collapsible panel component (expanded list / collapsed chip strip), project rows with activation and remove controls, add-project path input wired to the API, panel state persistence via `localStorage`, removal of header tab bar. Depends on the API slice.
 
+- **Collectors: Maintenance and Future Work** — Add two synthetic initiatives to the visualizer. A **maintenance collector** groups 9xx maintenance slices into a dedicated initiative. A **future work collector** aggregates future work items across all slice plans (via MCP `workflow_future` tool), displayed as an initiative with items grouped by source slice plan. Both are additive — existing slice plan views remain unchanged. Future work collector is gated by an internal config setting (not exposed in UI). Base color: saturated blue (~#08A8F6).
+
 ## Related Work
 
 - [100-arch.file-updates-and-organization.md](100-arch.file-updates-and-organization.md) — Established the `projects/` directory, manifest format, and `serve.py` server patterns this component extends.
