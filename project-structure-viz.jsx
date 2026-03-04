@@ -656,6 +656,7 @@ const Legend = () => (
         ["Tasks", THEME.colors.tasks],
         ["Feature", THEME.colors.feature],
         ["DevLog", THEME.colors.devlog],
+        ["Collector", THEME.colors.collector],
       ].map(([l, cs]) => (
         <div key={l} style={{ display: "flex", alignItems: "center", gap: THEME.sp.xs }}>
           <div style={{ width: 14, height: 14, borderRadius: 4, backgroundColor: cs.bg, border: `1px solid ${cs.border}` }} />
