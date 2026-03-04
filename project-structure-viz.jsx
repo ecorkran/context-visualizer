@@ -509,6 +509,60 @@ const FeaturesCard = ({ features }) => {
 };
 
 // ============================================================================
+// MAINTENANCE COLLECTOR CARD — groups 9xx operational docs into a collapsible card
+// ============================================================================
+const MaintenanceCollectorCard = ({ quality, investigation, maintenance }) => {
+  const [expanded, setExpanded] = useState(false);
+  const total = quality.length + investigation.length + maintenance.length;
+  if (total === 0) return null;
+  const colorSet = THEME.colors.collector;
+
+  return (
+    <div style={{
+      backgroundColor: "#1A1A2E", border: `1px solid ${colorSet.border}`,
+      borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
+        onClick={() => setExpanded(!expanded)}>
+        <span style={{
+          fontFamily: THEME.fonts.heading, fontSize: 18, color: colorSet.accent,
+          fontWeight: 700, opacity: 0.4,
+        }}>⚙</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: THEME.fonts.heading, fontSize: 16, color: "#E8E8FF", fontWeight: 600, marginBottom: 4 }}>
+            Maintenance &amp; Operations
+          </div>
+          <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA" }}>
+            {total} {total === 1 ? "item" : "items"}
+          </span>
+        </div>
+        <span style={{
+          color: "#8888AA", fontSize: 14, transition: "transform 0.15s ease",
+          transform: expanded ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block",
+        }}>▶</span>
+      </div>
+
+      {expanded && (
+        <div style={{ paddingLeft: THEME.sp.sm, marginTop: THEME.sp.md }}>
+          {quality.map((d, i) => (
+            <DocBlock key={`q${i}`} colorSet={THEME.colors.review} label="REVIEW"
+              name={d.name} index={d.index} status={d.status} item={d} />
+          ))}
+          {investigation.map((d, i) => (
+            <DocBlock key={`an${i}`} colorSet={THEME.colors.analysis} label="ANALYSIS"
+              name={d.name} index={d.index} status={d.status} item={d} />
+          ))}
+          {maintenance.map((d, i) => (
+            <DocBlock key={`m${i}`} colorSet={THEME.colors.maintenance} label="MAINT"
+              name={d.name} index={d.index} status={d.status} item={d} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // PROJECT VIEW
 // ============================================================================
 const ProjectView = ({ data }) => {
