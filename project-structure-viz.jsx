@@ -629,17 +629,7 @@ const ProjectView = ({ data }) => {
         <FeaturesCard features={data.standaloneFeatures} />
       )}
 
-      {(data.quality.length > 0 || data.investigation.length > 0 || data.maintenance.length > 0) && (
-        <div style={{ borderTop: "1px solid #2A2A4E", paddingTop: THEME.sp.lg, marginTop: THEME.sp.lg }}>
-          <h3 style={{
-            fontFamily: THEME.fonts.heading, fontSize: 12, color: "#6666AA",
-            textTransform: "uppercase", letterSpacing: "0.1em", margin: `0 0 ${THEME.sp.md}px 0`,
-          }}>Operational</h3>
-          {data.quality.map((d, i) => <DocBlock key={`q${i}`} colorSet={THEME.colors.review} label="REVIEW" name={d.name} index={d.index} status={d.status} item={d} />)}
-          {data.investigation.map((d, i) => <DocBlock key={`an${i}`} colorSet={THEME.colors.analysis} label="ANALYSIS" name={d.name} index={d.index} status={d.status} item={d} />)}
-          {data.maintenance.map((d, i) => <DocBlock key={`m${i}`} colorSet={THEME.colors.maintenance} label="MAINT" name={d.name} index={d.index} status={d.status} item={d} />)}
-        </div>
-      )}
+      <MaintenanceCollectorCard quality={data.quality} investigation={data.investigation} maintenance={data.maintenance} />
 
       {data.devlog && (
         <div style={{ marginTop: THEME.sp.md }}>
