@@ -26,44 +26,44 @@ status: in_progress
 
 ### 1. Add collector color set to THEME
 
-- [ ] Add `collector` color set to `THEME.colors` in `project-structure-viz.jsx`
-  - [ ] Color values: `{ bg: "#0A3A5A", text: "#E0F4FF", border: "#0870A8", accent: "#08A8F6" }`
-  - [ ] Placement: after the existing `projectLevel` entry
-  - [ ] Verify no syntax errors — app loads without console errors
-  - [ ] Commit
+- [x] Add `collector` color set to `THEME.colors` in `project-structure-viz.jsx`
+  - [x] Color values: `{ bg: "#0A3A5A", text: "#E0F4FF", border: "#0870A8", accent: "#08A8F6" }`
+  - [x] Placement: after the existing `projectLevel` entry
+  - [x] Verify no syntax errors — app loads without console errors
+  - [x] Commit
 
 ### 2. Implement MaintenanceCollectorCard component
 
-- [ ] Create `MaintenanceCollectorCard` component in `project-structure-viz.jsx`
-  - [ ] Props: `{ quality, investigation, maintenance }` (the three arrays from project data)
-  - [ ] Only render if at least one array is non-empty
-  - [ ] Follow `InitiativeCard` visual pattern:
+- [x] Create `MaintenanceCollectorCard` component in `project-structure-viz.jsx`
+  - [x] Props: `{ quality, investigation, maintenance }` (the three arrays from project data)
+  - [x] Only render if at least one array is non-empty
+  - [x] Follow `InitiativeCard` visual pattern:
     1. Collapsible header with chevron toggle
     2. Glyph `⚙` in place of band number (use `collector.accent` color, dimmed like band number)
     3. Title: "Maintenance & Operations"
     4. Item count summary in header (total across all three arrays)
     5. Collapsed by default
-  - [ ] Expanded body: three groups (only render each group if its array is non-empty):
+  - [x] Expanded body: three groups (only render each group if its array is non-empty):
     1. Reviews → `DocBlock` rows with `REVIEW` label, `THEME.colors.review` color set
     2. Analysis → `DocBlock` rows with `ANALYSIS` label, `THEME.colors.analysis` color set
     3. Maintenance → `DocBlock` rows with `MAINT` label, `THEME.colors.maintenance` color set
-  - [ ] Card background/border uses `collector` color set accents (border color from `collector.border`)
-  - [ ] Success: component renders correctly with sample data, matches initiative card styling
+  - [x] Card background/border uses `collector` color set accents (border color from `collector.border`)
+  - [x] Success: component renders correctly with sample data, matches initiative card styling
 
 ### 3. Wire MaintenanceCollectorCard into ProjectView
 
-- [ ] Replace the existing "Operational" section in `ProjectView` with `MaintenanceCollectorCard`
-  - [ ] Remove the current flat rendering block (lines ~577-586 in `ProjectView`)
-  - [ ] Insert `MaintenanceCollectorCard` in same position, passing `data.quality`, `data.investigation`, `data.maintenance` as props
-  - [ ] Verify the component only renders when at least one array has items (same condition as current block)
-  - [ ] Success: operational documents appear inside a collapsible card instead of flat rows; no duplication; app renders correctly in both MCP and local mode
+- [x] Replace the existing "Operational" section in `ProjectView` with `MaintenanceCollectorCard`
+  - [x] Remove the current flat rendering block (lines ~577-586 in `ProjectView`)
+  - [x] Insert `MaintenanceCollectorCard` in same position, passing `data.quality`, `data.investigation`, `data.maintenance` as props
+  - [x] Verify the component only renders when at least one array has items (same condition as current block)
+  - [x] Success: operational documents appear inside a collapsible card instead of flat rows; no duplication; app renders correctly in both MCP and local mode
 
 ### 4. Update Legend with collector entry
 
-- [ ] Add "Collector" entry to the `Legend` component
-  - [ ] Use `THEME.colors.collector` color set
-  - [ ] Place after existing entries (after "Maintenance" or at end)
-  - [ ] Success: legend shows the collector color swatch with label
+- [x] Add "Collector" entry to the `Legend` component
+  - [x] Use `THEME.colors.collector` color set
+  - [x] Place after existing entries (after "Maintenance" or at end)
+  - [x] Success: legend shows the collector color swatch with label
 
 ### 5. Commit and verify maintenance collector
 

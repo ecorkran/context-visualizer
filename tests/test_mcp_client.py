@@ -42,10 +42,29 @@ def _mock_process(stdout_bytes: bytes) -> MagicMock:
     return proc
 
 
+def _fake_select(rlist, _wlist, _xlist, timeout=None):
+    """Replacement for select.select that works with BytesIO objects.
+
+    BytesIO lacks fileno(), so real select() fails.  This shim reports
+    the stream as ready when it has remaining data, or empty (timeout)
+    when the stream is exhausted — matching the real behavior for tests.
+    """
+    ready = []
+    for fd in rlist:
+        if hasattr(fd, "read"):
+            pos = fd.tell()
+            chunk = fd.read(1)
+            fd.seek(pos)
+            if chunk:
+                ready.append(fd)
+    return ready, [], []
+
+
 # ---------------------------------------------------------------------------
 # Task 3: connect / disconnect / transport tests
 # ---------------------------------------------------------------------------
 
+@patch("mcp_client.select.select", side_effect=_fake_select)
 class TestMcpClientConnect(unittest.TestCase):
 
     def _init_response(self) -> bytes:
@@ -56,7 +75,7 @@ class TestMcpClientConnect(unittest.TestCase):
         })
 
     @patch("subprocess.Popen")
-    def test_connect_success(self, mock_popen):
+    def test_connect_success(self, mock_popen, _mock_select):
         """connect() performs initialize handshake; connected=True, server_info populated."""
         proc = _mock_process(self._init_response())
         mock_popen.return_value = proc
@@ -69,7 +88,7 @@ class TestMcpClientConnect(unittest.TestCase):
         self.assertEqual(client.server_info, {"name": "context-forge", "version": "1.0.0"})
 
     @patch("subprocess.Popen")
-    def test_connect_sends_initialize_request(self, mock_popen):
+    def test_connect_sends_initialize_request(self, mock_popen, _mock_select):
         """connect() writes an initialize JSON-RPC request to stdin."""
         proc = _mock_process(self._init_response())
         mock_popen.return_value = proc
@@ -88,7 +107,7 @@ class TestMcpClientConnect(unittest.TestCase):
         self.assertIn("clientInfo", msg["params"])
 
     @patch("subprocess.Popen")
-    def test_connect_sends_initialized_notification(self, mock_popen):
+    def test_connect_sends_initialized_notification(self, mock_popen, _mock_select):
         """connect() sends notifications/initialized after initialize response."""
         proc = _mock_process(self._init_response())
         mock_popen.return_value = proc
@@ -104,7 +123,7 @@ class TestMcpClientConnect(unittest.TestCase):
         self.assertIn("notifications/initialized", methods)
 
     @patch("subprocess.Popen")
-    def test_connect_failure_process_raises(self, mock_popen):
+    def test_connect_failure_process_raises(self, mock_popen, _mock_select):
         """connect() returns False and connected=False when Popen raises."""
         mock_popen.side_effect = FileNotFoundError("command not found")
 
@@ -115,7 +134,7 @@ class TestMcpClientConnect(unittest.TestCase):
         self.assertFalse(client.connected)
 
     @patch("subprocess.Popen")
-    def test_connect_failure_no_response(self, mock_popen):
+    def test_connect_failure_no_response(self, mock_popen, _mock_select):
         """connect() returns False when server sends no response (timeout)."""
         proc = _mock_process(b"")  # empty stdout
         mock_popen.return_value = proc
@@ -127,10 +146,11 @@ class TestMcpClientConnect(unittest.TestCase):
         self.assertFalse(client.connected)
 
 
+@patch("mcp_client.select.select", side_effect=_fake_select)
 class TestMcpClientDisconnect(unittest.TestCase):
 
     @patch("subprocess.Popen")
-    def test_disconnect_cleans_up(self, mock_popen):
+    def test_disconnect_cleans_up(self, mock_popen, _mock_select):
         """disconnect() terminates process and sets connected=False."""
         init_bytes = _make_response(1, {
             "protocolVersion": "2024-11-05",
@@ -150,17 +170,18 @@ class TestMcpClientDisconnect(unittest.TestCase):
         self.assertIsNone(client.server_info)
         proc.terminate.assert_called_once()
 
-    def test_disconnect_when_not_connected_is_safe(self):
+    def test_disconnect_when_not_connected_is_safe(self, _mock_select):
         """disconnect() on a never-connected client does not raise."""
         client = McpClient("node", ["server.js"])
         client.disconnect()  # should not raise
         self.assertFalse(client.connected)
 
 
+@patch("mcp_client.select.select", side_effect=_fake_select)
 class TestMcpClientReadResponse(unittest.TestCase):
 
     @patch("subprocess.Popen")
-    def test_read_response_timeout(self, mock_popen):
+    def test_read_response_timeout(self, mock_popen, _mock_select):
         """_read_response raises TimeoutError when server sends nothing."""
         proc = _mock_process(b"")
         mock_popen.return_value = proc
@@ -172,7 +193,7 @@ class TestMcpClientReadResponse(unittest.TestCase):
             client._read_response(1)
 
     @patch("subprocess.Popen")
-    def test_notification_skipped_before_response(self, mock_popen):
+    def test_notification_skipped_before_response(self, mock_popen, _mock_select):
         """Notifications (no id) are skipped; correct response is returned."""
         notification = _make_notification("some/notification")
         real_response = _make_response(1, {"result": "ok"})
@@ -191,6 +212,7 @@ class TestMcpClientReadResponse(unittest.TestCase):
 # Task 4 tests: call_tool, list_tools, error handling
 # ---------------------------------------------------------------------------
 
+@patch("mcp_client.select.select", side_effect=_fake_select)
 class TestMcpClientCallTool(unittest.TestCase):
 
     def _connected_client(self, mock_popen, extra_stdout: bytes = b"") -> McpClient:
@@ -207,7 +229,7 @@ class TestMcpClientCallTool(unittest.TestCase):
         return client
 
     @patch("subprocess.Popen")
-    def test_call_tool_happy_path(self, mock_popen):
+    def test_call_tool_happy_path(self, mock_popen, _mock_select):
         """call_tool returns parsed dict from single text content block."""
         payload = {"name": "Test", "description": "A test project"}
         tool_response = _make_response(2, {
@@ -221,7 +243,7 @@ class TestMcpClientCallTool(unittest.TestCase):
         self.assertEqual(result["description"], "A test project")
 
     @patch("subprocess.Popen")
-    def test_call_tool_raises_mcp_error(self, mock_popen):
+    def test_call_tool_raises_mcp_error(self, mock_popen, _mock_select):
         """call_tool raises McpError when server returns error response."""
         error_response = _make_error_response(2, -32601, "Method not found")
         client = self._connected_client(mock_popen, error_response)
@@ -233,7 +255,7 @@ class TestMcpClientCallTool(unittest.TestCase):
         self.assertIn("Method not found", ctx.exception.message)
 
     @patch("subprocess.Popen")
-    def test_call_tool_when_disconnected_raises_runtime_error(self, mock_popen):
+    def test_call_tool_when_disconnected_raises_runtime_error(self, mock_popen, _mock_select):
         """call_tool raises RuntimeError when not connected."""
         client = McpClient("node", ["server.js"])
         # do NOT connect
@@ -242,7 +264,7 @@ class TestMcpClientCallTool(unittest.TestCase):
             client.call_tool("project_list", {})
 
     @patch("subprocess.Popen")
-    def test_call_tool_reconnect_on_dead_process(self, mock_popen):
+    def test_call_tool_reconnect_on_dead_process(self, mock_popen, _mock_select):
         """call_tool reconnects when process has died, then succeeds."""
         payload = {"name": "Test"}
 
@@ -278,7 +300,7 @@ class TestMcpClientCallTool(unittest.TestCase):
         self.assertEqual(result["name"], "Test")
 
     @patch("subprocess.Popen")
-    def test_list_tools_returns_tool_list(self, mock_popen):
+    def test_list_tools_returns_tool_list(self, mock_popen, _mock_select):
         """list_tools returns the tools array from the server response."""
         tools = [
             {"name": "project_list", "description": "List projects"},
@@ -301,7 +323,7 @@ class TestMcpClientCallTool(unittest.TestCase):
         self.assertEqual(result[0]["name"], "project_list")
 
     @patch("subprocess.Popen")
-    def test_list_tools_when_disconnected_raises(self, mock_popen):
+    def test_list_tools_when_disconnected_raises(self, mock_popen, _mock_select):
         """list_tools raises RuntimeError when not connected."""
         client = McpClient("node", ["server.js"])
 
