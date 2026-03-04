@@ -16,6 +16,7 @@ const THEME = {
     maintenance: { bg: "#5A7040", text: "#F0FFE8", border: "#7A9060", accent: "#A0C880" },
     devlog: { bg: "#CC7A00", text: "#FFF5E0", border: "#E69A20", accent: "#FFB84D" },
     projectLevel: { bg: "#1E3A5F", text: "#D0E8FF", border: "#2E5A8F", accent: "#6BAADF" },
+    collector: { bg: "#0A3A5A", text: "#E0F4FF", border: "#0870A8", accent: "#08A8F6" },
   },
   fonts: {
     heading: "'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace",
