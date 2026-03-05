@@ -2,21 +2,47 @@
 
 ## 20260304
 
+###### Slice 109: Collectors — Implementation Complete
+
+**Commits:**
+- `4f0b35a` feat: add collector color set to THEME
+- `c21d0cf` feat: add MaintenanceCollectorCard component
+- `3414f64` refactor: replace flat Operational section with MaintenanceCollectorCard
+- `3e75202` feat: add Collector entry to Legend component
+- `a86429c` fix: patch select.select in MCP client tests for BytesIO compat
+- `5cd47fb` feat: add enableFutureWorkCollector config flag in serve.py
+- `8b66e64` feat: add GET /api/future-work endpoint
+- `000218c` test: add tests for future-work config flag and endpoint
+- `4286638` feat: add futureWorkEnabled field to /api/status response
+- `867e768` feat: conditionally fetch future work data in loadProjects
+- `910ab2c` feat: add FutureWorkCollectorCard component
+- `f448699` feat: wire FutureWorkCollectorCard into ProjectView
+- `9a8d78c` test: add E2E tests for maintenance collector card
+
+**Files changed:**
+- `project-structure-viz.jsx` — MaintenanceCollectorCard, FutureWorkCollectorCard, collector color set, Legend entry
+- `serve.py` — `_enable_future_work_collector` flag, `GET /api/future-work` endpoint, `futureWorkEnabled` in `/api/status`
+- `index.html` — `_attachFutureWork()` helper, conditional fetch in `loadProjects()`
+- `mcp-config.example.json` — documented `enableFutureWorkCollector` field
+- `tests/test_mcp_client.py` — `_fake_select` shim for select() compat with BytesIO mocks
+- `tests/test_serve.py` — 8 new tests (config flag, future-work endpoint)
+- `tests/test_ui_smoke.py` — 3 new E2E tests (maintenance collector renders, expands, no flat Operational heading)
+
+**Scope:** Two synthetic collector initiatives added to the visualizer UI. MaintenanceCollectorCard replaces the flat "Operational" section with a collapsible card grouping quality/investigation/maintenance docs. FutureWorkCollectorCard shows aggregated future work from MCP `workflow_future` tool, grouped by source initiative (MCP-only, config-gated via `enableFutureWorkCollector`).
+
+**Test count:** 111 (up from 98 baseline, +13 new tests)
+
 ###### Slice 109: Collectors — Design and Task Breakdown Complete
 
 **Documents created:**
 - `user/slices/109-slice.ui-collectors.md` — Slice design for maintenance and future work collectors
 - `user/tasks/109-tasks.ui-collectors.md` — Task breakdown: 16 tasks
 
-**Scope:** Two synthetic collector initiatives added to the visualizer UI. A maintenance collector reshapes existing `data.maintenance/quality/investigation` into a collapsible initiative card (replaces flat "Operational" section). A future work collector aggregates items from all slice plans via MCP `workflow_future` tool, displayed as a second collector card (MCP-only, config-gated).
-
 **Key decisions:**
 - Collectors are presentation-layer only — no changes to `parse.py` or `build_model()` output
 - Separate `GET /api/future-work` endpoint (not bundled into `/api/structures`) to avoid latency for users who don't want it
 - `enableFutureWorkCollector` config flag in `mcp-config.json` (default `false`) — feature value uncertain, so gated
 - Shared collector color set based on `#08A8F6` (saturated blue) for both cards
-
-**Next:** Implementation (Phase 7) of slice 109.
 
 ## 20260301
 
