@@ -519,7 +519,7 @@ const MaintenanceCollectorCard = ({ quality, investigation, maintenance }) => {
 
   return (
     <div style={{
-      backgroundColor: "#1A1A2E", border: `1px solid ${colorSet.border}`,
+      backgroundColor: "#1A1A2E", border: "1px solid #2A2A4E",
       borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
@@ -576,7 +576,7 @@ const FutureWorkCollectorCard = ({ futureWork }) => {
 
   return (
     <div style={{
-      backgroundColor: "#1A1A2E", border: `1px solid ${colorSet.border}`,
+      backgroundColor: "#1A1A2E", border: "1px solid #2A2A4E",
       borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}

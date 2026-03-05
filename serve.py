@@ -29,6 +29,19 @@ _mcp_client: McpClient | None = None
 # Config flag: whether the future work collector is enabled (MCP-only feature).
 _enable_future_work_collector: bool = False
 
+# Cached map of MCP project name → MCP project ID, populated lazily.
+_mcp_name_to_id: dict[str, str] = {}
+
+
+def _refresh_name_to_id(projects: list[dict]) -> None:
+    """Update the cached MCP project name → ID map from a project_list result."""
+    global _mcp_name_to_id
+    _mcp_name_to_id = {
+        p.get("name", "").lower().replace(" ", "-"): p.get("id", "")
+        for p in projects
+        if p.get("name") and p.get("id")
+    }
+
 
 def _load_mcp_config() -> dict | None:
     """Read mcp-config.json from the working directory.
@@ -109,6 +122,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             project_list_result = client.call_tool("project_list", {})
             all_projects = project_list_result.get("projects", [])
+            _refresh_name_to_id(all_projects)
         except Exception as exc:
             self._json_response(500, {"status": "error", "message": f"MCP project_list failed: {exc}"})
             return
@@ -293,6 +307,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             # 1. Enumerate projects
             project_list_result = client.call_tool("project_list", {})
             projects_raw = project_list_result.get("projects", [])
+            _refresh_name_to_id(projects_raw)
 
             # 2. Fetch structure for each project
             structures: dict = {}
@@ -328,7 +343,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             })
 
     def _handle_future_work(self) -> None:
-        """GET /api/future-work?project=<id> — proxy workflow_future MCP tool."""
+        """GET /api/future-work?project=<name> — proxy workflow_future MCP tool."""
         client = _mcp_client
         if not _enable_future_work_collector or client is None or not client.connected:
             self._json_response(503, {
@@ -339,11 +354,28 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
         from urllib.parse import parse_qs, urlparse
         qs = parse_qs(urlparse(self.path).query)
-        project_id = qs.get("project", [None])[0]
+        project_name = qs.get("project", [None])[0]
+
+        # Resolve project name to MCP project ID
+        mcp_id = _mcp_name_to_id.get(project_name) if project_name else None
+        if project_name and not mcp_id:
+            # Cache may be empty on first request; populate it now
+            try:
+                result = client.call_tool("project_list", {})
+                _refresh_name_to_id(result.get("projects", []))
+                mcp_id = _mcp_name_to_id.get(project_name)
+            except Exception as exc:
+                logger.warning("project_list failed during name→ID lookup: %s", exc)
+        if project_name and not mcp_id:
+            self._json_response(404, {
+                "status": "error",
+                "message": f"Unknown project: {project_name}",
+            })
+            return
 
         params: dict = {"status": "all"}
-        if project_id:
-            params["projectId"] = project_id
+        if mcp_id:
+            params["projectId"] = mcp_id
 
         try:
             result = client.call_tool("workflow_future", params)

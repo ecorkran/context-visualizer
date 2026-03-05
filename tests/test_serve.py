@@ -1240,11 +1240,13 @@ class TestFutureWorkEndpoint:
         import serve
         self._orig_client = serve._mcp_client
         self._orig_flag = serve._enable_future_work_collector
+        self._orig_name_map = serve._mcp_name_to_id.copy()
 
     def teardown_method(self) -> None:
         import serve
         serve._mcp_client = self._orig_client
         serve._enable_future_work_collector = self._orig_flag
+        serve._mcp_name_to_id = self._orig_name_map
 
     def _srv(self, tmp_dir: Path) -> "ServerFixture":
         srv = ServerFixture(projects_dir=tmp_dir)
@@ -1259,7 +1261,7 @@ class TestFutureWorkEndpoint:
         (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
         srv = self._srv(tmp_path)
         try:
-            status, body = srv.get("/api/future-work?project=p1")
+            status, body = srv.get("/api/future-work?project=my-project")
             data = json.loads(body)
             assert status == 503
             assert data["status"] == "error"
@@ -1274,7 +1276,7 @@ class TestFutureWorkEndpoint:
         (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
         srv = self._srv(tmp_path)
         try:
-            status, body = srv.get("/api/future-work?project=p1")
+            status, body = srv.get("/api/future-work?project=my-project")
             data = json.loads(body)
             assert status == 503
             assert data["status"] == "error"
@@ -1289,7 +1291,7 @@ class TestFutureWorkEndpoint:
         (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
         srv = self._srv(tmp_path)
         try:
-            status, body = srv.get("/api/future-work?project=p1")
+            status, body = srv.get("/api/future-work?project=my-project")
             data = json.loads(body)
             assert status == 200
             assert data["status"] == "ok"
@@ -1307,7 +1309,7 @@ class TestFutureWorkEndpoint:
         (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
         srv = self._srv(tmp_path)
         try:
-            status, body = srv.get("/api/future-work?project=p1")
+            status, body = srv.get("/api/future-work?project=my-project")
             data = json.loads(body)
             assert status == 500
             assert data["status"] == "error"
