@@ -563,6 +563,103 @@ const MaintenanceCollectorCard = ({ quality, investigation, maintenance }) => {
 };
 
 // ============================================================================
+// FUTURE WORK COLLECTOR CARD — aggregated future work from MCP (config-gated)
+// ============================================================================
+const FutureWorkCollectorCard = ({ futureWork }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  if (!futureWork || !futureWork.groups || futureWork.groups.length === 0) return null;
+
+  const colorSet = THEME.colors.collector;
+  const toggleGroup = (idx) => setExpandedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
+
+  return (
+    <div style={{
+      backgroundColor: "#1A1A2E", border: `1px solid ${colorSet.border}`,
+      borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
+        onClick={() => setExpanded(!expanded)}>
+        <span style={{
+          fontFamily: THEME.fonts.heading, fontSize: 18, color: colorSet.accent,
+          fontWeight: 700, opacity: 0.4,
+        }}>◈</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: THEME.fonts.heading, fontSize: 16, color: "#E8E8FF", fontWeight: 600, marginBottom: 4 }}>
+            Future Work
+          </div>
+          <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA" }}>
+            {futureWork.completedItems}/{futureWork.totalItems} complete
+          </span>
+        </div>
+        <span style={{
+          color: "#8888AA", fontSize: 14, transition: "transform 0.15s ease",
+          transform: expanded ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block",
+        }}>▶</span>
+      </div>
+
+      {expanded && (
+        <div style={{ paddingLeft: THEME.sp.sm, marginTop: THEME.sp.md }}>
+          {futureWork.groups.map((group, gi) => (
+            <div key={gi} style={{
+              borderRadius: THEME.radius, border: `1px solid ${colorSet.border}60`,
+              marginBottom: THEME.sp.sm, overflow: "hidden",
+            }}>
+              <div
+                onClick={() => toggleGroup(gi)}
+                style={{
+                  display: "flex", alignItems: "center", gap: THEME.sp.sm,
+                  padding: `${THEME.sp.sm}px ${THEME.sp.md}px`, cursor: "pointer",
+                  backgroundColor: colorSet.bg + "60",
+                }}>
+                <span style={{
+                  color: colorSet.accent, fontSize: 12, fontFamily: THEME.fonts.heading,
+                  width: 16, flexShrink: 0, transition: "transform 0.15s ease",
+                  transform: expandedGroups[gi] ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block", opacity: 0.5,
+                }}>▶</span>
+                <span style={{
+                  fontFamily: THEME.fonts.body, fontSize: 13, color: colorSet.text, fontWeight: 500,
+                  flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>{group.initiativeName}</span>
+                <span style={{
+                  fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA", flexShrink: 0,
+                }}>{group.completedItems}/{group.totalItems}</span>
+              </div>
+              {expandedGroups[gi] && (
+                <div style={{ padding: `${THEME.sp.xs}px ${THEME.sp.md}px ${THEME.sp.sm}px` }}>
+                  {group.items.map((item, ii) => (
+                    <div key={ii} style={{
+                      display: "flex", alignItems: "flex-start", gap: THEME.sp.sm,
+                      padding: "3px 0",
+                      borderBottom: ii < group.items.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                    }}>
+                      <span style={{
+                        fontSize: 11, lineHeight: "18px", flexShrink: 0,
+                        color: item.done ? THEME.status.complete : "#555577",
+                      }}>{item.done ? "✓" : "○"}</span>
+                      <span style={{
+                        fontFamily: THEME.fonts.heading, fontSize: 11, color: colorSet.accent,
+                        opacity: 0.5, minWidth: 28, flexShrink: 0, lineHeight: "18px",
+                      }}>{item.index}</span>
+                      <span style={{
+                        fontFamily: THEME.fonts.body, fontSize: 12, lineHeight: "18px",
+                        color: item.done ? (colorSet.text + "60") : (colorSet.text + "B0"),
+                        textDecoration: item.done ? "line-through" : "none",
+                      }}>{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // PROJECT VIEW
 // ============================================================================
 const ProjectView = ({ data }) => {
