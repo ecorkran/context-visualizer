@@ -26,6 +26,9 @@ logger = logging.getLogger(__name__)
 # Module-level MCP client instance; None when operating in local-only mode.
 _mcp_client: McpClient | None = None
 
+# Config flag: whether the future work collector is enabled (MCP-only feature).
+_enable_future_work_collector: bool = False
+
 
 def _load_mcp_config() -> dict | None:
     """Read mcp-config.json from the working directory.
@@ -439,7 +442,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 def main() -> None:
-    global _mcp_client
+    global _mcp_client, _enable_future_work_collector
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
@@ -450,6 +453,7 @@ def main() -> None:
     # Attempt MCP client connection if config is present
     config = _load_mcp_config()
     if config is not None:
+        _enable_future_work_collector = bool(config.get("enableFutureWorkCollector", False))
         prefer = config.get("prefer", "mcp")
         if prefer == "local":
             logger.info("mcp-config.json prefer=local — running in local mode")
