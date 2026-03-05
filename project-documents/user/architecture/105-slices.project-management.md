@@ -83,3 +83,8 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 ## Future Work
 
 1. [ ] **GitHub source support** — Extend manifest schema with `source`, `repoUrl`, `branch` fields; add `git clone`/`git pull` step to the add/refresh flow for GitHub-sourced projects; auth token handling. Depends on Project Management API. Risk: Medium. Effort: 3/5.
+2. [ ] **Initiative slice drill-down** — Toggle on each initiative card to lazy-load and display the full slice list (via MCP `introspection_slice_plan`). Collapsed by default to keep the overview clean. Risk: Low. Effort: 2/5.
+3. [ ] **Click-through to source files** — Slice and document names link to the actual markdown file via `file://` or VS Code URI scheme. Risk: Low. Effort: 1/5.
+4. [ ] **Stale work indicator** — Flag slices that have been in-progress for an extended period with no recent commits or file changes. Context-forge could derive staleness from git history or modification dates. Risk: Low. Effort: 2/5.
+5. [ ] **Cross-project dependency view** — Visualize dependencies between slices across projects (e.g. context-visualizer slice depending on a context-forge MCP tool). Risk: Medium. Effort: 3/5.
+6. [ ] **Search and filter** — Filter initiatives, slices, and documents by name or status as project size grows. Risk: Low. Effort: 2/5.
