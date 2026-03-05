@@ -995,10 +995,12 @@ class TestStatusEndpoint:
         sys.path.insert(0, str(PROJECT_ROOT))
         import serve
         self._orig_client = serve._mcp_client
+        self._orig_flag = serve._enable_future_work_collector
 
     def teardown_method(self) -> None:
         import serve
         serve._mcp_client = self._orig_client
+        serve._enable_future_work_collector = self._orig_flag
 
     def _srv(self, tmp_dir: Path) -> "ServerFixture":
         srv = ServerFixture(projects_dir=tmp_dir)
@@ -1011,6 +1013,7 @@ class TestStatusEndpoint:
 
         (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
         serve._mcp_client = _make_mock_mcp_client()
+        serve._enable_future_work_collector = False
         srv = self._srv(tmp_path)
         try:
             status, body = srv.get("/api/status")
@@ -1020,6 +1023,23 @@ class TestStatusEndpoint:
             assert data["mode"] == "mcp"
             assert data["mcpConnected"] is True
             assert data["serverInfo"] == {"name": "context-forge-mcp", "version": "1.0.0"}
+            assert data["futureWorkEnabled"] is False
+        finally:
+            srv.stop()
+
+    def test_status_mcp_connected_future_work_enabled(self, tmp_path: Path) -> None:
+        """MCP connected + flag true → futureWorkEnabled=True."""
+        import serve
+
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        serve._mcp_client = _make_mock_mcp_client()
+        serve._enable_future_work_collector = True
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/status")
+            data = json.loads(body)
+            assert status == 200
+            assert data["futureWorkEnabled"] is True
         finally:
             srv.stop()
 
@@ -1028,6 +1048,7 @@ class TestStatusEndpoint:
         import serve
 
         serve._mcp_client = None
+        serve._enable_future_work_collector = True  # flag true but no MCP → still false
         (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
         srv = self._srv(tmp_path)
         try:
@@ -1038,6 +1059,7 @@ class TestStatusEndpoint:
             assert data["mode"] == "local"
             assert data["mcpConnected"] is False
             assert data["serverInfo"] is None
+            assert data["futureWorkEnabled"] is False
         finally:
             srv.stop()
 

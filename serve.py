@@ -364,6 +364,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "mode": "mcp" if connected else "local",
             "mcpConnected": connected,
             "serverInfo": client.server_info if connected else None,
+            "futureWorkEnabled": _enable_future_work_collector and connected,
         })
 
     def _handle_list_projects(self) -> None:
