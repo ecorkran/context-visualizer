@@ -66,6 +66,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._handle_discover()
         elif self.path == "/api/structures":
             self._handle_structures()
+        elif self.path.startswith("/api/future-work"):
+            self._handle_future_work()
         elif self.path == "/api/status":
             self._handle_status()
         elif self.path == "/api/refresh":
@@ -322,6 +324,34 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_response(503, {
                 "status": "error",
                 "mode": "mcp",
+                "message": str(exc),
+            })
+
+    def _handle_future_work(self) -> None:
+        """GET /api/future-work?project=<id> — proxy workflow_future MCP tool."""
+        client = _mcp_client
+        if not _enable_future_work_collector or client is None or not client.connected:
+            self._json_response(503, {
+                "status": "error",
+                "message": "Future work collector is not available",
+            })
+            return
+
+        from urllib.parse import parse_qs, urlparse
+        qs = parse_qs(urlparse(self.path).query)
+        project_id = qs.get("project", [None])[0]
+
+        params: dict = {"status": "all"}
+        if project_id:
+            params["projectId"] = project_id
+
+        try:
+            result = client.call_tool("workflow_future", params)
+            self._json_response(200, {"status": "ok", "data": result})
+        except Exception as exc:
+            logger.warning("workflow_future failed: %s", exc)
+            self._json_response(500, {
+                "status": "error",
                 "message": str(exc),
             })
 
