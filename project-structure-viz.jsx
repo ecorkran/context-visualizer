@@ -727,6 +727,7 @@ const ProjectView = ({ data }) => {
       )}
 
       <MaintenanceCollectorCard quality={data.quality} investigation={data.investigation} maintenance={data.maintenance} />
+      <FutureWorkCollectorCard futureWork={data.futureWork} />
 
       {data.devlog && (
         <div style={{ marginTop: THEME.sp.md }}>
