@@ -26,6 +26,22 @@ logger = logging.getLogger(__name__)
 # Module-level MCP client instance; None when operating in local-only mode.
 _mcp_client: McpClient | None = None
 
+# Config flag: whether the future work collector is enabled (MCP-only feature).
+_enable_future_work_collector: bool = False
+
+# Cached map of MCP project name → MCP project ID, populated lazily.
+_mcp_name_to_id: dict[str, str] = {}
+
+
+def _refresh_name_to_id(projects: list[dict]) -> None:
+    """Update the cached MCP project name → ID map from a project_list result."""
+    global _mcp_name_to_id
+    _mcp_name_to_id = {
+        p.get("name", "").lower().replace(" ", "-"): p.get("id", "")
+        for p in projects
+        if p.get("name") and p.get("id")
+    }
+
 
 def _load_mcp_config() -> dict | None:
     """Read mcp-config.json from the working directory.
@@ -63,6 +79,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._handle_discover()
         elif self.path == "/api/structures":
             self._handle_structures()
+        elif self.path.startswith("/api/future-work"):
+            self._handle_future_work()
         elif self.path == "/api/status":
             self._handle_status()
         elif self.path == "/api/refresh":
@@ -104,6 +122,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         try:
             project_list_result = client.call_tool("project_list", {})
             all_projects = project_list_result.get("projects", [])
+            _refresh_name_to_id(all_projects)
         except Exception as exc:
             self._json_response(500, {"status": "error", "message": f"MCP project_list failed: {exc}"})
             return
@@ -288,6 +307,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             # 1. Enumerate projects
             project_list_result = client.call_tool("project_list", {})
             projects_raw = project_list_result.get("projects", [])
+            _refresh_name_to_id(projects_raw)
 
             # 2. Fetch structure for each project
             structures: dict = {}
@@ -322,6 +342,51 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 "message": str(exc),
             })
 
+    def _handle_future_work(self) -> None:
+        """GET /api/future-work?project=<name> — proxy workflow_future MCP tool."""
+        client = _mcp_client
+        if not _enable_future_work_collector or client is None or not client.connected:
+            self._json_response(503, {
+                "status": "error",
+                "message": "Future work collector is not available",
+            })
+            return
+
+        from urllib.parse import parse_qs, urlparse
+        qs = parse_qs(urlparse(self.path).query)
+        project_name = qs.get("project", [None])[0]
+
+        # Resolve project name to MCP project ID
+        mcp_id = _mcp_name_to_id.get(project_name) if project_name else None
+        if project_name and not mcp_id:
+            # Cache may be empty on first request; populate it now
+            try:
+                result = client.call_tool("project_list", {})
+                _refresh_name_to_id(result.get("projects", []))
+                mcp_id = _mcp_name_to_id.get(project_name)
+            except Exception as exc:
+                logger.warning("project_list failed during name→ID lookup: %s", exc)
+        if project_name and not mcp_id:
+            self._json_response(404, {
+                "status": "error",
+                "message": f"Unknown project: {project_name}",
+            })
+            return
+
+        params: dict = {"status": "all"}
+        if mcp_id:
+            params["projectId"] = mcp_id
+
+        try:
+            result = client.call_tool("workflow_future", params)
+            self._json_response(200, {"status": "ok", "data": result})
+        except Exception as exc:
+            logger.warning("workflow_future failed: %s", exc)
+            self._json_response(500, {
+                "status": "error",
+                "message": str(exc),
+            })
+
     def _handle_status(self) -> None:
         """GET /api/status — report current mode and MCP connection health."""
         client = _mcp_client
@@ -331,6 +396,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "mode": "mcp" if connected else "local",
             "mcpConnected": connected,
             "serverInfo": client.server_info if connected else None,
+            "futureWorkEnabled": _enable_future_work_collector and connected,
         })
 
     def _handle_list_projects(self) -> None:
@@ -439,7 +505,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 
 
 def main() -> None:
-    global _mcp_client
+    global _mcp_client, _enable_future_work_collector
 
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
@@ -450,6 +516,7 @@ def main() -> None:
     # Attempt MCP client connection if config is present
     config = _load_mcp_config()
     if config is not None:
+        _enable_future_work_collector = bool(config.get("enableFutureWorkCollector", False))
         prefer = config.get("prefer", "mcp")
         if prefer == "local":
             logger.info("mcp-config.json prefer=local — running in local mode")

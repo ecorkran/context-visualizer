@@ -851,6 +851,27 @@ def _make_mock_mcp_client(projects: list[dict] | None = None, fail_tool: str | N
                 "description": "A test project",
                 "initiatives": {},
             }
+        if name == "workflow_future":
+            return {
+                "projectPath": "/test/path",
+                "groups": [
+                    {
+                        "initiativeIndex": "100",
+                        "initiativeName": "Test Initiative",
+                        "sourceFile": "100-slices.test.md",
+                        "items": [
+                            {"index": "110", "name": "Future item 1", "done": False},
+                            {"index": "111", "name": "Future item 2", "done": True},
+                        ],
+                        "totalItems": 2,
+                        "pendingItems": 1,
+                        "completedItems": 1,
+                    }
+                ],
+                "totalItems": 2,
+                "pendingItems": 1,
+                "completedItems": 1,
+            }
         raise McpError(-32601, f"Unknown tool: {name}")
 
     mock = MagicMock()
@@ -974,10 +995,12 @@ class TestStatusEndpoint:
         sys.path.insert(0, str(PROJECT_ROOT))
         import serve
         self._orig_client = serve._mcp_client
+        self._orig_flag = serve._enable_future_work_collector
 
     def teardown_method(self) -> None:
         import serve
         serve._mcp_client = self._orig_client
+        serve._enable_future_work_collector = self._orig_flag
 
     def _srv(self, tmp_dir: Path) -> "ServerFixture":
         srv = ServerFixture(projects_dir=tmp_dir)
@@ -990,6 +1013,7 @@ class TestStatusEndpoint:
 
         (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
         serve._mcp_client = _make_mock_mcp_client()
+        serve._enable_future_work_collector = False
         srv = self._srv(tmp_path)
         try:
             status, body = srv.get("/api/status")
@@ -999,6 +1023,23 @@ class TestStatusEndpoint:
             assert data["mode"] == "mcp"
             assert data["mcpConnected"] is True
             assert data["serverInfo"] == {"name": "context-forge-mcp", "version": "1.0.0"}
+            assert data["futureWorkEnabled"] is False
+        finally:
+            srv.stop()
+
+    def test_status_mcp_connected_future_work_enabled(self, tmp_path: Path) -> None:
+        """MCP connected + flag true → futureWorkEnabled=True."""
+        import serve
+
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        serve._mcp_client = _make_mock_mcp_client()
+        serve._enable_future_work_collector = True
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/status")
+            data = json.loads(body)
+            assert status == 200
+            assert data["futureWorkEnabled"] is True
         finally:
             srv.stop()
 
@@ -1007,6 +1048,7 @@ class TestStatusEndpoint:
         import serve
 
         serve._mcp_client = None
+        serve._enable_future_work_collector = True  # flag true but no MCP → still false
         (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
         srv = self._srv(tmp_path)
         try:
@@ -1017,6 +1059,7 @@ class TestStatusEndpoint:
             assert data["mode"] == "local"
             assert data["mcpConnected"] is False
             assert data["serverInfo"] is None
+            assert data["futureWorkEnabled"] is False
         finally:
             srv.stop()
 
@@ -1122,5 +1165,154 @@ class TestRefreshMcpMode:
             assert "good-project" in data["projects"]
             assert "warnings" in data
             assert any("bad-project" in w for w in data["warnings"])
+        finally:
+            srv.stop()
+
+
+# ── Config flag and GET /api/future-work tests ───────────────────────────────
+
+
+class TestFutureWorkConfig:
+    """Tests for enableFutureWorkCollector config flag."""
+
+    def test_config_flag_true(self, tmp_path: Path) -> None:
+        """enableFutureWorkCollector=true is read from config."""
+        config = {"enableFutureWorkCollector": True, "server": {"command": "node", "args": []}}
+        (tmp_path / "mcp-config.json").write_text(json.dumps(config))
+
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+
+        orig_cwd = Path.cwd()
+        try:
+            import os
+            os.chdir(tmp_path)
+            cfg = serve._load_mcp_config()
+            assert cfg is not None
+            assert cfg.get("enableFutureWorkCollector") is True
+        finally:
+            os.chdir(orig_cwd)
+
+    def test_config_flag_false(self, tmp_path: Path) -> None:
+        """enableFutureWorkCollector=false is read from config."""
+        config = {"enableFutureWorkCollector": False, "server": {"command": "node", "args": []}}
+        (tmp_path / "mcp-config.json").write_text(json.dumps(config))
+
+        import sys, os
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+
+        orig_cwd = Path.cwd()
+        try:
+            os.chdir(tmp_path)
+            cfg = serve._load_mcp_config()
+            assert cfg is not None
+            assert cfg.get("enableFutureWorkCollector") is False
+        finally:
+            os.chdir(orig_cwd)
+
+    def test_config_flag_absent_defaults_false(self, tmp_path: Path) -> None:
+        """Missing enableFutureWorkCollector defaults to false."""
+        config = {"server": {"command": "node", "args": []}}
+        (tmp_path / "mcp-config.json").write_text(json.dumps(config))
+
+        import sys, os
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+
+        orig_cwd = Path.cwd()
+        try:
+            os.chdir(tmp_path)
+            cfg = serve._load_mcp_config()
+            assert cfg is not None
+            assert bool(cfg.get("enableFutureWorkCollector", False)) is False
+        finally:
+            os.chdir(orig_cwd)
+
+
+class TestFutureWorkEndpoint:
+    """Tests for GET /api/future-work."""
+
+    def setup_method(self) -> None:
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+        self._orig_client = serve._mcp_client
+        self._orig_flag = serve._enable_future_work_collector
+        self._orig_name_map = serve._mcp_name_to_id.copy()
+
+    def teardown_method(self) -> None:
+        import serve
+        serve._mcp_client = self._orig_client
+        serve._enable_future_work_collector = self._orig_flag
+        serve._mcp_name_to_id = self._orig_name_map
+
+    def _srv(self, tmp_dir: Path) -> "ServerFixture":
+        srv = ServerFixture(projects_dir=tmp_dir)
+        srv.start()
+        return srv
+
+    def test_returns_503_when_mcp_not_connected(self, tmp_path: Path) -> None:
+        """No MCP client → 503."""
+        import serve
+        serve._mcp_client = None
+        serve._enable_future_work_collector = True
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/future-work?project=my-project")
+            data = json.loads(body)
+            assert status == 503
+            assert data["status"] == "error"
+        finally:
+            srv.stop()
+
+    def test_returns_503_when_flag_false(self, tmp_path: Path) -> None:
+        """Flag disabled → 503 even with MCP connected."""
+        import serve
+        serve._mcp_client = _make_mock_mcp_client()
+        serve._enable_future_work_collector = False
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/future-work?project=my-project")
+            data = json.loads(body)
+            assert status == 503
+            assert data["status"] == "error"
+        finally:
+            srv.stop()
+
+    def test_returns_data_when_mcp_connected_and_flag_true(self, tmp_path: Path) -> None:
+        """MCP connected + flag true → 200 with future work data."""
+        import serve
+        serve._mcp_client = _make_mock_mcp_client()
+        serve._enable_future_work_collector = True
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/future-work?project=my-project")
+            data = json.loads(body)
+            assert status == 200
+            assert data["status"] == "ok"
+            assert "data" in data
+            assert data["data"]["totalItems"] == 2
+            assert len(data["data"]["groups"]) == 1
+        finally:
+            srv.stop()
+
+    def test_returns_error_when_tool_call_fails(self, tmp_path: Path) -> None:
+        """workflow_future tool failure → 500."""
+        import serve
+        serve._mcp_client = _make_mock_mcp_client(fail_tool="workflow_future")
+        serve._enable_future_work_collector = True
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/future-work?project=my-project")
+            data = json.loads(body)
+            assert status == 500
+            assert data["status"] == "error"
+            assert "workflow_future" in data["message"]
         finally:
             srv.stop()

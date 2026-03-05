@@ -16,6 +16,7 @@ const THEME = {
     maintenance: { bg: "#5A7040", text: "#F0FFE8", border: "#7A9060", accent: "#A0C880" },
     devlog: { bg: "#CC7A00", text: "#FFF5E0", border: "#E69A20", accent: "#FFB84D" },
     projectLevel: { bg: "#1E3A5F", text: "#D0E8FF", border: "#2E5A8F", accent: "#6BAADF" },
+    collector: { bg: "#0A3A5A", text: "#E0F4FF", border: "#0870A8", accent: "#08A8F6" },
   },
   fonts: {
     heading: "'JetBrains Mono', 'Fira Code', 'Source Code Pro', monospace",
@@ -508,6 +509,157 @@ const FeaturesCard = ({ features }) => {
 };
 
 // ============================================================================
+// MAINTENANCE COLLECTOR CARD — groups 9xx operational docs into a collapsible card
+// ============================================================================
+const MaintenanceCollectorCard = ({ quality, investigation, maintenance }) => {
+  const [expanded, setExpanded] = useState(false);
+  const total = quality.length + investigation.length + maintenance.length;
+  if (total === 0) return null;
+  const colorSet = THEME.colors.collector;
+
+  return (
+    <div style={{
+      backgroundColor: "#1A1A2E", border: "1px solid #2A2A4E",
+      borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
+        onClick={() => setExpanded(!expanded)}>
+        <span style={{
+          fontFamily: THEME.fonts.heading, fontSize: 18, color: colorSet.accent,
+          fontWeight: 700, opacity: 0.4,
+        }}>⚙</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: THEME.fonts.heading, fontSize: 16, color: "#E8E8FF", fontWeight: 600, marginBottom: 4 }}>
+            Maintenance &amp; Operations
+          </div>
+          <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA" }}>
+            {total} {total === 1 ? "item" : "items"}
+          </span>
+        </div>
+        <span style={{
+          color: "#8888AA", fontSize: 14, transition: "transform 0.15s ease",
+          transform: expanded ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block",
+        }}>▶</span>
+      </div>
+
+      {expanded && (
+        <div style={{ paddingLeft: THEME.sp.sm, marginTop: THEME.sp.md }}>
+          {quality.map((d, i) => (
+            <DocBlock key={`q${i}`} colorSet={THEME.colors.review} label="REVIEW"
+              name={d.name} index={d.index} status={d.status} item={d} />
+          ))}
+          {investigation.map((d, i) => (
+            <DocBlock key={`an${i}`} colorSet={THEME.colors.analysis} label="ANALYSIS"
+              name={d.name} index={d.index} status={d.status} item={d} />
+          ))}
+          {maintenance.map((d, i) => (
+            <DocBlock key={`m${i}`} colorSet={THEME.colors.maintenance} label="MAINT"
+              name={d.name} index={d.index} status={d.status} item={d} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// FUTURE WORK COLLECTOR CARD — aggregated future work from MCP (config-gated)
+// ============================================================================
+const FutureWorkCollectorCard = ({ futureWork }) => {
+  const [expanded, setExpanded] = useState(false);
+  const [expandedGroups, setExpandedGroups] = useState({});
+
+  if (!futureWork || !futureWork.groups || futureWork.groups.length === 0) return null;
+
+  const colorSet = THEME.colors.collector;
+  const toggleGroup = (idx) => setExpandedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
+
+  return (
+    <div style={{
+      backgroundColor: "#1A1A2E", border: "1px solid #2A2A4E",
+      borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
+        onClick={() => setExpanded(!expanded)}>
+        <span style={{
+          fontFamily: THEME.fonts.heading, fontSize: 18, color: colorSet.accent,
+          fontWeight: 700, opacity: 0.4,
+        }}>◈</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: THEME.fonts.heading, fontSize: 16, color: "#E8E8FF", fontWeight: 600, marginBottom: 4 }}>
+            Future Work
+          </div>
+          <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA" }}>
+            {futureWork.completedItems}/{futureWork.totalItems} complete
+          </span>
+        </div>
+        <span style={{
+          color: "#8888AA", fontSize: 14, transition: "transform 0.15s ease",
+          transform: expanded ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block",
+        }}>▶</span>
+      </div>
+
+      {expanded && (
+        <div style={{ paddingLeft: THEME.sp.sm, marginTop: THEME.sp.md }}>
+          {futureWork.groups.map((group, gi) => (
+            <div key={gi} style={{
+              borderRadius: THEME.radius, border: `1px solid ${colorSet.border}60`,
+              marginBottom: THEME.sp.sm, overflow: "hidden",
+            }}>
+              <div
+                onClick={() => toggleGroup(gi)}
+                style={{
+                  display: "flex", alignItems: "center", gap: THEME.sp.sm,
+                  padding: `${THEME.sp.sm}px ${THEME.sp.md}px`, cursor: "pointer",
+                  backgroundColor: colorSet.bg + "60",
+                }}>
+                <span style={{
+                  color: colorSet.accent, fontSize: 12, fontFamily: THEME.fonts.heading,
+                  width: 16, flexShrink: 0, transition: "transform 0.15s ease",
+                  transform: expandedGroups[gi] ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block", opacity: 0.5,
+                }}>▶</span>
+                <span style={{
+                  fontFamily: THEME.fonts.body, fontSize: 13, color: colorSet.text, fontWeight: 500,
+                  flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                }}>{group.initiativeName}</span>
+                <span style={{
+                  fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA", flexShrink: 0,
+                }}>{group.completedItems}/{group.totalItems}</span>
+              </div>
+              {expandedGroups[gi] && (
+                <div style={{ padding: `${THEME.sp.xs}px ${THEME.sp.md}px ${THEME.sp.sm}px` }}>
+                  {group.items.map((item, ii) => (
+                    <div key={ii} style={{
+                      display: "flex", alignItems: "flex-start", gap: THEME.sp.sm,
+                      padding: "3px 0",
+                      borderBottom: ii < group.items.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
+                    }}>
+                      <span style={{
+                        fontSize: 11, lineHeight: "18px", flexShrink: 0,
+                        color: item.done ? THEME.status.complete : "#555577",
+                      }}>{item.done ? "✓" : "○"}</span>
+                      <span style={{
+                        fontFamily: THEME.fonts.heading, fontSize: 11, color: colorSet.accent,
+                        opacity: 0.5, minWidth: 28, flexShrink: 0, lineHeight: "18px",
+                      }}>{item.index}</span>
+                      <span style={{
+                        fontFamily: THEME.fonts.body, fontSize: 12, lineHeight: "18px",
+                        color: item.done ? (colorSet.text + "60") : (colorSet.text + "B0"),
+                        textDecoration: item.done ? "line-through" : "none",
+                      }}>{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // PROJECT VIEW
 // ============================================================================
 const ProjectView = ({ data }) => {
@@ -574,17 +726,8 @@ const ProjectView = ({ data }) => {
         <FeaturesCard features={data.standaloneFeatures} />
       )}
 
-      {(data.quality.length > 0 || data.investigation.length > 0 || data.maintenance.length > 0) && (
-        <div style={{ borderTop: "1px solid #2A2A4E", paddingTop: THEME.sp.lg, marginTop: THEME.sp.lg }}>
-          <h3 style={{
-            fontFamily: THEME.fonts.heading, fontSize: 12, color: "#6666AA",
-            textTransform: "uppercase", letterSpacing: "0.1em", margin: `0 0 ${THEME.sp.md}px 0`,
-          }}>Operational</h3>
-          {data.quality.map((d, i) => <DocBlock key={`q${i}`} colorSet={THEME.colors.review} label="REVIEW" name={d.name} index={d.index} status={d.status} item={d} />)}
-          {data.investigation.map((d, i) => <DocBlock key={`an${i}`} colorSet={THEME.colors.analysis} label="ANALYSIS" name={d.name} index={d.index} status={d.status} item={d} />)}
-          {data.maintenance.map((d, i) => <DocBlock key={`m${i}`} colorSet={THEME.colors.maintenance} label="MAINT" name={d.name} index={d.index} status={d.status} item={d} />)}
-        </div>
-      )}
+      <MaintenanceCollectorCard quality={data.quality} investigation={data.investigation} maintenance={data.maintenance} />
+      <FutureWorkCollectorCard futureWork={data.futureWork} />
 
       {data.devlog && (
         <div style={{ marginTop: THEME.sp.md }}>
@@ -611,6 +754,7 @@ const Legend = () => (
         ["Tasks", THEME.colors.tasks],
         ["Feature", THEME.colors.feature],
         ["DevLog", THEME.colors.devlog],
+        ["Collector", THEME.colors.collector],
       ].map(([l, cs]) => (
         <div key={l} style={{ display: "flex", alignItems: "center", gap: THEME.sp.xs }}>
           <div style={{ width: 14, height: 14, borderRadius: 4, backgroundColor: cs.bg, border: `1px solid ${cs.border}` }} />

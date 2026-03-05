@@ -50,6 +50,49 @@ def test_no_console_errors(live_server: str, page: Page) -> None:
     assert unexpected == [], f"Unexpected console errors during load: {unexpected}"
 
 
+def test_maintenance_collector_card_renders(live_server: str, page: Page) -> None:
+    """When a project has operational documents, the Maintenance & Operations card appears."""
+    page.goto(live_server)
+    page.get_by_text("Project Structure").first.wait_for(timeout=10_000)
+    page.wait_for_timeout(500)
+
+    # The default project (orchestration) has maintenance docs —
+    # the MaintenanceCollectorCard should be visible
+    card_header = page.get_by_text("Maintenance & Operations")
+    expect(card_header.first).to_be_visible(timeout=5_000)
+
+
+def test_maintenance_collector_card_expands(live_server: str, page: Page) -> None:
+    """Clicking the maintenance collector card expands it to show document rows."""
+    page.goto(live_server)
+    page.get_by_text("Project Structure").first.wait_for(timeout=10_000)
+    page.wait_for_timeout(500)
+
+    # Click the card header to expand
+    card_header = page.get_by_text("Maintenance & Operations").first
+    expect(card_header).to_be_visible(timeout=5_000)
+    card_header.click()
+    page.wait_for_timeout(300)
+
+    # After expanding, we should see document labels (REVIEW, ANALYSIS, or MAINT)
+    maint_labels = page.locator("span", has_text="MAINT")
+    review_labels = page.locator("span", has_text="REVIEW")
+    # At least one type of operational doc label should appear
+    total = maint_labels.count() + review_labels.count()
+    assert total > 0, "Expected MAINT or REVIEW labels after expanding maintenance collector"
+
+
+def test_no_flat_operational_heading(live_server: str, page: Page) -> None:
+    """The old flat 'Operational' heading should not appear anywhere."""
+    page.goto(live_server)
+    page.get_by_text("Project Structure").first.wait_for(timeout=10_000)
+    page.wait_for_timeout(500)
+
+    # The old "Operational" h3 heading should be absent
+    operational_heading = page.locator("h3", has_text="Operational")
+    assert operational_heading.count() == 0, "Old flat 'Operational' heading still present"
+
+
 def test_local_mode_no_mcp_label(live_server: str, page: Page) -> None:
     """In local mode (no MCP config), the 'MCP' badge should not be visible."""
     page.goto(live_server)

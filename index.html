@@ -45,7 +45,9 @@
         if (structResp.ok) {
           const data = await structResp.json();
           window.__projectsMode = data.mode || 'mcp';
-          return data.projects || {};
+          const projects = data.projects || {};
+          await _attachFutureWork(projects);
+          return projects;
         }
       } catch (_) {
         // fetch error (e.g. server not running /api/structures) → fall through
@@ -78,7 +80,45 @@
           console.warn(`Skipping ${entry.key}: ${err.message}`);
         }
       }
+      // Local mode — no future work
+      for (const key of Object.keys(projects)) {
+        projects[key].futureWork = null;
+      }
       return projects;
+    }
+
+    /**
+     * Conditionally fetch future work data for each project (MCP mode only).
+     * Sets project.futureWork to the result object or null.
+     */
+    async function _attachFutureWork(projects) {
+      // Check if future work collector is enabled
+      let enabled = false;
+      try {
+        const statusResp = await fetch('/api/status', { cache: 'no-store' });
+        if (statusResp.ok) {
+          const statusData = await statusResp.json();
+          enabled = !!statusData.futureWorkEnabled;
+        }
+      } catch (_) { /* ignore */ }
+
+      for (const key of Object.keys(projects)) {
+        if (!enabled) {
+          projects[key].futureWork = null;
+          continue;
+        }
+        try {
+          const resp = await fetch(`/api/future-work?project=${encodeURIComponent(key)}`, { cache: 'no-store' });
+          if (resp.ok) {
+            const result = await resp.json();
+            projects[key].futureWork = result.data || null;
+          } else {
+            projects[key].futureWork = null;
+          }
+        } catch (_) {
+          projects[key].futureWork = null;
+        }
+      }
     }
 
     // Expose loadProjects so the mounted component can call it for refresh

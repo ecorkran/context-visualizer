@@ -2,6 +2,7 @@
   "_comment": "Copy this file to mcp-config.json and update the path to your context-forge MCP server. mcp-config.json is gitignored.",
   "_prefer_comment": "Optional: set 'prefer' to 'local' to start in local mode even when this config is present (skips MCP connection). Default is 'mcp'.",
   "prefer": "mcp",
+  "enableFutureWorkCollector": false,
   "server": {
     "transport": "stdio",
     "command": "node",
