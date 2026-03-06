@@ -14,8 +14,8 @@ Interactive dashboard for [Context Forge](https://github.com/ecorkran/context-fo
 
 ```bash
 # Clone and enter the project
-git clone https://github.com/ecorkran/context-visualization.git
-cd context-visualization
+git clone https://github.com/ecorkran/context-visualizer.git
+cd context-visualizer
 
 # Start the server
 python serve.py

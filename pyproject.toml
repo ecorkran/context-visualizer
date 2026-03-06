@@ -18,8 +18,8 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/ecorkran/context-visualization"
-Repository = "https://github.com/ecorkran/context-visualization"
+Homepage = "https://github.com/ecorkran/context-visualizer"
+Repository = "https://github.com/ecorkran/context-visualizer"
 
 [tool.uv]
 dev-dependencies = [
