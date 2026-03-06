@@ -1,5 +1,26 @@
 # DEVLOG — context-visualizer
 
+## 20260306
+
+###### Post-slice polish and packaging
+
+**Commits:**
+- `94ef8be` fix: resolve MCP project name to ID for future-work endpoint
+- `afcebef` package: bump version to 0.2.0
+- `442f4d1` docs: add future work items to slice plan
+- `1f80e9c` docs: add README, LICENSE, and update pyproject metadata
+- `1d2db80` chore: rename repo to context-visualizer
+- `23901bd` feat: make Project-Level Documents section collapsible
+
+**Changes:**
+- Fixed future-work endpoint: MCP `workflow_future` requires internal project IDs, not names. Added `_mcp_name_to_id` cache with lazy population from `project_list` calls.
+- Normalized collector card borders to match standard card style (`#2A2A4E`).
+- Bumped version to `0.2.0`, tagged `v0.2.0`.
+- Added README, MIT LICENSE, and pyproject metadata (description, classifiers, URLs).
+- Renamed GitHub repo from `context-visualization` to `context-visualizer`.
+- Added 6 future work items to slice plan (drill-down, click-through, stale indicator, cross-project deps, search/filter).
+- Extracted Project-Level Documents into collapsible `ProjectDocsCard` component (collapsed by default).
+
 ## 20260304
 
 ###### Slice 109: Collectors — Implementation Complete
