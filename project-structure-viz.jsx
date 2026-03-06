@@ -511,6 +511,57 @@ const FeaturesCard = ({ features }) => {
 // ============================================================================
 // MAINTENANCE COLLECTOR CARD — groups 9xx operational docs into a collapsible card
 // ============================================================================
+
+// ============================================================================
+// ProjectDocsCard — collapsible card for project-level documents
+// ============================================================================
+const ProjectDocsCard = ({ foundation, architecture }) => {
+  const [expanded, setExpanded] = useState(false);
+  const total = foundation.length + architecture.length;
+
+  return (
+    <div style={{
+      backgroundColor: "#1A1A2E", border: "1px solid #2A2A4E",
+      borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
+        onClick={() => setExpanded(!expanded)}>
+        <span style={{
+          fontFamily: THEME.fonts.heading, fontSize: 18, color: "#6666AA",
+          fontWeight: 700, opacity: 0.4,
+        }}>&#x25A8;</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontFamily: THEME.fonts.heading, fontSize: 16, color: "#E8E8FF", fontWeight: 600, marginBottom: 4 }}>
+            Project-Level Documents
+          </div>
+          <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: "#8888AA" }}>
+            {total} {total === 1 ? "document" : "documents"}
+          </span>
+        </div>
+        <span style={{
+          color: "#8888AA", fontSize: 14, transition: "transform 0.15s ease",
+          transform: expanded ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block",
+        }}>&#x25B6;</span>
+      </div>
+
+      {expanded && (
+        <div style={{ paddingLeft: THEME.sp.sm, marginTop: THEME.sp.md }}>
+          {foundation.map((d, i) => (
+            <DocBlock key={`f${i}`} colorSet={THEME.colors.foundation}
+              label={d.type?.toUpperCase() || "FOUND"} name={d.name}
+              index={d.index} status={d.status} item={d} />
+          ))}
+          {architecture.map((d, i) => (
+            <DocBlock key={`a${i}`} colorSet={THEME.colors.projectLevel}
+              label={d.type?.toUpperCase() || "ARCH"} name={d.name}
+              index={d.index} status={d.status} item={d} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const MaintenanceCollectorCard = ({ quality, investigation, maintenance }) => {
   const [expanded, setExpanded] = useState(false);
   const total = quality.length + investigation.length + maintenance.length;
@@ -696,25 +747,7 @@ const ProjectView = ({ data }) => {
       </div>
 
       {(data.projectArchitecture.length > 0 || data.foundation.length > 0) && (
-        <div style={{
-          marginBottom: THEME.sp.xl, padding: THEME.sp.lg,
-          backgroundColor: "#12121F", borderRadius: THEME.radius + 4, border: "1px solid #1E1E3A",
-        }}>
-          <div style={{
-            fontFamily: THEME.fonts.heading, fontSize: 11, color: "#6666AA",
-            textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: THEME.sp.md,
-          }}>Project-Level Documents</div>
-          {data.foundation.map((d, i) => (
-            <DocBlock key={`f${i}`} colorSet={THEME.colors.foundation}
-              label={d.type?.toUpperCase() || "FOUND"} name={d.name}
-              index={d.index} status={d.status} item={d} />
-          ))}
-          {data.projectArchitecture.map((d, i) => (
-            <DocBlock key={`a${i}`} colorSet={THEME.colors.projectLevel}
-              label={d.type?.toUpperCase() || "ARCH"} name={d.name}
-              index={d.index} status={d.status} item={d} />
-          ))}
-        </div>
+        <ProjectDocsCard foundation={data.foundation} architecture={data.projectArchitecture} />
       )}
 
       {bands.map(([band, init]) => (
