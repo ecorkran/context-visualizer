@@ -88,3 +88,4 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 4. [ ] **Stale work indicator** — Flag slices that have been in-progress for an extended period with no recent commits or file changes. Context-forge could derive staleness from git history or modification dates. Risk: Low. Effort: 2/5.
 5. [ ] **Cross-project dependency view** — Visualize dependencies between slices across projects (e.g. context-visualizer slice depending on a context-forge MCP tool). Risk: Medium. Effort: 3/5.
 6. [ ] **Search and filter** — Filter initiatives, slices, and documents by name or status as project size grows. Risk: Low. Effort: 2/5.
+7. [ ] **Project grouping by workspace** — Group projects in the panel sidebar by organization/workspace, derived from the parent directory of `projectPath` (e.g. `repos/manta/*` → "manta", `repos/otix/*` → "otix"). Collapsible sections per group. No Context Forge schema changes needed. Risk: Low. Effort: 2/5.
