@@ -20,7 +20,7 @@ cd context-visualizer
 # Start the server
 python serve.py
 
-# Open http://localhost:8000
+# Open http://localhost:5678
 ```
 
 ### With MCP (recommended)

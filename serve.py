@@ -5,7 +5,7 @@ Serves the static site and exposes a /api/refresh endpoint that re-invokes
 the parser to update project JSON files without a full page reload.
 
 Usage:
-    python serve.py              # serve on port 8000
+    python serve.py              # serve on port 5678
     python serve.py --port 3000  # serve on a custom port
 """
 
@@ -510,7 +510,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
     ap = argparse.ArgumentParser(description="Serve the project-structure-viz site locally.")
-    ap.add_argument("--port", type=int, default=8000, help="Port to listen on (default: 8000)")
+    ap.add_argument("--port", type=int, default=5678, help="Port to listen on (default: 5678)")
     args = ap.parse_args()
 
     # Attempt MCP client connection if config is present
