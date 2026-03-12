@@ -5,9 +5,9 @@ project: context-visualizer
 archIndex: 110
 component: worktree-view
 dateCreated: 20260308
-dateUpdated: 20260310
-status: concept
-relatedSlices: []
+dateUpdated: 20260311
+status: active
+relatedSlices: [110-slices.worktree-view]
 riskLevel: medium
 ---
 
@@ -37,7 +37,7 @@ Extend the visualizer to represent projects that use git worktrees for parallel 
 
 The visualizer displays one "current slice" per project, derived from Context Forge's `fileSlice` field on the project record. There is no concept of multiple simultaneous work streams. The project card shows initiatives, documents, and progress — all assuming a single linear workflow.
 
-Context Forge does not yet expose worktree data via MCP. The worktree feature is under active development in Context Forge.
+Context Forge now exposes worktree data via MCP (v0.4.2+). Available tools: `worktree_list`, `worktree_get`, `worktree_init`, `worktree_update`, `worktree_rm`. The `context-forge` project has 2 active worktrees (Default: 100-499, maintenance: 900-999) providing real test data.
 
 ## Chosen Layout: Horizontal Worktree Columns
 
@@ -78,11 +78,11 @@ When Context Forge exposes worktree data, the visualizer will show:
 - **Worktree columns** — Horizontal column layout as described above. Each worktree column contains the full initiative/slice/task hierarchy for that worktree's branch.
 - **Slice-level awareness** — Initiative cards within each worktree column show slice status in context. A slice "in progress" in a worktree is visually distinct from a slice that is merely planned.
 
-The architecture remains read-only and MCP-driven. The visualizer calls a Context Forge MCP tool (likely `project_worktrees` or an extension of `project_get`) and renders the result.
+The architecture remains read-only and MCP-driven. The visualizer calls `worktree_list` via MCP and renders the result.
 
 ## Technical Considerations
 
-- **MCP data contract dependency** — The entire feature depends on what Context Forge exposes. Slice planning should wait until the Context Forge worktree MCP interface is at least designed. Premature UI work risks building against an interface that doesn't exist.
+- **MCP data contract** — The `worktree_list` tool returns per-worktree: `id`, `name`, `indexRange` (number tuple), `worktreePath`, `developmentPhase`, `activeSlice`, `activeTaskFile`, `instruction`, `workType`, `archDoc`, `slicePlan`, plus a `pathStatuses` array. This contract is now stable and sufficient for all planned slices.
 - **Polling vs. push** — Worktree state changes as agents start and finish work. The current architecture polls on page load/refresh. Real-time updates would require a different transport (SSE, WebSocket) which is a significant architectural change. Initial implementation should use the existing poll-on-refresh model.
 - **Identity resolution** — Worktrees operate on branches. Mapping a branch to a slice requires Context Forge to maintain that association. The visualizer should not attempt to infer slice from branch name.
 - **Worktree lifecycle** — Worktrees are ephemeral. A worktree may be created, used, and cleaned up between refreshes. The visualizer should handle "worktree disappeared" gracefully — it simply stops showing it.
@@ -97,6 +97,6 @@ The architecture remains read-only and MCP-driven. The visualizer calls a Contex
 
 ## Related Work
 
-- Context Forge worktree support (in development — design not yet available)
+- Context Forge worktree support (available since v0.4.2)
 - [105-arch.project-management.md](105-arch.project-management.md) — Project panel and MCP integration that this initiative builds upon
 - Slice 108 (MCP client integration) — Provides the MCP client infrastructure this feature will consume
