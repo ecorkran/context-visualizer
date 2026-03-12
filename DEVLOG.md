@@ -1,5 +1,19 @@
 # DEVLOG — context-visualizer
 
+## 20260311
+
+###### Initiative 110: Worktree View — Phases 3-4
+
+**Commits:**
+- `4eb09e2` docs: add horizontal column layout design to worktree-view arch
+- `e8eca4e` docs: add slice plan for worktree-view initiative (110)
+
+**Changes:**
+- Chose horizontal column layout for worktree visualization (Option B) with responsive vertical fallback.
+- Updated architecture doc: MCP worktree API now available (Context Forge v0.4.2+), documented full data contract.
+- Created slice plan with 5 slices: API proxy (110), column layout (111), responsive fallback (112), initiative grouping (113), E2E polish (114).
+- Created slice design for 110-slice.worktree-api-proxy: `GET /api/worktrees?project={name}` endpoint proxying `worktree_list` MCP tool.
+
 ## 20260306
 
 ###### Post-slice polish and packaging
