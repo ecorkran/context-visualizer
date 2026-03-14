@@ -1,5 +1,20 @@
 # DEVLOG — context-visualizer
 
+## 20260313
+
+###### Slice 110: Worktree API Proxy — Implementation Complete
+
+**Commits:**
+- `0876023` feat: add /api/worktrees endpoint proxying worktree_list MCP tool
+
+**Changes:**
+- Added `GET /api/worktrees?project={name}` endpoint to `serve.py`, proxying Context Forge `worktree_list` MCP tool.
+- Follows established `_handle_future_work()` proxy pattern: name→ID resolution via `_mcp_name_to_id` cache with lazy fallback.
+- Error responses: 400 (missing param), 404 (unknown project), 503 (MCP not connected), 500 (tool failure).
+- Added `worktree_list` mock handler and 5 unit tests (`TestWorktreeEndpoint`).
+- Verified against live MCP: context-forge returns 2 worktrees (default, maintenance); context-visualizer returns empty array.
+- Also added initiative status dot feature to collapsed initiative cards (from prior session, commit `686aee1`).
+
 ## 20260311
 
 ###### Initiative 110: Worktree View — Phases 3-4
