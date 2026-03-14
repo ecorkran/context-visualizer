@@ -359,10 +359,16 @@ const InitiativeCard = ({ band, initiative, futureSlices }) => {
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
         onClick={() => setExpanded(!expanded)}>
-        <span style={{
-          fontFamily: THEME.fonts.heading, fontSize: 22, color: "#FFD700",
-          fontWeight: 700, opacity: 0.3, minWidth: 48,
-        }}>{band}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.sm, minWidth: 60 }}>
+          <span style={{
+            display: "inline-block", width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
+            backgroundColor: THEME.status[initiative.arch?.status] || THEME.status["not-started"],
+          }} />
+          <span style={{
+            fontFamily: THEME.fonts.heading, fontSize: 22, color: "#FFD700",
+            fontWeight: 700, opacity: 0.3,
+          }}>{band}</span>
+        </div>
         <div style={{ flex: 1 }}>
           <div style={{ fontFamily: THEME.fonts.heading, fontSize: 16, color: "#E8E8FF", fontWeight: 600, marginBottom: 4 }}>
             {initiative.name}
