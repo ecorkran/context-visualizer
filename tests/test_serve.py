@@ -872,6 +872,30 @@ def _make_mock_mcp_client(projects: list[dict] | None = None, fail_tool: str | N
                 "pendingItems": 1,
                 "completedItems": 1,
             }
+        if name == "worktree_list":
+            return {
+                "worktrees": [
+                    {
+                        "id": "wt_1",
+                        "name": "Default",
+                        "indexRange": [100, 499],
+                        "worktreePath": "/test/repo",
+                        "developmentPhase": "Phase 6: Implementation",
+                        "activeSlice": "187-slice.test",
+                    },
+                    {
+                        "id": "wt_2",
+                        "name": "maintenance",
+                        "indexRange": [900, 999],
+                        "worktreePath": "/test/repo-maintenance",
+                    },
+                ],
+                "count": 2,
+                "pathStatuses": [
+                    {"worktreeId": "wt_1", "worktreeName": "Default", "status": "valid"},
+                    {"worktreeId": "wt_2", "worktreeName": "maintenance", "status": "valid"},
+                ],
+            }
         raise McpError(-32601, f"Unknown tool: {name}")
 
     mock = MagicMock()
@@ -1314,5 +1338,104 @@ class TestFutureWorkEndpoint:
             assert status == 500
             assert data["status"] == "error"
             assert "workflow_future" in data["message"]
+        finally:
+            srv.stop()
+
+
+# ── GET /api/worktrees tests ─────────────────────────────────────────────────
+
+
+class TestWorktreeEndpoint:
+    """Tests for GET /api/worktrees."""
+
+    def setup_method(self) -> None:
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+        self._orig_client = serve._mcp_client
+        self._orig_name_map = serve._mcp_name_to_id.copy()
+
+    def teardown_method(self) -> None:
+        import serve
+        serve._mcp_client = self._orig_client
+        serve._mcp_name_to_id = self._orig_name_map
+
+    def _srv(self, tmp_dir: Path) -> "ServerFixture":
+        srv = ServerFixture(projects_dir=tmp_dir)
+        srv.start()
+        return srv
+
+    def test_returns_503_when_mcp_not_connected(self, tmp_path: Path) -> None:
+        """No MCP client → 503."""
+        import serve
+        serve._mcp_client = None
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/worktrees?project=my-project")
+            data = json.loads(body)
+            assert status == 503
+            assert data["status"] == "error"
+        finally:
+            srv.stop()
+
+    def test_returns_400_when_project_missing(self, tmp_path: Path) -> None:
+        """No project query param → 400."""
+        import serve
+        serve._mcp_client = _make_mock_mcp_client()
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/worktrees")
+            data = json.loads(body)
+            assert status == 400
+            assert data["status"] == "error"
+            assert "project" in data["message"].lower()
+        finally:
+            srv.stop()
+
+    def test_returns_404_when_project_unknown(self, tmp_path: Path) -> None:
+        """Unknown project name → 404."""
+        import serve
+        serve._mcp_client = _make_mock_mcp_client()
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/worktrees?project=nonexistent")
+            data = json.loads(body)
+            assert status == 404
+            assert data["status"] == "error"
+            assert "nonexistent" in data["message"]
+        finally:
+            srv.stop()
+
+    def test_returns_data_when_mcp_connected(self, tmp_path: Path) -> None:
+        """Happy path → 200 with worktree data."""
+        import serve
+        serve._mcp_client = _make_mock_mcp_client()
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/worktrees?project=my-project")
+            data = json.loads(body)
+            assert status == 200
+            assert data["status"] == "ok"
+            assert data["data"]["count"] == 2
+            assert len(data["data"]["worktrees"]) == 2
+        finally:
+            srv.stop()
+
+    def test_returns_500_when_tool_fails(self, tmp_path: Path) -> None:
+        """worktree_list tool failure → 500."""
+        import serve
+        serve._mcp_client = _make_mock_mcp_client(fail_tool="worktree_list")
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/worktrees?project=my-project")
+            data = json.loads(body)
+            assert status == 500
+            assert data["status"] == "error"
+            assert "worktree_list" in data["message"]
         finally:
             srv.stop()

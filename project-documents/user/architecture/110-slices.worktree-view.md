@@ -14,7 +14,7 @@ status: active
 
 ## Foundation Work
 
-1. [ ] **(110) Worktree API proxy** — Add `/api/worktrees?project={name}` endpoint to `serve.py` that calls `worktree_list` via MCP, resolving project name → ID using the existing `_mcp_name_to_id` cache. Returns the worktree array and path statuses. Effort: 1/5
+1. [x] **(110) Worktree API proxy** — Add `/api/worktrees?project={name}` endpoint to `serve.py` that calls `worktree_list` via MCP, resolving project name → ID using the existing `_mcp_name_to_id` cache. Returns the worktree array and path statuses. Effort: 1/5
    - **Value:** Backend plumbing that all UI slices depend on. Testable via `curl` independently of any frontend work.
    - **Success Criteria:**
      - `GET /api/worktrees?project=context-forge` returns the worktree list with all fields (id, name, indexRange, worktreePath, developmentPhase, activeSlice, activeTaskFile, archDoc, slicePlan, pathStatuses)

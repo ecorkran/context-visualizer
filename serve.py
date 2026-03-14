@@ -81,6 +81,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._handle_structures()
         elif self.path.startswith("/api/future-work"):
             self._handle_future_work()
+        elif self.path.startswith("/api/worktrees"):
+            self._handle_worktrees()
         elif self.path == "/api/status":
             self._handle_status()
         elif self.path == "/api/refresh":
@@ -382,6 +384,53 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_response(200, {"status": "ok", "data": result})
         except Exception as exc:
             logger.warning("workflow_future failed: %s", exc)
+            self._json_response(500, {
+                "status": "error",
+                "message": str(exc),
+            })
+
+    def _handle_worktrees(self) -> None:
+        """GET /api/worktrees?project=<name> — proxy worktree_list MCP tool."""
+        client = _mcp_client
+        if client is None or not client.connected:
+            self._json_response(503, {
+                "status": "error",
+                "message": "MCP not connected",
+            })
+            return
+
+        from urllib.parse import parse_qs, urlparse
+        qs = parse_qs(urlparse(self.path).query)
+        project_name = qs.get("project", [None])[0]
+
+        if not project_name:
+            self._json_response(400, {
+                "status": "error",
+                "message": "Missing required parameter: project",
+            })
+            return
+
+        # Resolve name → ID (same pattern as _handle_future_work)
+        mcp_id = _mcp_name_to_id.get(project_name)
+        if not mcp_id:
+            try:
+                result = client.call_tool("project_list", {})
+                _refresh_name_to_id(result.get("projects", []))
+                mcp_id = _mcp_name_to_id.get(project_name)
+            except Exception as exc:
+                logger.warning("project_list failed during name→ID lookup: %s", exc)
+        if not mcp_id:
+            self._json_response(404, {
+                "status": "error",
+                "message": f"Unknown project: {project_name}",
+            })
+            return
+
+        try:
+            result = client.call_tool("worktree_list", {"projectId": mcp_id})
+            self._json_response(200, {"status": "ok", "data": result})
+        except Exception as exc:
+            logger.warning("worktree_list failed: %s", exc)
             self._json_response(500, {
                 "status": "error",
                 "message": str(exc),

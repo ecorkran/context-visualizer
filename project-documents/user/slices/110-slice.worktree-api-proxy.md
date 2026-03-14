@@ -6,8 +6,8 @@ parent: user/architecture/110-slices.worktree-view.md
 dependencies: []
 interfaces: [111-slice.worktree-column-layout]
 dateCreated: 20260311
-dateUpdated: 20260311
-status: not_started
+dateUpdated: 20260313
+status: complete
 ---
 
 # Slice Design: Worktree API Proxy
@@ -253,40 +253,45 @@ if name == "worktree_list":
 
 **Prerequisites:** Server running in MCP mode (`python serve.py`), Context Forge MCP connected.
 
+**Note:** In zsh, quote URLs containing `?` to avoid glob expansion.
+
 1. **Verify endpoint exists:**
    ```bash
-   curl -s http://localhost:5678/api/worktrees?project=context-forge | python -m json.tool
+   curl -s "http://localhost:5678/api/worktrees?project=context-forge" | python -m json.tool
    ```
-   Expected: 200 response with `worktrees` array containing "Default" and "maintenance" entries.
+   Expected: 200 response with `worktrees` array containing "default" and "maintenance" entries.
+   Verified: Returns 2 worktrees with all fields (id, name, indexRange, worktreePath, developmentPhase, activeSlice, activeTaskFile, instruction, workType, archDoc, slicePlan) plus pathStatuses.
 
 2. **Verify empty worktree project:**
    ```bash
-   curl -s http://localhost:5678/api/worktrees?project=context-visualizer | python -m json.tool
+   curl -s "http://localhost:5678/api/worktrees?project=context-visualizer" | python -m json.tool
    ```
    Expected: 200 response with `{"status": "ok", "data": {"worktrees": [], "count": 0}}`.
+   Verified: Returns exactly as expected.
 
 3. **Verify error cases:**
    ```bash
-   # Missing parameter
-   curl -s http://localhost:5678/api/worktrees | python -m json.tool
-   # Expected: 400
+   # Missing parameter → 400
+   curl -s "http://localhost:5678/api/worktrees" | python -m json.tool
 
-   # Unknown project
-   curl -s http://localhost:5678/api/worktrees?project=nonexistent | python -m json.tool
-   # Expected: 404
+   # Unknown project → 404
+   curl -s "http://localhost:5678/api/worktrees?project=nonexistent" | python -m json.tool
    ```
+   Verified: 400 and 404 respectively.
 
 4. **Run unit tests:**
    ```bash
    pytest tests/test_serve.py -k "TestWorktreeEndpoint" -v
    ```
    Expected: All 5 tests pass.
+   Verified: 5 passed.
 
 5. **Run full test suite:**
    ```bash
    pytest tests/test_serve.py -v
    ```
    Expected: No regressions.
+   Verified: 65 passed (60 existing + 5 new).
 
 ## Implementation Notes
 
