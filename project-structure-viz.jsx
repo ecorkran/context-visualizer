@@ -717,9 +717,131 @@ const FutureWorkCollectorCard = ({ futureWork }) => {
 };
 
 // ============================================================================
+// WORKTREE COLUMN LAYOUT
+// ============================================================================
+
+// Collapsed 40px strip for an inactive worktree.
+const WorktreeStrip = ({ worktree, bands, onClick }) => {
+  const [hovered, setHovered] = useState(false);
+
+  const done = bands.reduce((acc, [, init]) =>
+    acc + init.slices.filter(s => s.status === "complete").length, 0);
+  const total = bands.reduce((acc, [, init]) => acc + init.slices.length, 0);
+  const initCount = bands.length;
+
+  const textStyle = {
+    fontFamily: THEME.fonts.heading,
+    fontSize: 10,
+    color: "#555577",
+    writingMode: "vertical-rl",
+    transform: "rotate(180deg)",
+  };
+
+  return (
+    <Tooltip content={`${worktree.name}  ·  ${worktree.worktreePath}`}>
+      <div
+        onClick={onClick}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          width: 40, flexShrink: 0, cursor: "pointer",
+          backgroundColor: hovered ? "#ffffff06" : "#12121F",
+          border: "1px solid #1E1E3A",
+          borderRadius: THEME.radius + 4,
+          minHeight: 80,
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center",
+          gap: THEME.sp.xs,
+          padding: `${THEME.sp.sm}px 0`,
+        }}
+      >
+        <span style={textStyle}>{`${done}/${total}`}</span>
+        <span style={{ ...textStyle, color: "#6666AA", fontSize: 11 }}>
+          {worktree.name.slice(0, 10)}
+        </span>
+        <span style={{ ...textStyle, color: "#444466" }}>{initCount}</span>
+      </div>
+    </Tooltip>
+  );
+};
+
+// Expanded full-width column for the active worktree.
+const WorktreeColumn = ({ worktree, bands, futureSlices }) => {
+  const rangeLabel = worktree.indexRange
+    ? ` ${worktree.indexRange[0]}–${worktree.indexRange[1]}`
+    : "";
+
+  return (
+    <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{
+        display: "flex", alignItems: "center", gap: THEME.sp.sm,
+        padding: `${THEME.sp.sm}px ${THEME.sp.md}px`,
+        marginBottom: THEME.sp.sm,
+        borderBottom: "1px solid #1E1E3A",
+      }}>
+        <span style={{ color: "#08A8F6", opacity: 0.6, fontSize: 14, fontFamily: THEME.fonts.heading }}>◈</span>
+        <span style={{ fontFamily: THEME.fonts.heading, fontSize: 13, color: "#8888AA" }}>
+          {worktree.name}
+        </span>
+        {rangeLabel && (
+          <span style={{ fontSize: 11, color: "#555577" }}>{rangeLabel}</span>
+        )}
+      </div>
+      {bands.map(([band, init]) => (
+        <InitiativeCard key={band} band={band} initiative={init} futureSlices={futureSlices} />
+      ))}
+    </div>
+  );
+};
+
+// Orchestrator: fetches /api/worktrees, renders pass-through or column layout.
+const WorktreeColumns = ({ projectKey, bands, futureSlices }) => {
+  const [worktrees, setWorktrees] = useState(null);
+  const [activeId, setActiveId] = useState(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    setWorktrees(null);
+    fetch(`/api/worktrees?project=${encodeURIComponent(projectKey)}`, { signal: controller.signal })
+      .then(r => r.json())
+      .then(body => {
+        if (body.status === "ok") {
+          setWorktrees(body.data.worktrees || []);
+          setActiveId(body.data.worktrees?.[0]?.id ?? null);
+        } else {
+          setWorktrees([]);
+        }
+      })
+      .catch(() => setWorktrees([]));
+    return () => controller.abort();
+  }, [projectKey]);
+
+  // Pass-through: loading, error, 0 or 1 worktrees
+  if (worktrees === null || worktrees.length <= 1) {
+    return (
+      <>
+        {bands.map(([band, init]) => (
+          <InitiativeCard key={band} band={band} initiative={init} futureSlices={futureSlices} />
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <div style={{ display: "flex", gap: THEME.sp.sm, alignItems: "stretch", marginBottom: THEME.sp.lg }}>
+      {worktrees.map(wt =>
+        wt.id === activeId
+          ? <WorktreeColumn key={wt.id} worktree={wt} bands={bands} futureSlices={futureSlices} />
+          : <WorktreeStrip key={wt.id} worktree={wt} bands={bands} onClick={() => setActiveId(wt.id)} />
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
 // PROJECT VIEW
 // ============================================================================
-const ProjectView = ({ data }) => {
+const ProjectView = ({ data, projectKey }) => {
   const bands = Object.entries(data.initiatives).sort(([a], [b]) => Number(a) - Number(b));
   const stats = useMemo(() => {
     let ts = 0, cs = 0, tt = 0, ct = 0;
@@ -756,9 +878,7 @@ const ProjectView = ({ data }) => {
         <ProjectDocsCard foundation={data.foundation} architecture={data.projectArchitecture} />
       )}
 
-      {bands.map(([band, init]) => (
-        <InitiativeCard key={band} band={band} initiative={init} futureSlices={data.futureSlices} />
-      ))}
+      <WorktreeColumns projectKey={projectKey} bands={bands} futureSlices={data.futureSlices} />
 
       {/* Standalone features/issues — displayed as their own band */}
       {(data.standaloneFeatures || []).length > 0 && (
@@ -1407,7 +1527,7 @@ export default function ProjectStructureVisualizer() {
           ) : (
             <>
               <Legend />
-              <ProjectView data={projects[active]} />
+              <ProjectView data={projects[active]} projectKey={active} />
             </>
           )}
         </div>
