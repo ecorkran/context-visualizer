@@ -1,5 +1,21 @@
 # DEVLOG — context-visualizer
 
+## 20260315
+
+###### Slice 111: Worktree Column Layout — Phases 4-5
+
+**Commits:**
+- `322c6c8` docs: add slice design for 111-slice.worktree-column-layout
+- `65a4709` chore: ignore egg-info packaging artifacts
+- `61e3bd5` docs: add task breakdown for 111-slice.worktree-column-layout
+
+**Changes:**
+- Created slice design for 111-slice.worktree-column-layout: horizontal column layout with `WorktreeColumns`, `WorktreeColumn`, and `WorktreeStrip` components.
+- Key decisions: self-fetching component, pass-through for 0/1 worktrees, AbortController for stale fetch prevention, tooltip on strip hover (name + path).
+- Clarified `projectKey` threading: one-line change at App root call site.
+- Created task breakdown (8 tasks, 185 lines): threads key from App root → strips → column → E2E test.
+- Cleaned up `context_visualizer.egg-info` artifact and added `*.egg-info/` to `.gitignore`.
+
 ## 20260313
 
 ###### Slice 110: Worktree API Proxy — Implementation Complete
