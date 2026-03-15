@@ -27,7 +27,7 @@ status: active
 
 ## Feature Slices (in implementation order)
 
-2. [ ] **(111) Worktree column layout** — New `WorktreeColumns` React component that renders the horizontal multi-column container. When a project has ≥2 worktrees: one expanded column (full initiative/slice/task cards as today) and N-1 collapsed strips (~36-48px wide) showing branch name (rotated), initiative count badge, and mini progress indicator. Clicking a strip expands that worktree and collapses the current. Single or zero worktrees: renders identically to current layout (no visual change). Effort: 3/5
+2. [x] **(111) Worktree column layout** — New `WorktreeColumns` React component that renders the horizontal multi-column container. When a project has ≥2 worktrees: one expanded column (full initiative/slice/task cards as today) and N-1 collapsed strips (~36-48px wide) showing branch name (rotated), initiative count badge, and mini progress indicator. Clicking a strip expands that worktree and collapses the current. Single or zero worktrees: renders identically to current layout (no visual change). Effort: 3/5
    - **Value:** Core UI pattern for parallel work visualization. The main deliverable of initiative 110.
    - **Success Criteria:**
      - Projects with 0 or 1 worktrees render identically to today — no regressions

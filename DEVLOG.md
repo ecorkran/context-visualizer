@@ -2,6 +2,25 @@
 
 ## 20260315
 
+###### Slice 111: Worktree Column Layout — Implementation Complete (Phase 6)
+
+**Commits:**
+- `58f8818` feat: add WorktreeColumns pass-through component
+- `67c2d5c` feat: add worktree column layout with strip toggle
+
+**Changes:**
+- Added `WorktreeStrip`, `WorktreeColumn`, `WorktreeColumns` components to `project-structure-viz.jsx` (after `FutureWorkCollectorCard`).
+- `WorktreeColumns` self-fetches `/api/worktrees?project=...` on `projectKey` change; uses `AbortController` to cancel stale requests on project switch.
+- Pass-through condition (`worktrees === null || worktrees.length <= 1`): zero DOM change vs. current layout.
+- Column layout (2+ worktrees): flex container with collapsed 40px `WorktreeStrip` per inactive worktree and one expanded `WorktreeColumn`.
+- `WorktreeStrip`: rotated worktree name (10-char truncated), progress fraction (`done/total`), initiative count; tooltip shows `"name  ·  path"`; hover highlight.
+- `WorktreeColumn`: slim header (◈ icon, name, index range) above unchanged `InitiativeCard` rendering.
+- Threaded `projectKey={active}` from `ProjectStructureVisualizer` root → `ProjectView` → `WorktreeColumns`.
+- 3 new E2E tests (mocked `/api/worktrees` response via Playwright `page.route`): layout renders, strip toggle, no-regression single project.
+- All 118 tests passing (106 unit + 12 E2E), 1 skipped.
+
+**Notable:** E2E tests use Playwright route interception to simulate 2-worktree response without requiring live MCP — avoids test environment dependency while still exercising the full React component behavior.
+
 ###### Slice 111: Worktree Column Layout — Phases 4-5
 
 **Commits:**

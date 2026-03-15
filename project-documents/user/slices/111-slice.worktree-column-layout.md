@@ -7,7 +7,7 @@ dependencies: [110-slice.worktree-api-proxy]
 interfaces: [112-slice.responsive-vertical-fallback, 113-slice.worktree-initiative-grouping]
 dateCreated: 20260315
 dateUpdated: 20260315
-status: not_started
+status: complete
 ---
 
 # Slice Design: Worktree Column Layout
@@ -139,7 +139,7 @@ Container: `display: flex, gap: THEME.sp.sm`. Strips shrink to fixed width; expa
 - Background: `#12121F` (darker than cards, same as panel sidebar)
 - Border: `1px solid #1E1E3A`
 - Border-radius: `THEME.radius + 4` (matches InitiativeCard)
-- Hover: subtle highlight `#ffffff06`
+- Hover: subtle highlight `#ffffff06`; show a tooltip (reuse existing `Tooltip` component) with the full worktree name and path (e.g., `"maintenance  ·  /path/to/repo-maintenance"`)
 - Cursor: pointer
 - Active strip (would be expanded): not shown as strip (it's the expanded column)
 
@@ -303,5 +303,5 @@ Test-first is less natural for pure UI components; write the E2E test after the 
 
 ### Special Considerations
 - The single JSX file pattern means all new components are added in the same file. Place them immediately before `ProjectView` in the component order (after `FutureWorkCollectorCard`).
-- The `projectKey` passed to `WorktreeColumns` must match the key used in the `/api/worktrees` URL. In `ProjectView`, the project key comes from the outer `App` state — it needs to be threaded through. Check how `ProjectView` receives `data` and confirm the project key is accessible (it may be `data.key` or need to be passed separately as a prop).
+- `ProjectView` is currently called as `<ProjectView data={projects[active]} />` — the project key (`active`) is **not** passed through. Add `projectKey={active}` to that call site (line ~1410 in the JSX), add `projectKey` to `ProjectView`'s props, and pass it down to `WorktreeColumns`. This is a one-line change with no other impact.
 - `window.__projectsMode` check: the endpoint returns 503 when MCP is not connected. The component already handles this via error → pass-through. No explicit mode check needed.
