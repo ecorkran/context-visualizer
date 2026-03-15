@@ -362,7 +362,7 @@ const InitiativeCard = ({ band, initiative, futureSlices }) => {
         <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.sm, minWidth: 60 }}>
           <span style={{
             display: "inline-block", width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-            backgroundColor: THEME.status[initiative.arch?.status] || THEME.status["not-started"],
+            backgroundColor: THEME.status[initiative.slicePlan?.status] || THEME.status["not-started"],
           }} />
           <span style={{
             fontFamily: THEME.fonts.heading, fontSize: 22, color: "#FFD700",
