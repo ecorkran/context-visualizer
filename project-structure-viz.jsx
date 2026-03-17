@@ -744,7 +744,7 @@ const WorktreeStrip = ({ worktree, bands, onClick }) => {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          width: 40, flexShrink: 0, cursor: "pointer",
+          width: 56, flexShrink: 0, cursor: "pointer",
           backgroundColor: hovered ? "#ffffff06" : "#12121F",
           border: "1px solid #1E1E3A",
           borderRadius: THEME.radius + 4,
@@ -757,7 +757,7 @@ const WorktreeStrip = ({ worktree, bands, onClick }) => {
       >
         <span style={textStyle}>{`${done}/${total}`}</span>
         <span style={{ ...textStyle, color: "#6666AA", fontSize: 11 }}>
-          {worktree.name.slice(0, 10)}
+          {worktree.name}
         </span>
         <span style={{ ...textStyle, color: "#444466" }}>{initCount}</span>
       </div>
@@ -827,12 +827,18 @@ const WorktreeColumns = ({ projectKey, bands, futureSlices }) => {
     );
   }
 
+  const bandsForWorktree = (wt) => {
+    if (!wt.indexRange) return bands;
+    const [lo, hi] = wt.indexRange;
+    return bands.filter(([band]) => { const n = Number(band); return n >= lo && n <= hi; });
+  };
+
   return (
     <div style={{ display: "flex", gap: THEME.sp.sm, alignItems: "stretch", marginBottom: THEME.sp.lg }}>
       {worktrees.map(wt =>
         wt.id === activeId
-          ? <WorktreeColumn key={wt.id} worktree={wt} bands={bands} futureSlices={futureSlices} />
-          : <WorktreeStrip key={wt.id} worktree={wt} bands={bands} onClick={() => setActiveId(wt.id)} />
+          ? <WorktreeColumn key={wt.id} worktree={wt} bands={bandsForWorktree(wt)} futureSlices={futureSlices} />
+          : <WorktreeStrip key={wt.id} worktree={wt} bands={bandsForWorktree(wt)} onClick={() => setActiveId(wt.id)} />
       )}
     </div>
   );
