@@ -731,37 +731,38 @@ const WorktreeStrip = ({ worktree, bands, onClick }) => {
 
   const textStyle = {
     fontFamily: THEME.fonts.heading,
-    fontSize: 10,
+    fontSize: 9,
     color: "#555577",
     writingMode: "vertical-rl",
     transform: "rotate(180deg)",
+    whiteSpace: "nowrap",
   };
 
   return (
-    <Tooltip content={`${worktree.name}  ·  ${worktree.worktreePath}`}>
-      <div
-        onClick={onClick}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        style={{
-          width: 56, flexShrink: 0, cursor: "pointer",
-          backgroundColor: hovered ? "#ffffff06" : "#12121F",
-          border: "1px solid #1E1E3A",
-          borderRadius: THEME.radius + 4,
-          minHeight: 80,
-          display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center",
-          gap: THEME.sp.xs,
-          padding: `${THEME.sp.sm}px 0`,
-        }}
-      >
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        width: 40, flexShrink: 0, cursor: "pointer",
+        backgroundColor: hovered ? "#ffffff06" : "#12121F",
+        border: "1px solid #1E1E3A",
+        borderRadius: THEME.radius + 4,
+        display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        gap: THEME.sp.xs,
+        padding: `${THEME.sp.xs}px 0`,
+        marginTop: 30, marginBottom: THEME.sp.lg,
+      }}
+    >
+      <Tooltip content={`${worktree.name}  ·  ${worktree.worktreePath}`}>
         <span style={textStyle}>{`${done}/${total}`}</span>
-        <span style={{ ...textStyle, color: "#6666AA", fontSize: 11 }}>
+        <span style={{ ...textStyle, color: "#6666AA", fontSize: 10 }}>
           {worktree.name}
         </span>
         <span style={{ ...textStyle, color: "#444466" }}>{initCount}</span>
-      </div>
-    </Tooltip>
+      </Tooltip>
+    </div>
   );
 };
 
@@ -834,7 +835,7 @@ const WorktreeColumns = ({ projectKey, bands, futureSlices }) => {
   };
 
   return (
-    <div style={{ display: "flex", gap: THEME.sp.sm, alignItems: "stretch", marginBottom: THEME.sp.lg }}>
+    <div style={{ display: "flex", gap: THEME.sp.md, alignItems: "stretch", marginBottom: THEME.sp.lg }}>
       {worktrees.map(wt =>
         wt.id === activeId
           ? <WorktreeColumn key={wt.id} worktree={wt} bands={bandsForWorktree(wt)} futureSlices={futureSlices} />

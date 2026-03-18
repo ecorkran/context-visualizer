@@ -1,5 +1,16 @@
 # DEVLOG — context-visualizer
 
+## 20260317
+
+###### Worktree Strip Polish (v0.2.3)
+
+**Commits:**
+- `f888565` fix: derive initiative status dot from slice plan, not architecture doc
+- `661b25f` fix: filter worktree bands by indexRange and widen strip
+- Strip now stretches full column height, aligned with initiative cards
+- Increased gap between strip and content column
+- Reduced strip text size for tighter 40px fit
+
 ## 20260315
 
 ###### Slice 111: Worktree Column Layout — Implementation Complete (Phase 6)
