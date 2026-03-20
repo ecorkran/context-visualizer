@@ -143,7 +143,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             proj_id = proj.get("id", "")
             key = proj.get("name", proj_id).lower().replace(" ", "-")
             try:
-                client.call_tool("project_structure", {"projectId": proj_id})
+                client.call_tool("project_structure", {"projectId": proj_id, "all": True})
                 refreshed.append(key)
             except Exception as exc:
                 errors.append(f"{key}: {exc}")
@@ -318,7 +318,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                 proj_name = proj.get("name", proj_id)
                 proj_path = proj.get("projectPath", "")
 
-                model = client.call_tool("project_structure", {"projectId": proj_id})
+                model = client.call_tool("project_structure", {"projectId": proj_id, "all": True})
 
                 # Skip projects where the MCP server returned an error envelope
                 if model.get("isError"):
