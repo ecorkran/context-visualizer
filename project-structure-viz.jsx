@@ -343,7 +343,7 @@ const DocBlock = ({
 // ============================================================================
 // INITIATIVE CARD
 // ============================================================================
-const InitiativeCard = ({ band, initiative, futureSlices }) => {
+const InitiativeCard = ({ band, initiative, futureSlices, accentColor, colorSet }) => {
   const [expanded, setExpanded] = useState(false);
   const done = initiative.slices.filter((s) => s.status === "complete").length;
   const total = initiative.slices.length;
@@ -354,7 +354,8 @@ const InitiativeCard = ({ band, initiative, futureSlices }) => {
 
   return (
     <div style={{
-      backgroundColor: "#1A1A2E", border: "1px solid #2A2A4E",
+      backgroundColor: colorSet ? colorSet.bg + "33" : "#1A1A2E",
+      border: `1px solid ${colorSet ? colorSet.border : "#2A2A4E"}`,
       borderRadius: THEME.radius + 4, padding: THEME.sp.lg, marginBottom: THEME.sp.lg,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.md, cursor: "pointer" }}
@@ -365,7 +366,7 @@ const InitiativeCard = ({ band, initiative, futureSlices }) => {
             backgroundColor: THEME.status[initiative.slicePlan?.status] || THEME.status["not-started"],
           }} />
           <span style={{
-            fontFamily: THEME.fonts.heading, fontSize: 22, color: "#FFD700",
+            fontFamily: THEME.fonts.heading, fontSize: 22, color: accentColor || colorSet?.accent || "#FFD700",
             fontWeight: 700, opacity: 0.3,
           }}>{band}</span>
         </div>
@@ -892,7 +893,33 @@ const ProjectView = ({ data, projectKey }) => {
         <FeaturesCard features={data.standaloneFeatures} />
       )}
 
-      <MaintenanceCollectorCard quality={data.quality} investigation={data.investigation} maintenance={data.maintenance} />
+      {/* Maintenance initiatives (900+ band) — render as InitiativeCards when available */}
+      {Object.keys(data.maintenanceInitiatives || {}).length > 0 && (
+        <div style={{ marginTop: THEME.sp.lg }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: THEME.sp.sm,
+            padding: `${THEME.sp.sm}px ${THEME.sp.md}px`,
+            marginBottom: THEME.sp.sm,
+            borderBottom: "1px solid #1E1E3A",
+          }}>
+            <span style={{ color: THEME.colors.maintenance.accent, opacity: 0.6, fontSize: 14, fontFamily: THEME.fonts.heading }}>⚙</span>
+            <span style={{ fontFamily: THEME.fonts.heading, fontSize: 13, color: "#8888AA" }}>
+              maintenance
+            </span>
+            <span style={{ fontSize: 11, color: "#555577" }}>900–999</span>
+          </div>
+          {Object.entries(data.maintenanceInitiatives)
+            .sort(([a], [b]) => Number(a) - Number(b))
+            .map(([band, init]) => (
+              <InitiativeCard key={band} band={band} initiative={init} futureSlices={data.futureSlices} colorSet={THEME.colors.maintenance} />
+            ))}
+        </div>
+      )}
+
+      {/* Flat maintenance collector — only show if no maintenanceInitiatives */}
+      {Object.keys(data.maintenanceInitiatives || {}).length === 0 && (
+        <MaintenanceCollectorCard quality={data.quality} investigation={data.investigation} maintenance={data.maintenance} />
+      )}
       <FutureWorkCollectorCard futureWork={data.futureWork} />
 
       {data.devlog && (
@@ -1445,7 +1472,7 @@ export default function ProjectStructureVisualizer() {
   // 'idle' | 'refreshing' | 'error'
   const [refreshState, setRefreshState] = useState('idle');
   const [panelExpanded, setPanelExpanded] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('panel-expanded')) ?? false; } catch { return false; }
+    try { return JSON.parse(localStorage.getItem('panel-expanded')) ?? true; } catch { return true; }
   });
   const handlePanelToggle = useCallback(() => {
     setPanelExpanded((v) => { const next = !v; localStorage.setItem('panel-expanded', JSON.stringify(next)); return next; });

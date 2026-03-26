@@ -130,7 +130,7 @@
         const PROJECTS = await loadProjects();
         window.__PROJECTS = PROJECTS;
 
-        const resp = await fetch('./project-structure-viz.jsx');
+        const resp = await fetch(`./project-structure-viz.jsx?v=${Date.now()}`);
         if (!resp.ok) throw new Error(`Failed to load JSX: ${resp.status}`);
         let src = await resp.text();
 

@@ -62,6 +62,10 @@ def _load_mcp_config() -> dict | None:
 class Handler(http.server.SimpleHTTPRequestHandler):
     """Static file handler with /api/refresh endpoint."""
 
+    def end_headers(self) -> None:
+        self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def do_POST(self) -> None:
         if self.path == "/api/refresh":
             self._handle_refresh()
