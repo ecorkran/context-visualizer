@@ -672,6 +672,10 @@ const FutureWorkCollectorCard = ({ futureWork }) => {
                   backgroundColor: colorSet.bg + "60",
                 }}>
                 <span style={{
+                  fontFamily: THEME.fonts.heading, fontSize: 16, color: "#FFD700",
+                  fontWeight: 700, opacity: 0.3, minWidth: 36, flexShrink: 0,
+                }}>{group.initiativeIndex}</span>
+                <span style={{
                   color: colorSet.accent, fontSize: 12, fontFamily: THEME.fonts.heading,
                   width: 16, flexShrink: 0, transition: "transform 0.15s ease",
                   transform: expandedGroups[gi] ? "rotate(90deg)" : "rotate(0deg)", display: "inline-block", opacity: 0.5,
