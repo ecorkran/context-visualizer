@@ -1,5 +1,29 @@
 # DEVLOG — context-visualizer
 
+## 20260331
+
+###### Info Panels, Maintenance Initiatives, and Cache Fixes (v0.2.4–v0.2.7)
+
+**Commits:**
+- `6b40491` feat: render maintenanceInitiatives as full initiative cards
+- `c8f76a7` chore: bump version to v0.2.4
+- `e3ec74c` feat: add initiative index to future work group headers
+- `1518644` feat: add slice info panel and cache-busting improvements
+- `222a413` fix: auto-size info panel to content instead of fixed minHeight
+- `48abb93` chore: bump version to v0.2.5
+- `4afacd0` feat: add info panel to architecture docs and update CLAUDE.md
+
+**Changes:**
+- Added `ⓘ` info icon to slices, architecture docs, and future work items — toggles inline description panel independently from task expansion
+- Cross-references `slicePlan.entries` descriptions to slice DocBlocks; scoped by initiative index to prevent cross-initiative collisions
+- Renders `maintenanceInitiatives` (900+ band) as full `InitiativeCard` with olive-green color tint; falls back to flat `MaintenanceCollectorCard` when field absent
+- Added `colorSet` and `accentColor` props to `InitiativeCard` for themed rendering
+- Added initiative index numbers to future work group headers
+- Stripped `**` markers from future work item display names
+- Added `Cache-Control: no-store` header to all responses and `Date.now()` cache-bust param to JSX fetch
+- Default project panel to expanded on first load
+- Auto-sizes info panel to content instead of fixed minHeight
+
 ## 20260317
 
 ###### Worktree Strip Polish (v0.2.3)

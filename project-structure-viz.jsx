@@ -702,14 +702,29 @@ const MaintenanceCollectorCard = ({ quality, investigation, maintenance }) => {
 // ============================================================================
 // FUTURE WORK COLLECTOR CARD — aggregated future work from MCP (config-gated)
 // ============================================================================
-const FutureWorkCollectorCard = ({ futureWork }) => {
+const FutureWorkCollectorCard = ({ futureWork, initiatives, maintenanceInitiatives }) => {
   const [expanded, setExpanded] = useState(false);
   const [expandedGroups, setExpandedGroups] = useState({});
+  const [infoOpen, setInfoOpen] = useState({});
 
   if (!futureWork || !futureWork.groups || futureWork.groups.length === 0) return null;
 
   const colorSet = THEME.colors.collector;
   const toggleGroup = (idx) => setExpandedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  const toggleInfo = (key) => setInfoOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  // Build description lookup scoped by initiative index to avoid cross-initiative collisions
+  const descLookup = useMemo(() => {
+    const lookup = {};
+    const allInits = { ...(initiatives || {}), ...(maintenanceInitiatives || {}) };
+    Object.entries(allInits).forEach(([initIdx, init]) => {
+      const sp = init.slicePlan;
+      if (!sp) return;
+      (sp.entries || []).forEach(e => { if (e.description) lookup[`${initIdx}:${e.index}`] = e.description; });
+      (sp.futureWork || []).forEach(fw => { if (fw.description) lookup[`${initIdx}:${fw.index}`] = fw.description; });
+    });
+    return lookup;
+  }, [initiatives, maintenanceInitiatives]);
 
   return (
     <div style={{
@@ -769,27 +784,53 @@ const FutureWorkCollectorCard = ({ futureWork }) => {
               </div>
               {expandedGroups[gi] && (
                 <div style={{ padding: `${THEME.sp.xs}px ${THEME.sp.md}px ${THEME.sp.sm}px` }}>
-                  {group.items.map((item, ii) => (
+                  {group.items.map((item, ii) => {
+                    const desc = descLookup[`${group.initiativeIndex}:${item.index}`];
+                    const infoKey = `${gi}-${ii}`;
+                    return (
                     <div key={ii} style={{
-                      display: "flex", alignItems: "flex-start", gap: THEME.sp.sm,
                       padding: "3px 0",
                       borderBottom: ii < group.items.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none",
                     }}>
-                      <span style={{
-                        fontSize: 11, lineHeight: "18px", flexShrink: 0,
-                        color: item.done ? THEME.status.complete : "#555577",
-                      }}>{item.done ? "✓" : "○"}</span>
-                      <span style={{
-                        fontFamily: THEME.fonts.heading, fontSize: 11, color: colorSet.accent,
-                        opacity: 0.5, minWidth: 28, flexShrink: 0, lineHeight: "18px",
-                      }}>{item.index}</span>
-                      <span style={{
-                        fontFamily: THEME.fonts.body, fontSize: 12, lineHeight: "18px",
-                        color: item.done ? (colorSet.text + "60") : (colorSet.text + "B0"),
-                        textDecoration: item.done ? "line-through" : "none",
-                      }}>{item.name.replace(/\*\*/g, "")}</span>
+                      <div style={{ display: "flex", alignItems: "flex-start", gap: THEME.sp.sm }}>
+                        <span style={{
+                          fontSize: 11, lineHeight: "18px", flexShrink: 0,
+                          color: item.done ? THEME.status.complete : "#555577",
+                        }}>{item.done ? "✓" : "○"}</span>
+                        <span style={{
+                          fontFamily: THEME.fonts.heading, fontSize: 11, color: colorSet.accent,
+                          opacity: 0.5, minWidth: 28, flexShrink: 0, lineHeight: "18px",
+                        }}>{item.index}</span>
+                        <span style={{
+                          fontFamily: THEME.fonts.body, fontSize: 12, lineHeight: "18px",
+                          color: item.done ? (colorSet.text + "60") : (colorSet.text + "B0"),
+                          textDecoration: item.done ? "line-through" : "none",
+                          flex: 1,
+                        }}>{item.name.replace(/\*\*/g, "")}</span>
+                        {desc && (
+                          <span
+                            onClick={() => toggleInfo(infoKey)}
+                            style={{
+                              cursor: "pointer", flexShrink: 0, fontSize: 12, lineHeight: "18px",
+                              color: infoOpen[infoKey] ? colorSet.accent : colorSet.text,
+                              opacity: infoOpen[infoKey] ? 0.9 : 0.6,
+                              transition: "color 0.15s ease, opacity 0.15s ease",
+                              padding: "0 2px",
+                            }}
+                            title="Overview"
+                          >ⓘ</span>
+                        )}
+                      </div>
+                      {infoOpen[infoKey] && desc && (
+                        <div style={{
+                          marginTop: THEME.sp.xs, paddingLeft: 46,
+                          fontFamily: THEME.fonts.body, fontSize: 12,
+                          color: colorSet.text, opacity: 0.6, lineHeight: "18px",
+                        }}>{desc}</div>
+                      )}
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1003,7 +1044,7 @@ const ProjectView = ({ data, projectKey }) => {
       {Object.keys(data.maintenanceInitiatives || {}).length === 0 && (
         <MaintenanceCollectorCard quality={data.quality} investigation={data.investigation} maintenance={data.maintenance} />
       )}
-      <FutureWorkCollectorCard futureWork={data.futureWork} />
+      <FutureWorkCollectorCard futureWork={data.futureWork} initiatives={data.initiatives} maintenanceInitiatives={data.maintenanceInitiatives} />
 
       {data.devlog && (
         <div style={{ marginTop: THEME.sp.md }}>
