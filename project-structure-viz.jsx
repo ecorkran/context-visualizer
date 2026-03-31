@@ -208,27 +208,54 @@ const TaskItemList = ({ items, colorSet }) => {
 // ============================================================================
 // FUTURE WORK BLOCK — solid dimmed border + hash pattern
 // ============================================================================
-const FutureBlock = ({ item, colorSet, label = "FUTURE" }) => (
-  <div style={{
-    position: "relative", borderRadius: THEME.radius,
-    border: `1px solid ${colorSet.border}40`,
-    padding: THEME.sp.md, marginBottom: THEME.sp.sm, overflow: "hidden",
-  }}>
-    <div style={{ position: "absolute", inset: 0, backgroundColor: colorSet.bg + "40", borderRadius: THEME.radius }} />
-    <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", borderRadius: THEME.radius }}>
-      <rect width="100%" height="100%" fill="url(#fh)" />
-    </svg>
-    <div style={{ position: "relative", display: "flex", alignItems: "center", gap: THEME.sp.sm }}>
-      <span style={{
-        display: "inline-block", width: 8, height: 8, borderRadius: "50%",
-        backgroundColor: THEME.status["not-started"], flexShrink: 0,
-      }} />
-      <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: colorSet.accent, opacity: 0.5, minWidth: 28 }}>{item.index}</span>
-      <Badge colorSet={colorSet} dimmed>{label}</Badge>
-      <span style={{ fontFamily: THEME.fonts.body, fontSize: 13, color: colorSet.text, opacity: 0.6, fontWeight: 500 }}>{item.name}</span>
+const FutureBlock = ({ item, colorSet, label = "FUTURE", description }) => {
+  const [infoOpen, setInfoOpen] = useState(false);
+  return (
+    <div style={{
+      position: "relative", borderRadius: THEME.radius,
+      border: `1px solid ${colorSet.border}40`,
+      padding: THEME.sp.md, marginBottom: THEME.sp.sm, overflow: "hidden",
+    }}>
+      <div style={{ position: "absolute", inset: 0, backgroundColor: colorSet.bg + "40", borderRadius: THEME.radius }} />
+      <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", borderRadius: THEME.radius }}>
+        <rect width="100%" height="100%" fill="url(#fh)" />
+      </svg>
+      <div style={{ position: "relative" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.sm }}>
+          <span style={{
+            display: "inline-block", width: 8, height: 8, borderRadius: "50%",
+            backgroundColor: THEME.status["not-started"], flexShrink: 0,
+          }} />
+          <span style={{ fontFamily: THEME.fonts.heading, fontSize: 11, color: colorSet.accent, opacity: 0.5, minWidth: 28 }}>{item.index}</span>
+          <Badge colorSet={colorSet} dimmed>{label}</Badge>
+          <span style={{ fontFamily: THEME.fonts.body, fontSize: 13, color: colorSet.text, opacity: 0.6, fontWeight: 500, flex: 1 }}>{item.name.replace(/\*\*/g, "")}</span>
+          {description && (
+            <span
+              onClick={() => setInfoOpen(!infoOpen)}
+              style={{
+                cursor: "pointer", flexShrink: 0, fontSize: 13, lineHeight: 1,
+                color: infoOpen ? colorSet.accent : colorSet.text,
+                opacity: 0.6, transition: "color 0.15s ease, opacity 0.15s ease",
+                padding: "0 2px",
+              }}
+              title="Overview"
+            >ⓘ</span>
+          )}
+        </div>
+        {infoOpen && description && (
+          <div style={{
+            marginTop: THEME.sp.sm, paddingTop: THEME.sp.sm,
+            borderTop: `1px solid ${colorSet.border}60`,
+            minHeight: 72, fontFamily: THEME.fonts.body, fontSize: 12,
+            color: colorSet.text, opacity: 0.6, lineHeight: "18px",
+          }}>
+            {description}
+          </div>
+        )}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ============================================================================
 // FUTURE SLICES GROUP — collapsible collection of future slices
@@ -268,7 +295,7 @@ const FutureSlicesGroup = ({ items }) => {
       </div>
       {expanded && (
         <div style={{ marginTop: THEME.sp.sm, paddingLeft: THEME.sp.md }}>
-          {[...items].sort((a, b) => parseInt(a.index) - parseInt(b.index)).map((fs, i) => <FutureBlock key={i} item={fs} colorSet={colorSet} label="FEATURE" />)}
+          {[...items].sort((a, b) => parseInt(a.index) - parseInt(b.index)).map((fs, i) => <FutureBlock key={i} item={fs} colorSet={colorSet} label="FEATURE" description={fs.description} />)}
         </div>
       )}
     </div>
@@ -283,9 +310,10 @@ const DocBlock = ({
   colorSet, label, name, index, status, children, expandable,
   defaultExpanded = false, count, countLabel, item,
   taskCount, completedTasks, showTaskPill = false, futureWork,
-  taskItems,
+  taskItems, infoContent,
 }) => {
   const [expanded, setExpanded] = useState(defaultExpanded);
+  const [infoOpen, setInfoOpen] = useState(false);
   const hasKids = expandable && (children || (taskItems && taskItems.length > 0));
   const hasFuture = futureWork?.length > 0;
 
@@ -318,7 +346,28 @@ const DocBlock = ({
             {count} {countLabel || (count === 1 ? "slice" : "slices")}
           </span>
         )}
+        {infoContent && (
+          <span
+            onClick={(e) => { e.stopPropagation(); setInfoOpen(!infoOpen); }}
+            style={{
+              cursor: "pointer", flexShrink: 0, fontSize: 13, lineHeight: 1,
+              color: infoOpen ? colorSet.accent : colorSet.text,
+              opacity: infoOpen ? 0.9 : 0.6,
+              transition: "color 0.15s ease, opacity 0.15s ease",
+              padding: "0 2px",
+            }}
+            title="Overview"
+          >ⓘ</span>
+        )}
       </div>
+      {infoOpen && infoContent && (
+        <div style={{
+          marginTop: THEME.sp.sm, paddingTop: THEME.sp.sm,
+          borderTop: `1px solid ${colorSet.border}60`,
+        }}>
+          {infoContent}
+        </div>
+      )}
       {expanded && (
         <div style={{ marginTop: THEME.sp.md, paddingLeft: hasKids ? THEME.sp.md : 0 }}>
           {children}
@@ -331,7 +380,7 @@ const DocBlock = ({
                 margin: `${THEME.sp.md}px 0 ${THEME.sp.sm}px 0`,
                 paddingTop: THEME.sp.sm, borderTop: "1px solid #2A2A4E",
               }}>Future Work</div>
-              {futureWork.map((fw, i) => <FutureBlock key={i} item={fw} colorSet={colorSet} />)}
+              {futureWork.map((fw, i) => <FutureBlock key={i} item={fw} colorSet={colorSet} description={fw.description} />)}
             </>
           )}
         </div>
@@ -408,16 +457,36 @@ const InitiativeCard = ({ band, initiative, futureSlices, accentColor, colorSet 
               name={initiative.arch.name} index={initiative.arch.index}
               status={initiative.arch.status} item={initiative.arch} />
           )}
-          {initiative.slicePlan && (
+          {initiative.slicePlan && (() => {
+            const entryDescs = {};
+            (initiative.slicePlan.entries || []).forEach(e => { if (e.description) entryDescs[String(e.index)] = e.description; });
+            return (
             <DocBlock colorSet={THEME.colors.slicePlan} label="PLAN"
               name={initiative.slicePlan.name} index={initiative.slicePlan.index}
               status={initiative.slicePlan.status} item={initiative.slicePlan}
               expandable={initiative.slices.length > 0 || (initiative.slicePlan.futureWork || []).length > 0}
               count={initiative.slices.length} futureWork={initiative.slicePlan.futureWork}>
-              {initiative.slices.map((sl, i) => (
+              {initiative.slices.map((sl, i) => {
+                const desc = sl.description || entryDescs[String(sl.index)];
+                return (
                 <DocBlock key={i} colorSet={THEME.colors.slice} label="SLICE"
                   name={sl.name} index={sl.index} status={sl.status} item={sl}
-                  expandable={!!sl.tasks || sl.features?.length > 0}>
+                  expandable={!!sl.tasks || sl.features?.length > 0}
+                  infoContent={
+                    <div style={{
+                      minHeight: 72, padding: `${THEME.sp.sm}px 0`,
+                      fontFamily: THEME.fonts.body, fontSize: 12,
+                      color: THEME.colors.slice.text, opacity: 0.9,
+                      lineHeight: "18px",
+                    }}>
+                      {desc || (
+                        <span style={{ fontStyle: "italic", opacity: 0.5 }}>
+                          {sl.status === "complete" ? `Completed ${sl.dateUpdated || ""}` : `Created ${sl.dateCreated || ""}`}
+                          {sl.tasks ? ` · ${sl.tasks.completedTasks}/${sl.tasks.taskCount} tasks` : ""}
+                        </span>
+                      )}
+                    </div>
+                  }>
                   {sl.tasks && (
                     <DocBlock colorSet={THEME.colors.tasks} label="TASKS"
                       name={sl.tasks.name} index={sl.tasks.index}
@@ -431,9 +500,11 @@ const InitiativeCard = ({ band, initiative, futureSlices, accentColor, colorSet 
                       name={f.name} index={f.index} status={f.status} item={f} />
                   ))}
                 </DocBlock>
-              ))}
+                );
+              })}
             </DocBlock>
-          )}
+            );
+          })()}
 
           {related.length > 0 && <FutureSlicesGroup items={related} />}
 
@@ -708,7 +779,7 @@ const FutureWorkCollectorCard = ({ futureWork }) => {
                         fontFamily: THEME.fonts.body, fontSize: 12, lineHeight: "18px",
                         color: item.done ? (colorSet.text + "60") : (colorSet.text + "B0"),
                         textDecoration: item.done ? "line-through" : "none",
-                      }}>{item.name}</span>
+                      }}>{item.name.replace(/\*\*/g, "")}</span>
                     </div>
                   ))}
                 </div>
