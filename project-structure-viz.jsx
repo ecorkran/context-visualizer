@@ -246,7 +246,7 @@ const FutureBlock = ({ item, colorSet, label = "FUTURE", description }) => {
           <div style={{
             marginTop: THEME.sp.sm, paddingTop: THEME.sp.sm,
             borderTop: `1px solid ${colorSet.border}60`,
-            minHeight: 72, fontFamily: THEME.fonts.body, fontSize: 12,
+            fontFamily: THEME.fonts.body, fontSize: 12,
             color: colorSet.text, opacity: 0.6, lineHeight: "18px",
           }}>
             {description}
@@ -474,7 +474,7 @@ const InitiativeCard = ({ band, initiative, futureSlices, accentColor, colorSet 
                   expandable={!!sl.tasks || sl.features?.length > 0}
                   infoContent={
                     <div style={{
-                      minHeight: 72, padding: `${THEME.sp.sm}px 0`,
+                      padding: `${THEME.sp.sm}px 0`,
                       fontFamily: THEME.fonts.body, fontSize: 12,
                       color: THEME.colors.slice.text, opacity: 0.9,
                       lineHeight: "18px",
