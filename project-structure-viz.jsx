@@ -455,7 +455,15 @@ const InitiativeCard = ({ band, initiative, futureSlices, accentColor, colorSet 
           {initiative.arch && (
             <DocBlock colorSet={THEME.colors.architecture} label="ARCH"
               name={initiative.arch.name} index={initiative.arch.index}
-              status={initiative.arch.status} item={initiative.arch} />
+              status={initiative.arch.status} item={initiative.arch}
+              infoContent={initiative.arch.description ? (
+                <div style={{
+                  padding: `${THEME.sp.sm}px 0`,
+                  fontFamily: THEME.fonts.body, fontSize: 12,
+                  color: THEME.colors.architecture.text, opacity: 0.9,
+                  lineHeight: "18px",
+                }}>{initiative.arch.description}</div>
+              ) : undefined} />
           )}
           {initiative.slicePlan && (() => {
             const entryDescs = {};

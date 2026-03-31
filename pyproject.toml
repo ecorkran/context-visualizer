@@ -1,6 +1,6 @@
 [project]
 name = "context-visualizer"
-version = "0.2.5"
+version = "0.2.6"
 description = "Interactive dashboard for Context Forge projects — visualize initiatives, slices, and documents across your project portfolio"
 readme = "README.md"
 requires-python = ">=3.13"
