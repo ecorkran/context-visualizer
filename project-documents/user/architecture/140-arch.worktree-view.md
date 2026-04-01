@@ -52,7 +52,7 @@ After evaluating three approaches — vertical nesting (worktree-as-section), ho
 
 ### Visual Design
 
-- Collapsed worktree strips use the same narrow-strip pattern as the project panel sidebar (already established in initiative 105).
+- Collapsed worktree strips use the same narrow-strip pattern as the project panel sidebar (already established in initiative 120).
 - The strip shows: branch name (rotated or truncated), initiative count badge, and a mini progress bar or completion fraction.
 - Active worktree column header shows branch name and worktree metadata (associated slice, agent if available).
 - Initiative indices across worktrees do not collide (Context Forge enforces this), so the ordering within each column is natural.
@@ -98,5 +98,5 @@ The architecture remains read-only and MCP-driven. The visualizer calls `worktre
 ## Related Work
 
 - Context Forge worktree support (available since v0.4.2)
-- [105-arch.project-management.md](105-arch.project-management.md) — Project panel and MCP integration that this initiative builds upon
-- Slice 108 (MCP client integration) — Provides the MCP client infrastructure this feature will consume
+- [120-arch.project-management.md](120-arch.project-management.md) — Project panel and MCP integration that this initiative builds upon
+- Slice 123 (MCP client integration) — Provides the MCP client infrastructure this feature will consume

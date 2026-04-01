@@ -2,20 +2,20 @@
 docType: tasks
 slice: project-management-api
 project: context-visualizer
-lld: user/slices/105-slice.project-management-api.md
+lld: user/slices/120-slice.project-management-api.md
 dependencies: []
-projectState: Initiative 100 complete (serve.py, manifest.json, parse.py with update_manifest). Bug fixes committed. Slice 105 design approved.
+projectState: Initiative 100 complete (serve.py, manifest.json, parse.py with update_manifest). Bug fixes committed. Slice 120 design approved.
 dateCreated: 20260226
 dateUpdated: 20260226
 ---
 
 ## Context Summary
 
-- Working on slice 105: Project Management API
+- Working on slice 120: Project Management API
 - Initiative 100 complete — `serve.py` serves static files with `POST /api/refresh`; `parse.py` writes per-project JSON to `projects/` and updates `manifest.json`
 - This slice adds `displayName` to manifest entries and three catalog management endpoints (`GET /api/projects`, `POST /api/projects`, `DELETE /api/projects/{key}`)
 - No UI changes — backend only, testable via `curl`
-- Next planned slice: 106 (Project Panel UI), which consumes these endpoints
+- Next planned slice: 121 (Project Panel UI), which consumes these endpoints
 - Key files: `parse.py`, `serve.py`, `tests/test_parse.py`, `tests/test_serve.py`
 
 ---
@@ -165,7 +165,7 @@ dateUpdated: 20260226
 - [x] Verify `/api/refresh` still works after the routing changes
 - [x] Run full test suite: `pytest tests/`
 - [x] Commit updated `manifest.json` with backfilled `displayName` fields
-- [x] Final commit: update slice status to `complete` in `105-slice.project-management-api.md`
+- [x] Final commit: update slice status to `complete` in `120-slice.project-management-api.md`
 
 **Success criteria:**
 - [x] All endpoints work correctly via curl

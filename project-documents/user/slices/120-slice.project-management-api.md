@@ -2,9 +2,9 @@
 docType: slice-design
 slice: project-management-api
 project: context-visualizer
-parent: user/architecture/105-slices.project-management.md
+parent: user/architecture/120-slices.project-management.md
 dependencies: []
-interfaces: [106-project-panel-ui]
+interfaces: [121-project-panel-ui]
 status: complete
 dateCreated: 20260226
 dateUpdated: 20260226
@@ -14,7 +14,7 @@ dateUpdated: 20260226
 
 ## Overview
 
-Add server-side endpoints for managing the project catalog (list, add, remove) and extend the manifest schema with a `displayName` field. This slice delivers the backend contract that the panel UI (slice 106) will consume. No UI changes.
+Add server-side endpoints for managing the project catalog (list, add, remove) and extend the manifest schema with a `displayName` field. This slice delivers the backend contract that the panel UI (slice 121) will consume. No UI changes.
 
 ## Value
 
@@ -30,10 +30,10 @@ Users (and the future panel UI) gain a programmatic interface for project catalo
 - Tests for all endpoints and `displayName` population
 
 **Excluded:**
-- UI changes (slice 106)
+- UI changes (slice 121)
 - Remote/GitHub sources
 - Project discovery/scan
-- Tab bar removal (slice 106)
+- Tab bar removal (slice 121)
 
 ## Dependencies
 
@@ -98,7 +98,7 @@ New entry:
 
 `displayName` is sourced from `model["name"]` in `build_model()` output — the human-readable project name that `parse.py` already computes. Written by `update_manifest()`.
 
-**Backward compatibility:** Existing manifest entries without `displayName` are valid. `GET /api/projects` returns whatever fields exist; the panel UI (slice 106) will fall back to `key` if `displayName` is absent. Re-parsing any project backfills the field.
+**Backward compatibility:** Existing manifest entries without `displayName` are valid. `GET /api/projects` returns whatever fields exist; the panel UI (slice 121) will fall back to `key` if `displayName` is absent. Re-parsing any project backfills the field.
 
 ### `parse.py` Changes
 
@@ -244,10 +244,10 @@ def _handle_remove_project(self, key: str) -> None:
 ## Integration Points
 
 ### Provides to Other Slices
-- `GET /api/projects` — Slice 106 (panel UI) reads this to populate the project list
-- `POST /api/projects` — Slice 106 calls this when user adds a project via the panel
-- `DELETE /api/projects/{key}` — Slice 106 calls this when user removes a project from the panel
-- `displayName` field in manifest — Slice 106 uses this to render project names without loading full JSON
+- `GET /api/projects` — Slice 121 (panel UI) reads this to populate the project list
+- `POST /api/projects` — Slice 121 calls this when user adds a project via the panel
+- `DELETE /api/projects/{key}` — Slice 121 calls this when user removes a project from the panel
+- `displayName` field in manifest — Slice 121 uses this to render project names without loading full JSON
 
 ### Consumes from Other Slices
 - None beyond initiative 100 foundation (already complete)

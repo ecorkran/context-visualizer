@@ -34,7 +34,7 @@ Backend plumbing that makes worktree data available to the frontend. Testable vi
 ## Dependencies
 
 ### Prerequisites
-- MCP client infrastructure (slice 108) — already complete
+- MCP client infrastructure (slice 123) — already complete
 - `_mcp_name_to_id` cache and `_refresh_name_to_id()` helper — already in `serve.py`
 
 ### Interfaces Required

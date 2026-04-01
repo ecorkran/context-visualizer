@@ -2,8 +2,8 @@
 docType: slice-design
 slice: mcp-client
 project: context-visualizer
-parent: user/architecture/105-slices.project-management.md
-dependencies: [105-project-management-api, 106-project-panel-ui, 107-local-project-discovery]
+parent: user/architecture/120-slices.project-management.md
+dependencies: [120-project-management-api, 121-project-panel-ui, 122-local-project-discovery]
 interfaces: []
 status: complete
 dateCreated: 20260301
@@ -45,7 +45,7 @@ Establishes context-visualizer as a true consumer of Context Forge's canonical p
 ### Prerequisites
 
 - **Context-forge slice 164** (MCP Introspection Tools) — provides the `project_structure` and `project_list` MCP tools
-- **Slices 105-107** (complete) — existing catalog API and panel UI that this slice integrates with
+- **Slices 120-122** (complete) — existing catalog API and panel UI that this slice integrates with
 
 ### External
 

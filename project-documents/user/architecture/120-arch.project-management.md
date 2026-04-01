@@ -2,7 +2,7 @@
 docType: architecture
 layer: project
 project: context-visualizer
-archIndex: 105
+archIndex: 120
 component: project-management
 dateCreated: 20260226
 dateUpdated: 20260226

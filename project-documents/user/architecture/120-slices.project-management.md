@@ -1,6 +1,6 @@
 ---
 docType: slice-plan
-parent: user/architecture/105-arch.project-management.md
+parent: user/architecture/120-arch.project-management.md
 project: context-visualizer
 dateCreated: 20260226
 dateUpdated: 20260226
@@ -10,7 +10,7 @@ status: complete
 # Slice Plan: Project Management
 
 ## Parent Document
-[105-arch.project-management.md](105-arch.project-management.md) — Architectural component introducing user-controlled project catalog management: a collapsible left panel that serves as both the project selector and the add/remove interface, backed by server-side catalog endpoints.
+[120-arch.project-management.md](120-arch.project-management.md) — Architectural component introducing user-controlled project catalog management: a collapsible left panel that serves as both the project selector and the add/remove interface, backed by server-side catalog endpoints.
 
 ## Foundation Work
 
@@ -54,11 +54,11 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
    - **Risk:** Low-Medium — layout change touches the root component; collapsed/expanded animation and responsive resizing need care
    - **Effort:** 3/5
 
-107. [x] **Local project discovery (scan)** — Endpoint that walks a root directory looking for `project-documents/user/` patterns and returns candidate project paths for the user to confirm-add. Depends on Project Management API. Additionally, for the existing Add button on project path (if it remains), allow the user to browse for the path.  Risk: Low. Effort: 2/5.
+122. [x] **Local project discovery (scan)** — Endpoint that walks a root directory looking for `project-documents/user/` patterns and returns candidate project paths for the user to confirm-add. Depends on Project Management API. Additionally, for the existing Add button on project path (if it remains), allow the user to browse for the path.  Risk: Low. Effort: 2/5.
 
-108. [x] **MCP client integration** — Add a minimal stdlib-only MCP client so context-visualizer can consume project structure data from context-forge's MCP server. Dual-mode operation: MCP mode when connected, local mode (parse.py) as fallback. New `GET /api/structures` endpoint, updated `loadProjects()`, mode indicator in panel. Depends on context-forge slice 164 (MCP Introspection Tools). Risk: Medium. Effort: 3/5.
+123. [x] **MCP client integration** — Add a minimal stdlib-only MCP client so context-visualizer can consume project structure data from context-forge's MCP server. Dual-mode operation: MCP mode when connected, local mode (parse.py) as fallback. New `GET /api/structures` endpoint, updated `loadProjects()`, mode indicator in panel. Depends on context-forge slice 164 (MCP Introspection Tools). Risk: Medium. Effort: 3/5.
 
-109. [x] **Collectors: Maintenance and Future Work** — Add two synthetic initiatives to the visualizer. A maintenance collector groups 9xx maintenance slices into a dedicated initiative. A future work collector aggregates future work items across all slice plans (via MCP `workflow_future` tool), displayed as an initiative with items grouped by source slice plan. Both are additive — existing slice plan views remain unchanged. Future work collector gated by internal config setting (not UI-exposed). Base color: saturated blue (~#08A8F6). Depends on MCP client integration.
+124. [x] **Collectors: Maintenance and Future Work** — Add two synthetic initiatives to the visualizer. A maintenance collector groups 9xx maintenance slices into a dedicated initiative. A future work collector aggregates future work items across all slice plans (via MCP `workflow_future` tool), displayed as an initiative with items grouped by source slice plan. Both are additive — existing slice plan views remain unchanged. Future work collector gated by internal config setting (not UI-exposed). Base color: saturated blue (~#08A8F6). Depends on MCP client integration.
    - **Value:** Gives users a consolidated view of maintenance work and outstanding future items without navigating individual slice plans. The maintenance initiative surfaces 9xx slices that otherwise lack a natural home in the initiative list.
    - **Success Criteria:**
      - 9xx maintenance slices render under a dedicated "Maintenance" initiative
@@ -67,7 +67,7 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
      - Internal config setting controls whether future work initiative is displayed
      - Existing slice plan future work sections remain unchanged
      - Base color ~#08A8F6 applied to collector initiatives
-   - **Dependencies:** MCP client integration (slice 108)
+   - **Dependencies:** MCP client integration (slice 123)
    - **Interfaces:** Consumes: MCP `workflow_future` tool, project structure data. Provides: synthetic initiative entries in the visualizer UI.
    - **Risk:** Low-Medium — future work collector depends on MCP mode; maintenance collector is local-only
    - **Effort:** 3/5
@@ -76,7 +76,7 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 
 - **No migration slices needed** — Both slices add new capabilities rather than restructuring existing behavior. The tab bar removal in Slice 106 is a direct replacement, not a migration.
 - **displayName resolution** — `parse.py` already has access to `data["name"]` from parsed output. Writing it to the manifest is a one-line addition during the manifest upsert step.
-- **Remove-and-delete trade-off** — Whether `DELETE /api/projects/{key}` also deletes the `{key}-structure.json` file is a slice-design decision. Both options leave the system in a working state; the difference is convenience vs. tidiness. Resolve during Slice 105 design.
+- **Remove-and-delete trade-off** — Whether `DELETE /api/projects/{key}` also deletes the `{key}-structure.json` file is a slice-design decision. Both options leave the system in a working state; the difference is convenience vs. tidiness. Resolve during Slice 120 design.
 - **Tab bar removal timing** — The tab bar is only removed in Slice 106, not Slice 105. During the interval between the two slices (when the API exists but the panel does not), the UI is unchanged and fully functional.
 - **Refresh button relocation** — The global ↻ button currently sits in the header beside the tab bar. Slice 106 moves it to the panel header, which is the natural home for "refresh all projects." This is in scope for Slice 106 and should be called out explicitly in that slice design.
 - **No dedicated integration slice** — Slice 106's end-to-end verification covers the cross-cutting concerns. The component count and surface area don't warrant a separate integration slice.

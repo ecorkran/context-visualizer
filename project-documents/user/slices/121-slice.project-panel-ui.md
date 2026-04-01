@@ -2,8 +2,8 @@
 docType: slice-design
 slice: project-panel-ui
 project: context-visualizer
-parent: user/architecture/105-slices.project-management.md
-dependencies: [105-project-management-api]
+parent: user/architecture/120-slices.project-management.md
+dependencies: [120-project-management-api]
 interfaces: []
 status: complete
 dateCreated: 20260228
@@ -14,7 +14,7 @@ dateUpdated: 20260228
 
 ## Overview
 
-Replace the header tab bar with a collapsible left-side panel that serves as both the project selector and the project management interface. The panel renders the project list from the catalog API (slice 105), wires add/remove controls to `POST /api/projects` and `DELETE /api/projects/{key}`, and persists its collapsed/expanded state in `localStorage`.
+Replace the header tab bar with a collapsible left-side panel that serves as both the project selector and the project management interface. The panel renders the project list from the catalog API (slice 120), wires add/remove controls to `POST /api/projects` and `DELETE /api/projects/{key}`, and persists its collapsed/expanded state in `localStorage`.
 
 ## Value
 
@@ -35,7 +35,7 @@ Users gain a unified control surface for project navigation and management — a
 - Loading/error indicators for async operations (add, refresh)
 
 **Excluded:**
-- Backend API changes (delivered in slice 105)
+- Backend API changes (delivered in slice 120)
 - Remote/GitHub project sources
 - Project discovery/scan
 - Drag-to-reorder or manual ordering of projects
@@ -44,7 +44,7 @@ Users gain a unified control surface for project navigation and management — a
 ## Dependencies
 
 ### Prerequisites
-- Slice 105 (Project Management API) — complete. Provides `GET /api/projects`, `POST /api/projects`, `DELETE /api/projects/{key}`, `POST /api/refresh`, manifest `displayName` field.
+- Slice 120 (Project Management API) — complete. Provides `GET /api/projects`, `POST /api/projects`, `DELETE /api/projects/{key}`, `POST /api/refresh`, manifest `displayName` field.
 
 ### Interfaces Required
 - `GET /api/projects` → `{ status, projects: [{ key, displayName, sourcePath, file }] }`

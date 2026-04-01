@@ -2,17 +2,17 @@
 docType: tasks
 slice: mcp-client
 project: context-visualizer
-lld: user/slices/108-slice.mcp-client.md
-dependencies: [105-project-management-api, 106-project-panel-ui, 107-local-project-discovery, context-forge-slice-164]
-projectState: Slices 105-107 complete. serve.py has catalog API endpoints (GET/POST/DELETE /api/projects, POST /api/refresh, GET /api/info, GET /api/discover). ProjectPanel UI with add/remove/refresh controls. 67 tests passing (52 backend + 12 E2E + 3 smoke). Zero runtime dependencies.
+lld: user/slices/123-slice.mcp-client.md
+dependencies: [120-project-management-api, 121-project-panel-ui, 122-local-project-discovery, context-forge-slice-164]
+projectState: Slices 120-122 complete. serve.py has catalog API endpoints (GET/POST/DELETE /api/projects, POST /api/refresh, GET /api/info, GET /api/discover). ProjectPanel UI with add/remove/refresh controls. 67 tests passing (52 backend + 12 E2E + 3 smoke). Zero runtime dependencies.
 dateCreated: 20260301
 dateUpdated: 20260301
 ---
 
 ## Context Summary
 
-- Working on slice 108: MCP Client
-- Slices 105 (catalog API), 106 (panel UI), 107 (discovery) are complete
+- Working on slice 123: MCP Client
+- Slices 120 (catalog API), 121 (panel UI), 122 (discovery) are complete
 - This slice adds a minimal stdlib-only MCP client so context-visualizer can consume project data from context-forge's MCP server
 - Dual-mode: MCP mode when connected to context-forge, local mode (parse.py) as automatic fallback
 - New files: `mcp_client.py`, `mcp-config.example.json`, `tests/test_mcp_client.py`
@@ -20,7 +20,7 @@ dateUpdated: 20260301
 - All write operations (add/remove/discover) remain local — MCP is read-only in v1
 - Key external dependency: context-forge slice 164 (provides `project_list` and `project_structure` MCP tools)
 - E2E browser tests available via pytest-playwright; `live_server` fixture in `tests/conftest.py`
-- Next planned slice: none currently in initiative 105
+- Next planned slice: none currently in initiative 120
 
 ---
 
@@ -327,7 +327,7 @@ dateUpdated: 20260301
 ### 17. Final — mark slice complete
 
 - [x] Run full test suite one final time: `pytest tests/`
-- [x] Update slice status to `complete` in `108-slice.mcp-client.md`
-- [x] Check off slice 108 in `105-slices.project-management.md` (slice plan)
-- [x] Write DEVLOG entry for slice 108 completion
+- [x] Update slice status to `complete` in `123-slice.mcp-client.md`
+- [x] Check off slice 123 in `120-slices.project-management.md` (slice plan)
+- [x] Write DEVLOG entry for slice 123 completion
 - [x] Commit

@@ -2,8 +2,8 @@
 docType: slice-design
 slice: ui-collectors
 project: context-visualizer
-parent: user/architecture/105-slices.project-management.md
-dependencies: [108-mcp-client]
+parent: user/architecture/120-slices.project-management.md
+dependencies: [123-mcp-client]
 interfaces: []
 status: complete
 dateCreated: 20260304
@@ -43,7 +43,7 @@ The maintenance collector replaces the current flat "Operational" section with a
 
 ### Prerequisites
 
-- **Slice 108** (MCP Client) — complete. Provides `McpClient` and the `call_tool` interface used by the future work collector.
+- **Slice 123** (MCP Client) — complete. Provides `McpClient` and the `call_tool` interface used by the future work collector.
 - MCP `workflow_future` tool — available in context-forge MCP server.
 
 ### Interfaces Required

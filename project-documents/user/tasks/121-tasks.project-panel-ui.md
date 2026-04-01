@@ -2,17 +2,17 @@
 docType: tasks
 slice: project-panel-ui
 project: context-visualizer
-lld: user/slices/106-slice.project-panel-ui.md
-dependencies: [105-project-management-api]
-projectState: Slice 105 complete — serve.py has GET/POST/DELETE /api/projects and POST /api/refresh; manifest.json has displayName; 52 tests passing. UI unchanged — still uses header tab bar for project switching.
+lld: user/slices/121-slice.project-panel-ui.md
+dependencies: [120-project-management-api]
+projectState: Slice 120 complete — serve.py has GET/POST/DELETE /api/projects and POST /api/refresh; manifest.json has displayName; 52 tests passing. UI unchanged — still uses header tab bar for project switching.
 dateCreated: 20260228
 dateUpdated: 20260228
 ---
 
 ## Context Summary
 
-- Working on slice 106: Project Panel UI
-- Slice 105 (Project Management API) is complete — all catalog endpoints exist and are tested
+- Working on slice 121: Project Panel UI
+- Slice 120 (Project Management API) is complete — all catalog endpoints exist and are tested
 - This slice replaces the header tab bar with a collapsible left-side panel for project navigation and management
 - All changes are in `project-structure-viz.jsx` (and minor `index.html` if needed) — no new files
 - E2E browser tests available via pytest-playwright (`pytest tests/test_ui_smoke.py`); `live_server` fixture in `tests/conftest.py`
@@ -192,5 +192,5 @@ dateUpdated: 20260228
 
 - [x] Run `pytest tests/` to confirm no regressions in existing backend tests
 - [x] Update slice status to `complete` in `106-slice.project-panel-ui.md`
-- [x] Check off slice 106 in `105-slices.project-management.md` (slice plan)
+- [x] Check off slice 121 in `120-slices.project-management.md` (slice plan)
 - [x] Commit

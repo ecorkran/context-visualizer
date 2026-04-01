@@ -2,8 +2,8 @@
 docType: slice-design
 slice: local-project-discovery
 project: context-visualizer
-parent: user/architecture/105-slices.project-management.md
-dependencies: [105-project-management-api]
+parent: user/architecture/120-slices.project-management.md
+dependencies: [120-project-management-api]
 interfaces: []
 status: complete
 dateCreated: 20260228
@@ -16,7 +16,7 @@ dateUpdated: 20260228
 
 Add a "Find projects" flow to the Project Panel that scans a user-specified root directory for valid project paths and lets the user add any discovered candidate with a single click. The user edits a pre-populated root path (derived from the manifest) and clicks "Find"; the server scans one level deep and returns candidates; each result row has an inline Add button.
 
-The existing Add input from slice 106 (type a path → Enter/Add) is unchanged. This slice adds discovery on top of it, making the panel self-sufficient for users who want to browse rather than type.
+The existing Add input from slice 121 (type a path → Enter/Add) is unchanged. This slice adds discovery on top of it, making the panel self-sufficient for users who want to browse rather than type.
 
 ## Value
 
@@ -40,8 +40,8 @@ Eliminates the "what is the exact path?" friction when onboarding new projects. 
 ## Dependencies
 
 ### Prerequisites
-- Slice 105 — provides `find_user_dir()` in `parse.py` (reused for validation) and `POST /api/projects`
-- Slice 106 — provides `ProjectPanel` where the discovery UI lives
+- Slice 120 — provides `find_user_dir()` in `parse.py` (reused for validation) and `POST /api/projects`
+- Slice 121 — provides `ProjectPanel` where the discovery UI lives
 
 ### Interfaces Consumed
 - `parse.find_user_dir(path)` — already imported in `serve.py`; reused to check each candidate
@@ -88,7 +88,7 @@ One new section added to the expanded `ProjectPanel`, below the existing Add inp
 
 ```
 ┌─────────────────────────────────────┐
-│ [Project path...        ] [Add]     │  ← existing (slice 106, unchanged)
+│ [Project path...        ] [Add]     │  ← existing (slice 121, unchanged)
 │ ─────────────────────────────────── │
 │ Find projects                    ▼  │  ← toggle button (collapsed by default)
 │ [/Users/manta/source    ] [Find]    │  ← root input + Find button
@@ -173,7 +173,7 @@ Deriving the default scan root from `os.path.commonpath(source_paths)` is the mo
 
 ### No inline path validation on Add input
 
-The existing Add input already shows an error message on failed submission (slice 106). Adding debounced validation would duplicate the feedback and add state complexity for a case (typing a wrong path) that the existing error handling already covers adequately.
+The existing Add input already shows an error message on failed submission (slice 121). Adding debounced validation would duplicate the feedback and add state complexity for a case (typing a wrong path) that the existing error handling already covers adequately.
 
 ### `GET /api/info` is always 200
 

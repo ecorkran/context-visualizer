@@ -50,7 +50,7 @@ status: complete
    - **Risk:** Medium — the browser-to-Python bridge is the one area requiring a design decision. The current static-site setup has no server component, so this slice introduces one (even if minimal).
    - **Effort:** 3/5
 
-3. [ ] (108) **MCP Client**
+3. [ ] (123) **MCP Client**
 Become an MCP client and consume context-forge output.  context-forge aggregate project tool was built using our parse.py as a reference spec. 
 
 - **Benefits:** This will allow us to use advanced features that context-forge may provide, and having the features provided by MCP server allows other clients to use them.  Advanced features may include things such as consistency checks and writeback updates.

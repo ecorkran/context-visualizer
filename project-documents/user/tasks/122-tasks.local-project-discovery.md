@@ -2,9 +2,9 @@
 docType: tasks
 slice: local-project-discovery
 project: context-visualizer
-lld: user/slices/107-slice.local-project-discovery.md
-dependencies: [105-project-management-api, 106-project-panel-ui]
-projectState: Slices 105 and 106 complete — serve.py has GET/POST/DELETE /api/projects, ProjectPanel with add/remove/refresh; 55 tests passing. Slice 107 design finalized (commit e9f9f3b).
+lld: user/slices/122-slice.local-project-discovery.md
+dependencies: [120-project-management-api, 121-project-panel-ui]
+projectState: Slices 120 and 121 complete — serve.py has GET/POST/DELETE /api/projects, ProjectPanel with add/remove/refresh; 55 tests passing. Slice 122 design finalized (commit e9f9f3b).
 status: complete
 dateCreated: 20260228
 dateUpdated: 20260228
@@ -12,7 +12,7 @@ dateUpdated: 20260228
 
 ## Context Summary
 
-- Working on slice 107: Local Project Discovery
+- Working on slice 122: Local Project Discovery
 - Adds a "Find projects" collapsible section to `ProjectPanel` (below existing Add input)
 - Two new GET endpoints: `GET /api/info` (smart scan root), `GET /api/discover?root=<path>` (depth-1 scan)
 - No new Python dependencies (stdlib only: `urllib.parse`, `os.path`)
@@ -238,12 +238,12 @@ dateUpdated: 20260228
 
 - [x] Run `pytest tests/` — all tests pass
 - [x] Update slice status to `complete` in `107-slice.local-project-discovery.md`
-- [x] Check off slice 107 in `105-slices.project-management.md`
-- [x] Write DEVLOG entry for slice 107 with commit hashes
-- [x] Commit: `docs: mark slice 107 complete`
+- [x] Check off slice 122 in `120-slices.project-management.md`
+- [x] Write DEVLOG entry for slice 122 with commit hashes
+- [x] Commit: `docs: mark slice 122 complete`
 
 **Success criteria:**
 - [x] All tests pass
 - [x] Slice design file status is `complete`
-- [x] Slice 107 checked off in slice plan
+- [x] Slice 122 checked off in slice plan
 - [x] DEVLOG updated

@@ -1,9 +1,9 @@
 ---
 slice: ui-collectors
 project: context-visualizer
-lld: user/slices/109-slice.ui-collectors.md
-dependencies: [108-mcp-client]
-projectState: Slice 108 (MCP Client) complete. MCP client operational with select()-based I/O. Server runs in dual mode (MCP/local). 98 tests passing.
+lld: user/slices/124-slice.ui-collectors.md
+dependencies: [123-mcp-client]
+projectState: Slice 123 (MCP Client) complete. MCP client operational with select()-based I/O. Server runs in dual mode (MCP/local). 98 tests passing.
 dateCreated: 20260304
 dateUpdated: 20260304
 status: complete
@@ -11,8 +11,8 @@ status: complete
 
 ## Context Summary
 
-- Working on slice 109: Collectors — Maintenance and Future Work
-- Slice 108 (MCP Client) is complete — `McpClient`, `/api/structures`, dual-mode operation all working
+- Working on slice 124: Collectors — Maintenance and Future Work
+- Slice 123 (MCP Client) is complete — `McpClient`, `/api/structures`, dual-mode operation all working
 - This slice adds two synthetic collector initiatives to the visualizer UI:
   1. **Maintenance collector** — reshapes existing `data.maintenance/quality/investigation` into a collapsible initiative card (replaces flat "Operational" section)
   2. **Future work collector** — fetches aggregated future work via MCP `workflow_future` tool, rendered as a second collector card (MCP-only, config-gated)
@@ -174,7 +174,7 @@ status: complete
 ### 15. Final verification and cleanup
 
 - [x] Run full test suite: `pytest tests/ -x`
-  - [x] All tests pass (no regressions from slice 108 baseline of 98 tests)
+  - [x] All tests pass (no regressions from slice 123 baseline of 98 tests)
   - [x] App loads correctly in both MCP and local modes
   - [x] Maintenance collector renders in both modes
   - [x] Future work collector renders only in MCP mode with flag enabled
@@ -184,7 +184,7 @@ status: complete
 ### 16. Update slice and project documents
 
 - [x] Mark slice 109 as complete in relevant documents
-  - [x] Update `109-slice.ui-collectors.md` frontmatter: `status: complete` (or in_progress during work)
+  - [x] Update `124-slice.ui-collectors.md` frontmatter: `status: complete` (or in_progress during work)
   - [x] Update this task file frontmatter: `status: complete`
-  - [x] Write DEVLOG entry for slice 109 (matching existing format: commits, files, decisions, test count)
+  - [x] Write DEVLOG entry for slice 124 (matching existing format: commits, files, decisions, test count)
   - [x] Commit documentation updates

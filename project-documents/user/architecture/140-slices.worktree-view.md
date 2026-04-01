@@ -23,7 +23,7 @@ status: active
      - Unit tests cover success, empty, and error cases
    - **Interfaces:** Consumes `worktree_list` MCP tool. Provides REST endpoint for frontend.
    - **Risk Level:** Low
-   - **Dependencies:** None (MCP client infrastructure from slice 108 already exists)
+   - **Dependencies:** None (MCP client infrastructure from slice 123 already exists)
 
 ## Feature Slices (in implementation order)
 
