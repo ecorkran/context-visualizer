@@ -1286,7 +1286,47 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
     }
   };
 
-  const panelWidth = expanded ? 280 : 36;
+  const PANEL_MIN = 180;
+  const PANEL_MAX = 400;
+  const PANEL_DEFAULT = 280;
+  const COLLAPSED_WIDTH = 36;
+
+  const [userWidth, setUserWidth] = useState(() => {
+    try {
+      const saved = parseInt(localStorage.getItem('panel-width'), 10);
+      if (saved >= PANEL_MIN && saved <= PANEL_MAX) return saved;
+    } catch { /* ignore */ }
+    return PANEL_DEFAULT;
+  });
+  const panelWidth = expanded ? userWidth : COLLAPSED_WIDTH;
+
+  // Splitter drag logic
+  const dragRef = useRef(null);
+  useEffect(() => {
+    const onMove = (e) => {
+      if (dragRef.current == null) return;
+      const newW = Math.min(PANEL_MAX, Math.max(PANEL_MIN, e.clientX - dragRef.current));
+      setUserWidth(newW);
+    };
+    const onUp = () => {
+      if (dragRef.current == null) return;
+      dragRef.current = null;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      try { localStorage.setItem('panel-width', String(userWidth)); } catch { /* ignore */ }
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => { window.removeEventListener('mousemove', onMove); window.removeEventListener('mouseup', onUp); };
+  }, [userWidth]);
+
+  const handleSplitterDown = useCallback((e) => {
+    e.preventDefault();
+    // offset = distance from panel left edge to mouse (accounts for padding)
+    dragRef.current = e.clientX - userWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  }, [userWidth]);
 
   // Collapsed strip
   if (!expanded) {
@@ -1332,11 +1372,13 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
   }
 
   // Expanded panel
+  const isDragging = dragRef.current != null;
   return (
+    <div style={{ display: "flex", flexShrink: 0 }}>
     <div style={{
       width: panelWidth, flexShrink: 0, backgroundColor: "#111128",
-      display: "flex", flexDirection: "column", borderRight: "1px solid #1E1E3A",
-      transition: "width 0.2s ease", overflow: "hidden",
+      display: "flex", flexDirection: "column",
+      transition: isDragging ? "none" : "width 0.2s ease", overflow: "hidden",
     }}>
       {/* Panel header */}
       <div style={{
@@ -1454,7 +1496,7 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
                     width: 20, height: 20, borderRadius: 4, border: "1px solid transparent",
                     backgroundColor: "transparent",
                     color: starred ? "#FFD700" : "#555577",
-                    cursor: "pointer", flexShrink: 0, fontSize: 12, padding: 0,
+                    cursor: "pointer", flexShrink: 0, fontSize: 10, padding: 0,
                     transition: "color 0.15s ease",
                   }}
                   onMouseEnter={(e) => { if (!starred) e.currentTarget.style.color = "#8888AA"; }}
@@ -1643,6 +1685,18 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
           </div>
         )}
       </div>}
+    </div>
+    {/* Drag splitter */}
+    <div
+      onMouseDown={handleSplitterDown}
+      style={{
+        width: 4, cursor: "col-resize", flexShrink: 0,
+        backgroundColor: "transparent", borderRight: "1px solid #1E1E3A",
+        transition: "background-color 0.15s ease",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#2A2A4E"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+    />
     </div>
   );
 }
