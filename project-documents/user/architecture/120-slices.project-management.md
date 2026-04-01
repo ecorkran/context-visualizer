@@ -74,12 +74,12 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
 
 ## Notes
 
-- **No migration slices needed** — Both slices add new capabilities rather than restructuring existing behavior. The tab bar removal in Slice 106 is a direct replacement, not a migration.
+- **No migration slices needed** — Both slices add new capabilities rather than restructuring existing behavior. The tab bar removal in Slice 121 is a direct replacement, not a migration.
 - **displayName resolution** — `parse.py` already has access to `data["name"]` from parsed output. Writing it to the manifest is a one-line addition during the manifest upsert step.
 - **Remove-and-delete trade-off** — Whether `DELETE /api/projects/{key}` also deletes the `{key}-structure.json` file is a slice-design decision. Both options leave the system in a working state; the difference is convenience vs. tidiness. Resolve during Slice 120 design.
-- **Tab bar removal timing** — The tab bar is only removed in Slice 106, not Slice 105. During the interval between the two slices (when the API exists but the panel does not), the UI is unchanged and fully functional.
-- **Refresh button relocation** — The global ↻ button currently sits in the header beside the tab bar. Slice 106 moves it to the panel header, which is the natural home for "refresh all projects." This is in scope for Slice 106 and should be called out explicitly in that slice design.
-- **No dedicated integration slice** — Slice 106's end-to-end verification covers the cross-cutting concerns. The component count and surface area don't warrant a separate integration slice.
+- **Tab bar removal timing** — The tab bar is only removed in Slice 121, not Slice 120. During the interval between the two slices (when the API exists but the panel does not), the UI is unchanged and fully functional.
+- **Refresh button relocation** — The global ↻ button currently sits in the header beside the tab bar. Slice 121 moves it to the panel header, which is the natural home for "refresh all projects." This is in scope for Slice 121 and should be called out explicitly in that slice design.
+- **No dedicated integration slice** — Slice 121's end-to-end verification covers the cross-cutting concerns. The component count and surface area don't warrant a separate integration slice.
 
 ## Future Work
 

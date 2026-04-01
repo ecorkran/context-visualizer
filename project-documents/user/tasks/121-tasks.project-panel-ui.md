@@ -191,6 +191,6 @@ dateUpdated: 20260228
 ### 9. Final — mark slice complete
 
 - [x] Run `pytest tests/` to confirm no regressions in existing backend tests
-- [x] Update slice status to `complete` in `106-slice.project-panel-ui.md`
+- [x] Update slice status to `complete` in `121-slice.project-panel-ui.md`
 - [x] Check off slice 121 in `120-slices.project-management.md` (slice plan)
 - [x] Commit

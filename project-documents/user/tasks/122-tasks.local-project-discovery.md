@@ -237,7 +237,7 @@ dateUpdated: 20260228
 ### 10. Final — mark slice complete
 
 - [x] Run `pytest tests/` — all tests pass
-- [x] Update slice status to `complete` in `107-slice.local-project-discovery.md`
+- [x] Update slice status to `complete` in `122-slice.local-project-discovery.md`
 - [x] Check off slice 122 in `120-slices.project-management.md`
 - [x] Write DEVLOG entry for slice 122 with commit hashes
 - [x] Commit: `docs: mark slice 122 complete`
