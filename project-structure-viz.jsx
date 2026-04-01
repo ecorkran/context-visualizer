@@ -1110,11 +1110,20 @@ const PANEL_COLORS = ["#5BA4D9", "#5CCFB9", "#D4B45A", "#C9A8E8", "#D48A8A", "#A
 
 function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState, onProjectsChanged, expanded, onToggle }) {
   const isMcp = window.__projectsMode === 'mcp';
-  const projectList = Object.keys(projects).map((k, i) => ({
-    key: k,
-    name: projects[k].name || k,
-    color: PANEL_COLORS[i % PANEL_COLORS.length],
-  }));
+  const projectList = useMemo(() => {
+    const items = Object.keys(projects).map((k, i) => ({
+      key: k,
+      name: projects[k].name || k,
+      color: PANEL_COLORS[i % PANEL_COLORS.length],
+      starred: !!projects[k].starred,
+      hidden: !!projects[k].hidden,
+    }));
+    // Sort: starred first, then normal, then hidden (preserve order within groups)
+    const starred = items.filter(p => p.starred);
+    const normal = items.filter(p => !p.starred && !p.hidden);
+    const hidden = items.filter(p => p.hidden);
+    return [...starred, ...normal, ...hidden];
+  }, [projects]);
 
   // Add-project state
   const [addPath, setAddPath] = useState('');
