@@ -1203,6 +1203,22 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
     }
   };
 
+  const handleToggleStar = async (key) => {
+    const current = !!projects[key]?.starred;
+    try {
+      const resp = await fetch(`/api/projects/${encodeURIComponent(key)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ starred: !current }),
+      });
+      const body = await resp.json();
+      if (!resp.ok || body.status !== 'ok') throw new Error(body.message || `HTTP ${resp.status}`);
+      await onProjectsChanged();
+    } catch (err) {
+      console.error('Toggle star failed:', err);
+    }
+  };
+
   const handleToggleDiscover = async () => {
     const opening = !showDiscover;
     setShowDiscover(opening);
@@ -1365,7 +1381,7 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
 
       {/* Project list */}
       <div className="panel-list" style={{ flex: 1, overflowY: "auto", padding: `${THEME.sp.sm}px 0` }}>
-        {projectList.map(({ key, name, color }) => (
+        {projectList.map(({ key, name, color, starred, hidden }) => (
           <div
             key={key}
             className="panel-row"
@@ -1383,9 +1399,27 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
               backgroundColor: color, flexShrink: 0, display: "inline-block",
             }} />
             <span style={{
-              fontFamily: THEME.fonts.body, fontSize: 13, color: active === key ? "#E8E8FF" : "#8888AA",
+              fontFamily: THEME.fonts.body, fontSize: 13,
+              color: (active === key || starred) ? "#E8E8FF" : "#8888AA",
               overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
             }}>{name}</span>
+            {/* Star toggle */}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleToggleStar(key); }}
+              title={starred ? "Unstar this project" : "Star this project"}
+              style={{
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                width: 20, height: 20, borderRadius: 4, border: "1px solid transparent",
+                backgroundColor: "transparent",
+                color: starred ? "#FFD700" : "#555577",
+                cursor: "pointer", flexShrink: 0, fontSize: 14, padding: 0,
+                transition: "color 0.15s ease",
+              }}
+              onMouseEnter={(e) => { if (!starred) e.currentTarget.style.color = "#8888AA"; }}
+              onMouseLeave={(e) => { if (!starred) e.currentTarget.style.color = "#555577"; }}
+            >
+              {starred ? '★' : '☆'}
+            </button>
             {/* Per-row refresh */}
             <button
               onClick={(e) => { e.stopPropagation(); handleRowRefresh(key); }}
