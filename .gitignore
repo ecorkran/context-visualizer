@@ -30,6 +30,9 @@ out/*
 project-documents/user/slices/120-slice.plugins-1.md
 mcp-config.json
 
+# User-specific visualizer state
+projects/project-prefs.json
+
 # Python
 __pycache__/
 *.pyc

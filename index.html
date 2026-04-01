@@ -25,7 +25,7 @@
   <!-- Load the component via Babel JSX transform -->
   <script type="text/babel" data-type="module">
     // Provide React hooks as globals so the component's named imports work
-    const { useState, useMemo, useRef, useCallback, useEffect } = React;
+    const { useState, useMemo, useRef, useCallback, useEffect, Fragment } = React;
 
     function showError(message) {
       document.getElementById('root').innerHTML = `
@@ -38,6 +38,23 @@
     // Load all project data. Tries /api/structures (MCP mode) first;
     // falls back to manifest+JSON (local mode) if unavailable.
     // cache: 'no-store' ensures re-fetches bypass the browser cache.
+    async function _mergePrefs(projects) {
+      // Merge starred/hidden from project-prefs.json (mode-independent)
+      try {
+        const resp = await fetch('/api/project-prefs', { cache: 'no-store' });
+        if (resp.ok) {
+          const data = await resp.json();
+          const prefs = data.prefs || {};
+          for (const [key, pref] of Object.entries(prefs)) {
+            if (projects[key]) {
+              if (pref.starred != null) projects[key].starred = pref.starred;
+              if (pref.hidden != null) projects[key].hidden = pref.hidden;
+            }
+          }
+        }
+      } catch (_) { /* best-effort */ }
+    }
+
     async function loadProjects() {
       // --- MCP path ---
       try {
@@ -46,6 +63,7 @@
           const data = await structResp.json();
           window.__projectsMode = data.mode || 'mcp';
           const projects = data.projects || {};
+          await _mergePrefs(projects);
           await _attachFutureWork(projects);
           return projects;
         }
@@ -70,16 +88,16 @@
             continue;
           }
           const data = await resp.json();
-          // Each file is keyed by project key: { "key": { ...model... } }
           Object.assign(projects, data);
           // Merge manifest metadata (sourcePath) so the UI can identify tracked projects
-          if (entry.sourcePath && projects[entry.key]) {
-            projects[entry.key].sourcePath = entry.sourcePath;
+          if (projects[entry.key]) {
+            if (entry.sourcePath) projects[entry.key].sourcePath = entry.sourcePath;
           }
         } catch (err) {
           console.warn(`Skipping ${entry.key}: ${err.message}`);
         }
       }
+      await _mergePrefs(projects);
       // Local mode — no future work
       for (const key of Object.keys(projects)) {
         projects[key].futureWork = null;
@@ -149,8 +167,8 @@
         }).code;
 
         // Execute — PROJECTS is read from window.__PROJECTS inside the component
-        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', transformed);
-        fn(React, useState, useMemo, useRef, useCallback, useEffect);
+        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', 'Fragment', transformed);
+        fn(React, useState, useMemo, useRef, useCallback, useEffect, Fragment);
 
         // Render
         const App = window.$COMPONENT;

@@ -77,6 +77,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self) -> None:
         if self.path == "/api/projects":
             self._handle_list_projects()
+        elif self.path == "/api/project-prefs":
+            self._handle_get_prefs()
         elif self.path == "/api/info":
             self._handle_info()
         elif self.path.startswith("/api/discover"):
@@ -93,6 +95,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self.send_error(405, "Method Not Allowed")
         else:
             super().do_GET()
+
+    def do_PATCH(self) -> None:
+        if self.path.startswith("/api/projects/"):
+            key = self.path[len("/api/projects/"):]
+            self._handle_patch_project(key)
+        else:
+            self.send_error(404, "Not Found")
 
     def do_DELETE(self) -> None:
         if self.path.startswith("/api/projects/"):
@@ -210,6 +219,24 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_response(200, {"status": "ok", "projects": refreshed, "warnings": errors})
         else:
             self._json_response(200, {"status": "ok", "projects": refreshed})
+
+    def _prefs_path(self) -> Path:
+        return Path("projects/project-prefs.json")
+
+    def _read_prefs(self) -> dict:
+        """Read project prefs (starred/hidden state). Returns {} if missing."""
+        pp = self._prefs_path()
+        if not pp.exists():
+            return {}
+        try:
+            return json.loads(pp.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+
+    def _write_prefs(self, prefs: dict) -> None:
+        pp = self._prefs_path()
+        pp.parent.mkdir(parents=True, exist_ok=True)
+        pp.write_text(json.dumps(prefs, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     def _manifest_path(self) -> Path:
         return Path("projects/manifest.json")
@@ -541,6 +568,44 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             json_file.unlink()
 
         self._json_response(200, {"status": "ok", "removed": key})
+
+    def _handle_get_prefs(self) -> None:
+        """GET /api/project-prefs — return all project prefs (starred/hidden)."""
+        self._json_response(200, {"status": "ok", "prefs": self._read_prefs()})
+
+    def _handle_patch_project(self, key: str) -> None:
+        """PATCH /api/projects/{key} — update starred/hidden in project-prefs.json."""
+        content_length = int(self.headers.get("Content-Length", 0))
+        try:
+            body = json.loads(self.rfile.read(content_length)) if content_length > 0 else {}
+        except Exception:
+            self._json_response(400, {"status": "error", "message": "Invalid JSON body"})
+            return
+
+        prefs = self._read_prefs()
+        entry = prefs.get(key, {})
+
+        # Apply starred/hidden fields from request body
+        if "starred" in body:
+            entry["starred"] = bool(body["starred"])
+        if "hidden" in body:
+            entry["hidden"] = bool(body["hidden"])
+
+        # Enforce mutual exclusion: starred and hidden cannot both be true
+        if entry.get("starred") and entry.get("hidden"):
+            if "starred" in body and body["starred"]:
+                entry["hidden"] = False
+            elif "hidden" in body and body["hidden"]:
+                entry["starred"] = False
+
+        # Clean up: remove entry if both fields are false/absent
+        if not entry.get("starred") and not entry.get("hidden"):
+            prefs.pop(key, None)
+        else:
+            prefs[key] = entry
+
+        self._write_prefs(prefs)
+        self._json_response(200, {"status": "ok", "project": {"key": key, **entry}})
 
     def _json_response(self, status: int, body: dict) -> None:
         payload = json.dumps(body).encode("utf-8")
