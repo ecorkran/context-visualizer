@@ -12,20 +12,15 @@ from playwright.sync_api import Page, expect
 pytestmark = pytest.mark.e2e
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
-MANIFEST_PATH = PROJECT_ROOT / "projects" / "manifest.json"
+PREFS_PATH = PROJECT_ROOT / "projects" / "project-prefs.json"
 
 
 @pytest.fixture(autouse=True)
-def clean_manifest():
-    """Remove starred/hidden fields from all manifest entries after each test."""
+def clean_prefs():
+    """Remove project-prefs.json after each test to reset star/hide state."""
     yield
-    manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
-    for entry in manifest.get("projects", []):
-        entry.pop("starred", None)
-        entry.pop("hidden", None)
-    MANIFEST_PATH.write_text(
-        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
+    if PREFS_PATH.exists():
+        PREFS_PATH.unlink()
 
 
 def _wait_for_panel(page: Page) -> None:

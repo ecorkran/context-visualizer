@@ -44,6 +44,9 @@ class ServerFixture:
                 def _manifest_path(self) -> Path:
                     return projects_dir / "manifest.json"
 
+                def _prefs_path(self) -> Path:
+                    return projects_dir / "project-prefs.json"
+
                 def _parse_py(self) -> Path:
                     return PROJECT_ROOT / "parse.py"
 
@@ -497,6 +500,8 @@ class TestRemoveProject:
 
 
 class TestPatchProject:
+    """PATCH /api/projects/{key} — uses project-prefs.json (mode-independent)."""
+
     def setup_method(self) -> None:
         self.tmp_dir = Path(f"/tmp/test_patch_{id(self)}")
         self.tmp_dir.mkdir(exist_ok=True)
@@ -505,15 +510,16 @@ class TestPatchProject:
         import shutil
         shutil.rmtree(self.tmp_dir, ignore_errors=True)
 
-    def _write_manifest(self, projects: list[dict]) -> None:
-        (self.tmp_dir / "manifest.json").write_text(
-            json.dumps({"projects": projects}), encoding="utf-8"
+    def _write_prefs(self, prefs: dict) -> None:
+        (self.tmp_dir / "project-prefs.json").write_text(
+            json.dumps(prefs), encoding="utf-8"
         )
 
-    def _read_manifest(self) -> list[dict]:
-        return json.loads(
-            (self.tmp_dir / "manifest.json").read_text(encoding="utf-8")
-        )["projects"]
+    def _read_prefs(self) -> dict:
+        pp = self.tmp_dir / "project-prefs.json"
+        if not pp.exists():
+            return {}
+        return json.loads(pp.read_text(encoding="utf-8"))
 
     def _start_server(self) -> ServerFixture:
         srv = ServerFixture(projects_dir=self.tmp_dir)
@@ -521,25 +527,19 @@ class TestPatchProject:
         return srv
 
     def test_patch_starred_true(self) -> None:
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
-        ])
         srv = self._start_server()
         try:
             status, resp = srv.patch("/api/projects/proj-a", {"starred": True})
             assert status == 200
             assert resp["status"] == "ok"
             assert resp["project"]["starred"] is True
-            # Verify persisted
-            projects = self._read_manifest()
-            assert projects[0]["starred"] is True
+            # Verify persisted in prefs file
+            prefs = self._read_prefs()
+            assert prefs["proj-a"]["starred"] is True
         finally:
             srv.stop()
 
     def test_patch_hidden_true(self) -> None:
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
-        ])
         srv = self._start_server()
         try:
             status, resp = srv.patch("/api/projects/proj-a", {"hidden": True})
@@ -549,9 +549,7 @@ class TestPatchProject:
             srv.stop()
 
     def test_patch_starred_clears_hidden(self) -> None:
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a", "hidden": True},
-        ])
+        self._write_prefs({"proj-a": {"hidden": True}})
         srv = self._start_server()
         try:
             status, resp = srv.patch("/api/projects/proj-a", {"starred": True})
@@ -562,9 +560,7 @@ class TestPatchProject:
             srv.stop()
 
     def test_patch_hidden_clears_starred(self) -> None:
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a", "starred": True},
-        ])
+        self._write_prefs({"proj-a": {"starred": True}})
         srv = self._start_server()
         try:
             status, resp = srv.patch("/api/projects/proj-a", {"hidden": True})
@@ -574,37 +570,33 @@ class TestPatchProject:
         finally:
             srv.stop()
 
-    def test_patch_starred_false(self) -> None:
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a", "starred": True},
-        ])
+    def test_patch_starred_false_cleans_up_entry(self) -> None:
+        self._write_prefs({"proj-a": {"starred": True}})
         srv = self._start_server()
         try:
             status, resp = srv.patch("/api/projects/proj-a", {"starred": False})
             assert status == 200
             assert resp["project"]["starred"] is False
+            # Entry removed from prefs when both fields are false
+            prefs = self._read_prefs()
+            assert "proj-a" not in prefs
         finally:
             srv.stop()
 
-    def test_patch_nonexistent_key_returns_404(self) -> None:
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
-        ])
+    def test_patch_any_key_succeeds(self) -> None:
+        """Any project key can be patched — no manifest dependency."""
         srv = self._start_server()
         try:
-            status, resp = srv.patch("/api/projects/no-such-key", {"starred": True})
-            assert status == 404
-            assert resp["status"] == "error"
+            status, resp = srv.patch("/api/projects/mcp-only-project", {"starred": True})
+            assert status == 200
+            assert resp["project"]["key"] == "mcp-only-project"
+            assert resp["project"]["starred"] is True
         finally:
             srv.stop()
 
     def test_patch_invalid_json_returns_400(self) -> None:
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
-        ])
         srv = self._start_server()
         try:
-            # Send raw invalid JSON via urllib directly
             data = b"not json"
             req = urllib.request.Request(
                 srv.url("/api/projects/proj-a"),
@@ -625,33 +617,37 @@ class TestPatchProject:
             srv.stop()
 
     def test_patch_no_recognized_fields_unchanged(self) -> None:
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
-        ])
         srv = self._start_server()
         try:
             status, resp = srv.patch("/api/projects/proj-a", {"irrelevant": "value"})
             assert status == 200
             assert resp["status"] == "ok"
-            # Entry should not have starred or hidden added
-            assert resp["project"].get("starred") is None
-            assert resp["project"].get("hidden") is None
+            # No prefs file created for empty prefs
+            prefs = self._read_prefs()
+            assert "proj-a" not in prefs
         finally:
             srv.stop()
 
-    def test_patch_legacy_entry_without_fields(self) -> None:
-        """Entries without starred/hidden fields are handled gracefully."""
-        self._write_manifest([
-            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
-        ])
+    def test_patch_prefs_file_missing_is_ok(self) -> None:
+        """Prefs file is created on first write."""
         srv = self._start_server()
         try:
-            # Star a legacy entry
             status, resp = srv.patch("/api/projects/proj-a", {"starred": True})
             assert status == 200
             assert resp["project"]["starred"] is True
-            # hidden should be absent or False (not True)
-            assert not resp["project"].get("hidden")
+            assert (self.tmp_dir / "project-prefs.json").exists()
+        finally:
+            srv.stop()
+
+    def test_get_project_prefs(self) -> None:
+        self._write_prefs({"proj-a": {"starred": True}, "proj-b": {"hidden": True}})
+        srv = self._start_server()
+        try:
+            status, body = srv.get("/api/project-prefs")
+            data = json.loads(body)
+            assert status == 200
+            assert data["prefs"]["proj-a"]["starred"] is True
+            assert data["prefs"]["proj-b"]["hidden"] is True
         finally:
             srv.stop()
 
