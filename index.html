@@ -46,6 +46,19 @@
           const data = await structResp.json();
           window.__projectsMode = data.mode || 'mcp';
           const projects = data.projects || {};
+          // Merge starred/hidden from local manifest (visualizer-only metadata)
+          try {
+            const manifestResp = await fetch('/api/projects', { cache: 'no-store' });
+            if (manifestResp.ok) {
+              const manifestData = await manifestResp.json();
+              for (const entry of (manifestData.projects || [])) {
+                if (projects[entry.key]) {
+                  if (entry.starred != null) projects[entry.key].starred = entry.starred;
+                  if (entry.hidden != null) projects[entry.key].hidden = entry.hidden;
+                }
+              }
+            }
+          } catch (_) { /* manifest merge is best-effort */ }
           await _attachFutureWork(projects);
           return projects;
         }
