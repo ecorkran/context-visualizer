@@ -25,7 +25,7 @@
   <!-- Load the component via Babel JSX transform -->
   <script type="text/babel" data-type="module">
     // Provide React hooks as globals so the component's named imports work
-    const { useState, useMemo, useRef, useCallback, useEffect } = React;
+    const { useState, useMemo, useRef, useCallback, useEffect, Fragment } = React;
 
     function showError(message) {
       document.getElementById('root').innerHTML = `
@@ -151,8 +151,8 @@
         }).code;
 
         // Execute — PROJECTS is read from window.__PROJECTS inside the component
-        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', transformed);
-        fn(React, useState, useMemo, useRef, useCallback, useEffect);
+        const fn = new Function('React', 'useState', 'useMemo', 'useRef', 'useCallback', 'useEffect', 'Fragment', transformed);
+        fn(React, useState, useMemo, useRef, useCallback, useEffect, Fragment);
 
         // Render
         const App = window.$COMPONENT;
