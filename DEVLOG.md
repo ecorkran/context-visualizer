@@ -2,6 +2,26 @@
 
 ## 20260331
 
+###### Slice 125: Project List Organization — Implementation Complete (Phase 6)
+
+**Commits:**
+- `a8b49c8` feat: add PATCH /api/projects/{key} endpoint for star/hide
+- `3fbf0f0` test: add PATCH endpoint tests for star/hide
+- `2affeb0` feat: sort project list by starred/normal/hidden groups
+- `f8df23a` feat: add star toggle to project panel rows
+- `9a004ee` feat: add hide/unhide controls and dimmed section to project panel
+- `3abb7c5` test: add E2E tests for project list organization
+
+**Changes:**
+- Added `PATCH /api/projects/{key}` endpoint to `serve.py` for updating `starred` and `hidden` boolean fields on manifest entries, with server-side mutual exclusion (starring un-hides, hiding un-stars)
+- Extended `ProjectPanel` to sort projects into three groups: starred (top), normal (middle), hidden (bottom dimmed section at 0.4 opacity)
+- Added per-row star toggle (☆/★ with gold highlight) and hide/unhide controls (↓/↑) to expanded panel
+- Hidden section separated by subtle divider; hidden projects remain clickable
+- 9 new unit tests for PATCH endpoint, 6 new E2E tests for star/hide UI interactions
+- All 133 tests passing (112 unit + 21 E2E), 1 skipped
+
+---
+
 ###### Info Panels, Maintenance Initiatives, and Cache Fixes (v0.2.4–v0.2.7)
 
 **Commits:**

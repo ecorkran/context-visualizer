@@ -4,7 +4,8 @@ parent: user/architecture/120-arch.project-management.md
 project: context-visualizer
 dateCreated: 20260226
 dateUpdated: 20260226
-status: complete
+status: active
+dateUpdated: 20260331
 ---
 
 # Slice Plan: Project Management
@@ -71,6 +72,8 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
    - **Interfaces:** Consumes: MCP `workflow_future` tool, project structure data. Provides: synthetic initiative entries in the visualizer UI.
    - **Risk:** Low-Medium — future work collector depends on MCP mode; maintenance collector is local-only
    - **Effort:** 3/5
+
+125. [x] **(125) Project list organization** — Star/pin projects to the top of the panel list, and hide/archive projects to a dimmed section at the bottom. Starred projects sort above unstarred; hidden projects render at reduced opacity with a restore control. State persisted in `manifest.json` via new `starred` and `hidden` boolean fields, updated through `PATCH /api/projects/{key}` endpoint. Panel list sorts: starred first, then normal, then hidden. Dependencies: [120, 121]. Risk: Low. Effort: 2/5.
 
 ## Notes
 
