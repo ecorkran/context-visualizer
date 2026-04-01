@@ -154,6 +154,23 @@ class ServerFixture:
             except Exception:
                 return exc.code, {}
 
+    def patch(self, path: str, body: dict | None = None) -> tuple[int, dict]:
+        data = json.dumps(body).encode("utf-8") if body is not None else b""
+        req = urllib.request.Request(
+            self.url(path),
+            data=data,
+            method="PATCH",
+            headers={"Content-Type": "application/json", "Content-Length": str(len(data))},
+        )
+        try:
+            resp = urllib.request.urlopen(req)
+            return resp.status, json.loads(resp.read())
+        except urllib.error.HTTPError as exc:
+            try:
+                return exc.code, json.loads(exc.read())
+            except Exception:
+                return exc.code, {}
+
 
 # ── Static file serving tests ──────────────────────────────────────────────
 
@@ -474,6 +491,169 @@ class TestRemoveProject:
         manifest = json.loads((self.tmp_dir / "manifest.json").read_text())
         keys = [p["key"] for p in manifest["projects"]]
         assert "proj-b" not in keys
+
+
+# ── PATCH /api/projects/{key} tests ─────────────────────────────────────────
+
+
+class TestPatchProject:
+    def setup_method(self) -> None:
+        self.tmp_dir = Path(f"/tmp/test_patch_{id(self)}")
+        self.tmp_dir.mkdir(exist_ok=True)
+
+    def teardown_method(self) -> None:
+        import shutil
+        shutil.rmtree(self.tmp_dir, ignore_errors=True)
+
+    def _write_manifest(self, projects: list[dict]) -> None:
+        (self.tmp_dir / "manifest.json").write_text(
+            json.dumps({"projects": projects}), encoding="utf-8"
+        )
+
+    def _read_manifest(self) -> list[dict]:
+        return json.loads(
+            (self.tmp_dir / "manifest.json").read_text(encoding="utf-8")
+        )["projects"]
+
+    def _start_server(self) -> ServerFixture:
+        srv = ServerFixture(projects_dir=self.tmp_dir)
+        srv.start()
+        return srv
+
+    def test_patch_starred_true(self) -> None:
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
+        ])
+        srv = self._start_server()
+        try:
+            status, resp = srv.patch("/api/projects/proj-a", {"starred": True})
+            assert status == 200
+            assert resp["status"] == "ok"
+            assert resp["project"]["starred"] is True
+            # Verify persisted
+            projects = self._read_manifest()
+            assert projects[0]["starred"] is True
+        finally:
+            srv.stop()
+
+    def test_patch_hidden_true(self) -> None:
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
+        ])
+        srv = self._start_server()
+        try:
+            status, resp = srv.patch("/api/projects/proj-a", {"hidden": True})
+            assert status == 200
+            assert resp["project"]["hidden"] is True
+        finally:
+            srv.stop()
+
+    def test_patch_starred_clears_hidden(self) -> None:
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a", "hidden": True},
+        ])
+        srv = self._start_server()
+        try:
+            status, resp = srv.patch("/api/projects/proj-a", {"starred": True})
+            assert status == 200
+            assert resp["project"]["starred"] is True
+            assert resp["project"]["hidden"] is False
+        finally:
+            srv.stop()
+
+    def test_patch_hidden_clears_starred(self) -> None:
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a", "starred": True},
+        ])
+        srv = self._start_server()
+        try:
+            status, resp = srv.patch("/api/projects/proj-a", {"hidden": True})
+            assert status == 200
+            assert resp["project"]["hidden"] is True
+            assert resp["project"]["starred"] is False
+        finally:
+            srv.stop()
+
+    def test_patch_starred_false(self) -> None:
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a", "starred": True},
+        ])
+        srv = self._start_server()
+        try:
+            status, resp = srv.patch("/api/projects/proj-a", {"starred": False})
+            assert status == 200
+            assert resp["project"]["starred"] is False
+        finally:
+            srv.stop()
+
+    def test_patch_nonexistent_key_returns_404(self) -> None:
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
+        ])
+        srv = self._start_server()
+        try:
+            status, resp = srv.patch("/api/projects/no-such-key", {"starred": True})
+            assert status == 404
+            assert resp["status"] == "error"
+        finally:
+            srv.stop()
+
+    def test_patch_invalid_json_returns_400(self) -> None:
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
+        ])
+        srv = self._start_server()
+        try:
+            # Send raw invalid JSON via urllib directly
+            data = b"not json"
+            req = urllib.request.Request(
+                srv.url("/api/projects/proj-a"),
+                data=data,
+                method="PATCH",
+                headers={"Content-Type": "application/json", "Content-Length": str(len(data))},
+            )
+            try:
+                resp = urllib.request.urlopen(req)
+                status = resp.status
+                body = json.loads(resp.read())
+            except urllib.error.HTTPError as exc:
+                status = exc.code
+                body = json.loads(exc.read())
+            assert status == 400
+            assert body["status"] == "error"
+        finally:
+            srv.stop()
+
+    def test_patch_no_recognized_fields_unchanged(self) -> None:
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
+        ])
+        srv = self._start_server()
+        try:
+            status, resp = srv.patch("/api/projects/proj-a", {"irrelevant": "value"})
+            assert status == 200
+            assert resp["status"] == "ok"
+            # Entry should not have starred or hidden added
+            assert resp["project"].get("starred") is None
+            assert resp["project"].get("hidden") is None
+        finally:
+            srv.stop()
+
+    def test_patch_legacy_entry_without_fields(self) -> None:
+        """Entries without starred/hidden fields are handled gracefully."""
+        self._write_manifest([
+            {"key": "proj-a", "file": "a.json", "sourcePath": "/a"},
+        ])
+        srv = self._start_server()
+        try:
+            # Star a legacy entry
+            status, resp = srv.patch("/api/projects/proj-a", {"starred": True})
+            assert status == 200
+            assert resp["project"]["starred"] is True
+            # hidden should be absent or False (not True)
+            assert not resp["project"].get("hidden")
+        finally:
+            srv.stop()
 
 
 # ── GET /api/info tests ──────────────────────────────────────────────────────
