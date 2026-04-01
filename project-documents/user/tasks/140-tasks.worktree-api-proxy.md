@@ -1,7 +1,7 @@
 ---
 slice: worktree-api-proxy
 project: context-visualizer
-lld: user/slices/110-slice.worktree-api-proxy.md
+lld: user/slices/140-slice.worktree-api-proxy.md
 dependencies: []
 projectState: MCP client infrastructure complete (slice 108). serve.py has established proxy patterns (_handle_future_work, _handle_structures). _mcp_name_to_id cache exists. Server runs on port 5678.
 dateCreated: 20260312
@@ -10,11 +10,11 @@ status: complete
 ---
 
 ## Context Summary
-- Working on 110-slice.worktree-api-proxy (foundation slice for initiative 110: Worktree View)
+- Working on 140-slice.worktree-api-proxy (foundation slice for initiative 140: Worktree View)
 - Adding `GET /api/worktrees?project={name}` endpoint to `serve.py`
 - Proxies Context Forge `worktree_list` MCP tool using existing name→ID resolution pattern
 - No frontend changes — backend only
-- Next slice: 111 (Worktree column layout) consumes this endpoint
+- Next slice: 141 (Worktree column layout) consumes this endpoint
 
 ## Tasks
 
@@ -88,7 +88,7 @@ Restart the dev server and test the endpoint against real MCP data.
   - `curl -s http://localhost:5678/api/worktrees?project=nonexistent` → 404
 - [x] Git add and commit from project root: `serve.py` and `tests/test_serve.py`
 - [x] Update slice design status to `complete`
-- [x] Mark slice as complete in slice plan (`110-slices.worktree-view.md`)
+- [x] Mark slice as complete in slice plan (`140-slices.worktree-view.md`)
 
 **Success criteria:**
 - [x] All curl verification commands return expected responses

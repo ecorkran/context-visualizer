@@ -2,12 +2,12 @@
 docType: architecture
 layer: project
 project: context-visualizer
-archIndex: 110
+archIndex: 140
 component: worktree-view
 dateCreated: 20260308
 dateUpdated: 20260311
 status: active
-relatedSlices: [110-slices.worktree-view]
+relatedSlices: [140-slices.worktree-view]
 riskLevel: medium
 ---
 

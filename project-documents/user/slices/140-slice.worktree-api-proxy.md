@@ -2,9 +2,9 @@
 docType: slice-design
 slice: worktree-api-proxy
 project: context-visualizer
-parent: user/architecture/110-slices.worktree-view.md
+parent: user/architecture/140-slices.worktree-view.md
 dependencies: []
-interfaces: [111-slice.worktree-column-layout]
+interfaces: [141-slice.worktree-column-layout]
 dateCreated: 20260311
 dateUpdated: 20260313
 status: complete
@@ -13,7 +13,7 @@ status: complete
 # Slice Design: Worktree API Proxy
 
 ## Overview
-Add a `GET /api/worktrees?project={name}` endpoint to `serve.py` that proxies the Context Forge `worktree_list` MCP tool. This is the foundation slice for initiative 110 — all UI slices depend on this endpoint to get worktree data.
+Add a `GET /api/worktrees?project={name}` endpoint to `serve.py` that proxies the Context Forge `worktree_list` MCP tool. This is the foundation slice for initiative 140 — all UI slices depend on this endpoint to get worktree data.
 
 ## Value
 Backend plumbing that makes worktree data available to the frontend. Testable via `curl` independently of any UI work. Follows the exact same proxy pattern already established by `/api/future-work` and `/api/structures`.
@@ -27,7 +27,7 @@ Backend plumbing that makes worktree data available to the frontend. Testable vi
 - Unit tests in `tests/test_serve.py`
 
 **Excluded:**
-- Frontend consumption (slice 111)
+- Frontend consumption (slice 141)
 - Any UI components
 - Worktree write operations (init, update, rm) — read-only
 
@@ -229,7 +229,7 @@ if name == "worktree_list":
 ## Integration Points
 
 ### Provides to Other Slices
-- `GET /api/worktrees?project={name}` — consumed by slice 111 (WorktreeColumns component) to fetch worktree data per project
+- `GET /api/worktrees?project={name}` — consumed by slice 141 (WorktreeColumns component) to fetch worktree data per project
 
 ### Consumes from Other Slices
 - None (foundation slice)

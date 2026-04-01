@@ -1,23 +1,23 @@
 ---
 slice: worktree-column-layout
 project: context-visualizer
-lld: user/slices/111-slice.worktree-column-layout.md
-dependencies: [110-slice.worktree-api-proxy]
-projectState: Slice 110 complete. /api/worktrees endpoint live. project-structure-viz.jsx is a single-file React app. All components (InitiativeCard, DocBlock, Tooltip, etc.) are defined in that file. ProjectView renders initiative bands directly; no worktree awareness yet.
+lld: user/slices/141-slice.worktree-column-layout.md
+dependencies: [140-slice.worktree-api-proxy]
+projectState: Slice 140 complete. /api/worktrees endpoint live. project-structure-viz.jsx is a single-file React app. All components (InitiativeCard, DocBlock, Tooltip, etc.) are defined in that file. ProjectView renders initiative bands directly; no worktree awareness yet.
 dateCreated: 20260315
 dateUpdated: 20260315
 status: complete
 ---
 
 ## Context Summary
-- Working on 111-slice.worktree-column-layout (core UI slice of initiative 110)
+- Working on 141-slice.worktree-column-layout (core UI slice of initiative 140)
 - Adding `WorktreeColumns`, `WorktreeColumn`, and `WorktreeStrip` components to `project-structure-viz.jsx`
 - `WorktreeColumns` replaces the direct `bands.map(InitiativeCard)` call in `ProjectView`
 - Pass-through behavior: 0 or 1 worktrees → zero visual change from today
 - Column layout: 2+ worktrees → horizontal flex with one expanded column and N-1 collapsed 40px strips
 - `ProjectView` call site needs `projectKey={active}` added (one-line change in App root)
 - E2E test verifies toggle behavior against live context-forge project (2 worktrees)
-- Next slice: 112 (responsive vertical fallback) extends `WorktreeColumns`
+- Next slice: 142 (responsive vertical fallback) extends `WorktreeColumns`
 
 ## Tasks
 
@@ -174,10 +174,10 @@ Run full verification walkthrough from the slice design and mark slice complete.
   - [x] Column toggle: click strip, verify swap
   - [x] Refresh: default worktree expanded on reload
 - [x] Run full test suite: `pytest tests/ -v`
-- [x] Update `111-slice.worktree-column-layout.md` frontmatter `status` to `complete` and `dateUpdated`
-- [x] Check off slice 111 in `110-slices.worktree-view.md`
+- [x] Update `141-slice.worktree-column-layout.md` frontmatter `status` to `complete` and `dateUpdated`
+- [x] Check off slice 141 in `140-slices.worktree-view.md`
 - [x] Write DEVLOG entry (matching existing format, include commit hashes)
-- [x] Commit: `docs: mark 111-slice complete, update DEVLOG`
+- [x] Commit: `docs: mark 141-slice complete, update DEVLOG`
 
 **Success criteria:**
 - [x] All tests pass (unit + E2E)

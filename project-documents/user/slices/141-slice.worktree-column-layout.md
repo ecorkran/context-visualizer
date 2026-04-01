@@ -2,9 +2,9 @@
 docType: slice-design
 slice: worktree-column-layout
 project: context-visualizer
-parent: user/architecture/110-slices.worktree-view.md
-dependencies: [110-slice.worktree-api-proxy]
-interfaces: [112-slice.responsive-vertical-fallback, 113-slice.worktree-initiative-grouping]
+parent: user/architecture/140-slices.worktree-view.md
+dependencies: [140-slice.worktree-api-proxy]
+interfaces: [142-slice.responsive-vertical-fallback, 143-slice.worktree-initiative-grouping]
 dateCreated: 20260315
 dateUpdated: 20260315
 status: complete
@@ -20,7 +20,7 @@ When 0 or 1 worktrees are returned, the component is a pass-through: the existin
 
 ## Value
 
-This is the core UI deliverable of initiative 110. Users with multi-worktree projects can see at a glance that parallel work is happening and switch focus to any worktree column. Single-worktree and no-worktree projects are completely unaffected.
+This is the core UI deliverable of initiative 140. Users with multi-worktree projects can see at a glance that parallel work is happening and switch focus to any worktree column. Single-worktree and no-worktree projects are completely unaffected.
 
 ## Technical Scope
 
@@ -33,20 +33,20 @@ This is the core UI deliverable of initiative 110. Users with multi-worktree pro
 - E2E test verifying column toggle with live context-forge data
 
 **Excluded:**
-- Responsive vertical fallback (slice 112)
-- Initiative filtering by `indexRange` (slice 113)
-- Per-column header metadata (activeSlice, developmentPhase) — deferred to slice 113
+- Responsive vertical fallback (slice 142)
+- Initiative filtering by `indexRange` (slice 143)
+- Per-column header metadata (activeSlice, developmentPhase) — deferred to slice 143
 - Any changes to `InitiativeCard`, `DocBlock`, or other existing components
 
 ## Dependencies
 
 ### Prerequisites
-- Slice 110 complete: `/api/worktrees?project={name}` endpoint available
+- Slice 140 complete: `/api/worktrees?project={name}` endpoint available
 
 ### Interfaces Required
 - `GET /api/worktrees?project={key}` — returns `{ status, data: { worktrees, count, pathStatuses } }`
-- Worktree fields used by this slice: `id`, `name`, `indexRange` (for count, pre-113), `worktreePath`
-- All other worktree fields (`developmentPhase`, `activeSlice`, etc.) are ignored until slice 113
+- Worktree fields used by this slice: `id`, `name`, `indexRange` (for count, pre-143), `worktreePath`
+- All other worktree fields (`developmentPhase`, `activeSlice`, etc.) are ignored until slice 143
 
 ## Architecture
 
@@ -123,7 +123,7 @@ Enough for rotated text (up to ~10 chars visible), progress fraction, and touch 
 ```
 [strip 40px] [strip 40px] ... [column flex:1]
 ```
-Container: `display: flex, gap: THEME.sp.sm`. Strips shrink to fixed width; expanded column takes remaining space. Minimum expanded column width: the same width as today's single-column layout (no minimum enforced — that is slice 112's concern).
+Container: `display: flex, gap: THEME.sp.sm`. Strips shrink to fixed width; expanded column takes remaining space. Minimum expanded column width: the same width as today's single-column layout (no minimum enforced — that is slice 142's concern).
 
 ### Strip Contents (bottom-to-top, text rotated 90deg CW)
 ```
@@ -217,12 +217,12 @@ WorktreeColumn({ worktree, bands, futureSlices })
 ## Integration Points
 
 ### Provides to Other Slices
-- `WorktreeColumns` component accepts worktree data and bands — slices 112 and 113 extend this component
-- Column layout container — slice 112 (responsive) adds container-width detection to switch to vertical
-- Expanded column — slice 113 filters `bands` per-column by `indexRange`
+- `WorktreeColumns` component accepts worktree data and bands — slices 142 and 143 extend this component
+- Column layout container — slice 142 (responsive) adds container-width detection to switch to vertical
+- Expanded column — slice 143 filters `bands` per-column by `indexRange`
 
 ### Consumes from Other Slices
-- `/api/worktrees` endpoint from slice 110
+- `/api/worktrees` endpoint from slice 140
 - `InitiativeCard` from existing codebase (unchanged)
 
 ## Success Criteria
@@ -241,7 +241,7 @@ WorktreeColumn({ worktree, bands, futureSlices })
 - Column state is `useState` only — no localStorage, no URL param
 
 ### Integration Requirements
-- Slices 112 and 113 can extend `WorktreeColumns` without modifying `ProjectView`
+- Slices 142 and 143 can extend `WorktreeColumns` without modifying `ProjectView`
 
 ### Verification Walkthrough
 
