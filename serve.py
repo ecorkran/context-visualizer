@@ -94,6 +94,13 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         else:
             super().do_GET()
 
+    def do_PATCH(self) -> None:
+        if self.path.startswith("/api/projects/"):
+            key = self.path[len("/api/projects/"):]
+            self._handle_patch_project(key)
+        else:
+            self.send_error(404, "Not Found")
+
     def do_DELETE(self) -> None:
         if self.path.startswith("/api/projects/"):
             key = self.path[len("/api/projects/"):]
@@ -541,6 +548,43 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             json_file.unlink()
 
         self._json_response(200, {"status": "ok", "removed": key})
+
+    def _handle_patch_project(self, key: str) -> None:
+        """PATCH /api/projects/{key} — update starred/hidden fields."""
+        content_length = int(self.headers.get("Content-Length", 0))
+        try:
+            body = json.loads(self.rfile.read(content_length)) if content_length > 0 else {}
+        except Exception:
+            self._json_response(400, {"status": "error", "message": "Invalid JSON body"})
+            return
+
+        manifest, err = self._read_manifest()
+        if err:
+            self._json_response(500, {"status": "error", "message": err})
+            return
+
+        projects = manifest.get("projects", [])
+        entry = next((p for p in projects if p.get("key") == key), None)
+        if entry is None:
+            self._json_response(404, {"status": "error", "message": "Project not found"})
+            return
+
+        # Apply starred/hidden fields from request body
+        if "starred" in body:
+            entry["starred"] = bool(body["starred"])
+        if "hidden" in body:
+            entry["hidden"] = bool(body["hidden"])
+
+        # Enforce mutual exclusion: starred and hidden cannot both be true
+        if entry.get("starred") and entry.get("hidden"):
+            # Last-write wins: if starred was set in this request, clear hidden
+            if "starred" in body and body["starred"]:
+                entry["hidden"] = False
+            elif "hidden" in body and body["hidden"]:
+                entry["starred"] = False
+
+        self._write_manifest(manifest)
+        self._json_response(200, {"status": "ok", "project": entry})
 
     def _json_response(self, status: int, body: dict) -> None:
         payload = json.dumps(body).encode("utf-8")
