@@ -183,7 +183,7 @@ status: complete
 
 ### 16. Update slice and project documents
 
-- [x] Mark slice 109 as complete in relevant documents
+- [x] Mark slice 124 as complete in relevant documents
   - [x] Update `124-slice.ui-collectors.md` frontmatter: `status: complete` (or in_progress during work)
   - [x] Update this task file frontmatter: `status: complete`
   - [x] Write DEVLOG entry for slice 124 (matching existing format: commits, files, decisions, test count)
