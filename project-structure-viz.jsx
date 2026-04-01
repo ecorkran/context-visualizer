@@ -1286,7 +1286,7 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
     }
   };
 
-  const panelWidth = expanded ? 240 : 36;
+  const panelWidth = expanded ? 280 : 36;
 
   // Collapsed strip
   if (!expanded) {
@@ -1427,23 +1427,6 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
                   color: (active === key || starred) ? "#E8E8FF" : "#8888AA",
                   overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
                 }}>{name}</span>
-                {/* Star toggle */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleToggleStar(key); }}
-                  title={starred ? "Unstar this project" : "Star this project"}
-                  style={{
-                    display: "inline-flex", alignItems: "center", justifyContent: "center",
-                    width: 20, height: 20, borderRadius: 4, border: "1px solid transparent",
-                    backgroundColor: "transparent",
-                    color: starred ? "#FFD700" : "#555577",
-                    cursor: "pointer", flexShrink: 0, fontSize: 14, padding: 0,
-                    transition: "color 0.15s ease",
-                  }}
-                  onMouseEnter={(e) => { if (!starred) e.currentTarget.style.color = "#8888AA"; }}
-                  onMouseLeave={(e) => { if (!starred) e.currentTarget.style.color = "#555577"; }}
-                >
-                  {starred ? '★' : '☆'}
-                </button>
                 {/* Per-row refresh */}
                 <button
                   onClick={(e) => { e.stopPropagation(); handleRowRefresh(key); }}
@@ -1462,7 +1445,24 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
                     &#x21bb;
                   </span>
                 </button>
-                {/* Hide/unhide toggle */}
+                {/* Star toggle */}
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleToggleStar(key); }}
+                  title={starred ? "Unstar this project" : "Star this project"}
+                  style={{
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    width: 20, height: 20, borderRadius: 4, border: "1px solid transparent",
+                    backgroundColor: "transparent",
+                    color: starred ? "#FFD700" : "#555577",
+                    cursor: "pointer", flexShrink: 0, fontSize: 12, padding: 0,
+                    transition: "color 0.15s ease",
+                  }}
+                  onMouseEnter={(e) => { if (!starred) e.currentTarget.style.color = "#8888AA"; }}
+                  onMouseLeave={(e) => { if (!starred) e.currentTarget.style.color = "#555577"; }}
+                >
+                  {starred ? '★' : '☆'}
+                </button>
+                {/* Hide/restore — × to hide, ↑ to restore */}
                 <button
                   onClick={(e) => { e.stopPropagation(); handleToggleHidden(key); }}
                   title={hidden ? "Restore this project" : "Hide this project"}
@@ -1473,32 +1473,11 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
                     cursor: "pointer", flexShrink: 0, fontSize: 14, padding: 0,
                     transition: "color 0.15s ease",
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.color = "#8888AA"; }}
+                  onMouseEnter={(e) => { e.currentTarget.style.color = hidden ? "#8888AA" : "#FF6B6B"; }}
                   onMouseLeave={(e) => { e.currentTarget.style.color = "#555577"; }}
                 >
-                  {hidden ? '↑' : '↓'}
+                  {hidden ? '↑' : '×'}
                 </button>
-                {/* Remove — disabled in MCP mode (project list is managed by context-forge) */}
-                {!hidden && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); if (!isMcp) handleRemove(key); }}
-                    title={isMcp ? "Projects are managed by MCP — remove via context-forge" : "Remove this project"}
-                    disabled={isMcp}
-                    style={{
-                      display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      width: 20, height: 20, borderRadius: 4, border: "1px solid transparent",
-                      backgroundColor: "transparent",
-                      color: isMcp ? "#333350" : "#555577",
-                      cursor: isMcp ? "not-allowed" : "pointer",
-                      flexShrink: 0, fontSize: 14, padding: 0,
-                      transition: "color 0.15s ease",
-                    }}
-                    onMouseEnter={(e) => { if (!isMcp) e.currentTarget.style.color = "#FF6B6B"; }}
-                    onMouseLeave={(e) => { if (!isMcp) e.currentTarget.style.color = "#555577"; }}
-                  >
-                    ×
-                  </button>
-                )}
               </div>
             </Fragment>
           );

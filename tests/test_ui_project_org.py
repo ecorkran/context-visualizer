@@ -54,9 +54,9 @@ def test_star_moves_project_to_top(live_server: str, page: Page) -> None:
     initial_names = _get_project_names(page)
     assert len(initial_names) >= 2, "Need at least 2 projects for this test"
 
-    # Star the second project
+    # Star the second project (star is the 2nd button: refresh, star, hide)
     rows = page.locator(".panel-row")
-    star_btn = rows.nth(1).locator("button").first  # Star is the first button in controls
+    star_btn = rows.nth(1).locator("button").nth(1)
     star_btn.click()
     page.wait_for_timeout(500)
 
@@ -74,14 +74,14 @@ def test_unstar_returns_to_normal(live_server: str, page: Page) -> None:
 
     initial_names = _get_project_names(page)
 
-    # Star the second project
+    # Star the second project (star is 2nd button: refresh, star, hide)
     rows = page.locator(".panel-row")
-    rows.nth(1).locator("button").first.click()
+    rows.nth(1).locator("button").nth(1).click()
     page.wait_for_timeout(500)
 
     # Now unstar it (it's now the first row)
     rows = page.locator(".panel-row")
-    rows.nth(0).locator("button").first.click()
+    rows.nth(0).locator("button").nth(1).click()
     page.wait_for_timeout(500)
 
     # Order should be restored
@@ -96,10 +96,9 @@ def test_hide_moves_project_to_bottom_dimmed(live_server: str, page: Page) -> No
 
     initial_names = _get_project_names(page)
 
-    # Click the hide button (↓) on the first project — it's the 4th button in the row
-    # Buttons order: star, refresh, hide/unhide, remove
+    # Click the hide button (×) on the first project — 3rd button: refresh, star, hide
     rows = page.locator(".panel-row")
-    hide_btn = rows.nth(0).locator("button", has_text="↓")
+    hide_btn = rows.nth(0).locator("button", has_text="×")
     hide_btn.click()
     page.wait_for_timeout(500)
 
@@ -120,9 +119,9 @@ def test_unhide_restores_project(live_server: str, page: Page) -> None:
 
     initial_names = _get_project_names(page)
 
-    # Hide first project
+    # Hide first project (× is the hide button)
     rows = page.locator(".panel-row")
-    rows.nth(0).locator("button", has_text="↓").click()
+    rows.nth(0).locator("button", has_text="×").click()
     page.wait_for_timeout(500)
 
     # Unhide it (now the last row, button shows ↑)
@@ -144,9 +143,9 @@ def test_hidden_project_still_activates(live_server: str, page: Page) -> None:
     initial_names = _get_project_names(page)
     target_name = initial_names[0]
 
-    # Hide first project
+    # Hide first project (× is the hide button)
     rows = page.locator(".panel-row")
-    rows.nth(0).locator("button", has_text="↓").click()
+    rows.nth(0).locator("button", has_text="×").click()
     page.wait_for_timeout(500)
 
     # Click the hidden project row (now last)
@@ -167,9 +166,9 @@ def test_state_persists_across_reload(live_server: str, page: Page) -> None:
 
     initial_names = _get_project_names(page)
 
-    # Star the second project
+    # Star the second project (star is 2nd button: refresh, star, hide)
     rows = page.locator(".panel-row")
-    rows.nth(1).locator("button").first.click()
+    rows.nth(1).locator("button").nth(1).click()
     page.wait_for_timeout(500)
 
     starred_name = initial_names[1]
