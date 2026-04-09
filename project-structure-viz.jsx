@@ -707,13 +707,8 @@ const FutureWorkCollectorCard = ({ futureWork, initiatives, maintenanceInitiativ
   const [expandedGroups, setExpandedGroups] = useState({});
   const [infoOpen, setInfoOpen] = useState({});
 
-  if (!futureWork || !futureWork.groups || futureWork.groups.length === 0) return null;
-
-  const colorSet = THEME.colors.collector;
-  const toggleGroup = (idx) => setExpandedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
-  const toggleInfo = (key) => setInfoOpen((prev) => ({ ...prev, [key]: !prev[key] }));
-
   // Build description lookup scoped by initiative index to avoid cross-initiative collisions
+  // Must be called unconditionally before any early return (Rules of Hooks)
   const descLookup = useMemo(() => {
     const lookup = {};
     const allInits = { ...(initiatives || {}), ...(maintenanceInitiatives || {}) };
@@ -725,6 +720,12 @@ const FutureWorkCollectorCard = ({ futureWork, initiatives, maintenanceInitiativ
     });
     return lookup;
   }, [initiatives, maintenanceInitiatives]);
+
+  if (!futureWork || !futureWork.groups || futureWork.groups.length === 0) return null;
+
+  const colorSet = THEME.colors.collector;
+  const toggleGroup = (idx) => setExpandedGroups((prev) => ({ ...prev, [idx]: !prev[idx] }));
+  const toggleInfo = (key) => setInfoOpen((prev) => ({ ...prev, [key]: !prev[key] }));
 
   return (
     <div style={{
