@@ -1109,7 +1109,7 @@ const Legend = () => (
 // ============================================================================
 const PANEL_COLORS = ["#5BA4D9", "#5CCFB9", "#D4B45A", "#C9A8E8", "#D48A8A", "#A0C880", "#A0A0D4", "#FFB84D"];
 
-function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState, onProjectsChanged, expanded, onToggle }) {
+function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState, onProjectsChanged, expanded, onToggle, viewMode, onViewModeChange }) {
   const isMcp = window.__projectsMode === 'mcp';
   const projectList = useMemo(() => {
     const items = Object.keys(projects).map((k, i) => ({
@@ -1424,6 +1424,10 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
               &#x21bb;
             </span>
           </button>
+          {/* View mode toggle */}
+          {onViewModeChange && (
+            <ViewModeToggle viewMode={viewMode || 'detail'} onToggle={onViewModeChange} />
+          )}
           {/* Collapse chevron */}
           <button
             onClick={onToggle}
@@ -1703,6 +1707,247 @@ function ProjectPanel({ projects, active, onActivate, onRefreshAll, refreshState
 }
 
 // ============================================================================
+// DASHBOARD COMPONENTS
+// ============================================================================
+
+/**
+ * Two-state toggle for "Detail" vs "Dashboard" view mode.
+ * Renders near the refresh button in the panel header.
+ */
+function ViewModeToggle({ viewMode, onToggle }) {
+  const btnStyle = (mode) => ({
+    display: "inline-flex", alignItems: "center", justifyContent: "center",
+    height: 22, padding: "0 7px", borderRadius: 4,
+    border: `1px solid ${viewMode === mode ? "#7B68EE" : "#2A2A4E"}`,
+    backgroundColor: viewMode === mode ? "#7B68EE22" : "transparent",
+    color: viewMode === mode ? "#B0A8FF" : "#555577",
+    cursor: "pointer", fontSize: 10, fontFamily: "inherit",
+    fontWeight: viewMode === mode ? 700 : 400,
+    letterSpacing: "0.05em", textTransform: "uppercase",
+    transition: "all 0.15s ease",
+  });
+  return (
+    <div style={{ display: "flex", gap: 2 }} data-testid="view-mode-toggle">
+      <button style={btnStyle("detail")} onClick={() => onToggle("detail")} data-mode="detail">
+        Detail
+      </button>
+      <button style={btnStyle("dashboard")} onClick={() => onToggle("dashboard")} data-mode="dashboard">
+        Dash
+      </button>
+    </div>
+  );
+}
+
+/**
+ * Individual project status tile in the dashboard grid.
+ */
+function ProjectTile({ project, onClick }) {
+  const { key, displayName, color, phase, activeSlice, recommendation, findings, tileState } = project;
+
+  // Resolve accent color via CSS custom properties set by injectStatusTokens
+  const getAccent = () => {
+    if (tileState === "error") return "var(--status-error, #E85B5B)";
+    if (!phase) return "var(--status-ok, #7FC9B8)";
+    const m = phase.match(/\d+/);
+    if (!m) return "var(--status-ok, #7FC9B8)";
+    const n = parseInt(m[0], 10);
+    if (n >= 1 && n <= 3) return "var(--status-waiting, #A78BCA)";
+    if (n >= 4 && n <= 6) return "var(--status-info, #5BB8D4)";
+    if (n >= 7) return "var(--status-complete, #6BAF8A)";
+    return "var(--status-ok, #7FC9B8)";
+  };
+
+  const rec = recommendation || null;
+
+  return (
+    <div
+      data-testid={`project-tile-${key}`}
+      onClick={onClick}
+      style={{
+        height: 140, borderRadius: 8, backgroundColor: "#111128",
+        border: `1px solid #2A2A4E`,
+        borderLeft: `4px solid ${getAccent()}`,
+        padding: "10px 12px", display: "flex", flexDirection: "column",
+        gap: 4, cursor: "pointer", overflow: "hidden",
+        transition: "border-color 0.15s ease, background-color 0.15s ease",
+        boxSizing: "border-box",
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#15152E"; }}
+      onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "#111128"; }}
+    >
+      {/* Row 1: color dot + name + findings badge */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+        <span style={{
+          width: 8, height: 8, borderRadius: "50%",
+          backgroundColor: color, flexShrink: 0, display: "inline-block",
+        }} />
+        <span style={{
+          fontFamily: "inherit", fontSize: 13, fontWeight: 700,
+          color: "#E8E8FF", flex: 1, overflow: "hidden",
+          textOverflow: "ellipsis", whiteSpace: "nowrap",
+        }}>{displayName}</span>
+        {findings && findings.total > 0 && (
+          <span
+            title={`${findings.errors} error${findings.errors !== 1 ? "s" : ""}, ${findings.warnings} warning${findings.warnings !== 1 ? "s" : ""}, ${findings.infos} info${findings.infos !== 1 ? "s" : ""}`}
+            data-testid={`findings-badge-${key}`}
+            style={{
+              fontSize: 10, fontFamily: "inherit", fontWeight: 600,
+              color: "#7B68EE", background: "#7B68EE18",
+              border: "1px solid #7B68EE44",
+              borderRadius: 3, padding: "1px 4px", flexShrink: 0,
+            }}
+          >
+            {findings.total}
+          </span>
+        )}
+      </div>
+
+      {/* Row 2: phase */}
+      <div style={{
+        fontSize: 11, color: "#6666AA", fontFamily: "inherit",
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+      }}>
+        {phase || <span style={{ fontStyle: "italic" }}>—</span>}
+      </div>
+
+      {/* Row 3: active slice + status chip */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+        {activeSlice ? (
+          <>
+            <span style={{
+              fontSize: 11, color: "#9090CC", fontFamily: "inherit",
+              overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1,
+            }}>
+              {activeSlice.name}
+            </span>
+            {activeSlice.status && (
+              <span style={{
+                fontSize: 9, fontFamily: "inherit", fontWeight: 600,
+                color: "#5CCFB9", background: "#5CCFB918",
+                border: "1px solid #5CCFB944",
+                borderRadius: 3, padding: "1px 4px", flexShrink: 0,
+                textTransform: "uppercase", letterSpacing: "0.05em",
+              }}>
+                {activeSlice.status}
+              </span>
+            )}
+          </>
+        ) : (
+          <span style={{ fontSize: 11, color: "#444466", fontFamily: "inherit", fontStyle: "italic" }}>—</span>
+        )}
+      </div>
+
+      {/* Row 4: recommendation — 2-line clamp */}
+      <div style={{
+        fontSize: 11, color: rec ? "#8888AA" : "#444466",
+        fontFamily: "inherit", flex: 1,
+        display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical",
+        overflow: "hidden", lineHeight: 1.4,
+        fontStyle: !rec ? "italic" : "normal",
+      }}>
+        {rec || "—"}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Portfolio-level dashboard: fetches /api/dashboard and renders a grid of ProjectTile.
+ */
+function ProjectDashboard({ refreshSignal, onActivate, onSwitchToDetail }) {
+  const [tiles, setTiles] = useState(null); // null = loading, [] = no projects, [...] = tiles
+  const [fetchError, setFetchError] = useState(null); // "mcp-unavailable" | "error"
+
+  useEffect(() => {
+    // Inject status CSS tokens on mount
+    import('./theme.js').then(({ injectStatusTokens }) => {
+      injectStatusTokens();
+    }).catch(() => { /* theme tokens unavailable — CSS fallbacks apply */ });
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    setTiles(null);
+    setFetchError(null);
+    fetch('/api/dashboard')
+      .then((r) => {
+        if (r.status === 503) return r.json().then((b) => { throw Object.assign(new Error(b.message || 'MCP unavailable'), { isMcpUnavailable: true }); });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data) => {
+        if (!cancelled) setTiles(data.projects || []);
+      })
+      .catch((err) => {
+        if (!cancelled) setFetchError(err.isMcpUnavailable ? 'mcp-unavailable' : 'error');
+      });
+    return () => { cancelled = true; };
+  }, [refreshSignal]);
+
+  const handleTileClick = useCallback((key) => {
+    onActivate(key);
+    onSwitchToDetail();
+  }, [onActivate, onSwitchToDetail]);
+
+  if (fetchError === 'mcp-unavailable') {
+    return (
+      <div data-testid="dashboard-mcp-unavailable" style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        height: "60%", flexDirection: "column", gap: 8,
+        color: "#555577", fontFamily: "inherit", fontSize: 14, fontStyle: "italic",
+      }}>
+        <span style={{ fontSize: 24, opacity: 0.4 }}>⬡</span>
+        MCP unavailable
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div data-testid="dashboard-error" style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        height: "60%", color: "#E85B5B", fontFamily: "inherit", fontSize: 14,
+      }}>
+        Dashboard failed to load
+      </div>
+    );
+  }
+
+  if (tiles === null) {
+    return (
+      <div data-testid="dashboard-loading" style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        height: "60%", color: "#555577", fontFamily: "inherit", fontSize: 14,
+      }}>
+        Loading…
+      </div>
+    );
+  }
+
+  if (tiles.length === 0) {
+    return (
+      <div data-testid="dashboard-empty" style={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        height: "60%", color: "#555577", fontFamily: "inherit", fontSize: 14, fontStyle: "italic",
+      }}>
+        No projects
+      </div>
+    );
+  }
+
+  return (
+    <div data-testid="project-dashboard" style={{
+      display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16,
+      alignItems: "start",
+    }}>
+      {tiles.map((proj) => (
+        <ProjectTile key={proj.key} project={proj} onClick={() => handleTileClick(proj.key)} />
+      ))}
+    </div>
+  );
+}
+
+// ============================================================================
 // MAIN
 // ============================================================================
 export default function ProjectStructureVisualizer() {
@@ -1719,9 +1964,26 @@ export default function ProjectStructureVisualizer() {
   const [panelExpanded, setPanelExpanded] = useState(() => {
     try { return JSON.parse(localStorage.getItem('panel-expanded')) ?? true; } catch { return true; }
   });
+
+  // View mode: "detail" (per-project) or "dashboard" (portfolio grid)
+  const [viewMode, setViewMode] = useState(() => {
+    try { return localStorage.getItem('cv.viewMode') || 'detail'; } catch { return 'detail'; }
+  });
+
+  // Incrementing counter — ProjectDashboard refetches whenever this changes
+  const [refreshSignal, setRefreshSignal] = useState(0);
+
+  const handleViewModeChange = useCallback((mode) => {
+    setViewMode(mode);
+    try { localStorage.setItem('cv.viewMode', mode); } catch { /* ignore */ }
+    // Switching into dashboard always triggers a fresh fetch
+    if (mode === 'dashboard') setRefreshSignal((s) => s + 1);
+  }, []);
+
   const handlePanelToggle = useCallback(() => {
     setPanelExpanded((v) => { const next = !v; localStorage.setItem('panel-expanded', JSON.stringify(next)); return next; });
   }, []);
+
   const handleActivate = useCallback((key) => {
     try { localStorage.setItem('active-project', key); } catch { /* ignore */ }
     setActive(key);
@@ -1732,6 +1994,8 @@ export default function ProjectStructureVisualizer() {
     const fresh = await window.__loadProjects();
     setProjects(fresh);
     setActive((prev) => (fresh[prev] ? prev : Object.keys(fresh)[0] ?? null));
+    // If in dashboard mode, trigger a refetch so ordering reflects the new prefs
+    setRefreshSignal((s) => s + 1);
     return fresh;
   }, []);
 
@@ -1749,12 +2013,43 @@ export default function ProjectStructureVisualizer() {
       // Preserve active tab if it still exists, else fall back to first
       setActive((prev) => (fresh[prev] ? prev : Object.keys(fresh)[0]));
       setRefreshState('idle');
+      // Refresh all also bumps the dashboard signal
+      setRefreshSignal((s) => s + 1);
     } catch (err) {
       console.error('Refresh failed:', err);
       setRefreshState('error');
       setTimeout(() => setRefreshState('idle'), 3000);
     }
   }, []);
+
+  const contentArea = () => {
+    if (viewMode === 'dashboard') {
+      return (
+        <ProjectDashboard
+          refreshSignal={refreshSignal}
+          onActivate={handleActivate}
+          onSwitchToDetail={() => handleViewModeChange('detail')}
+        />
+      );
+    }
+    if (Object.keys(projects).length === 0 || !active) {
+      return (
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "center",
+          height: "60%", fontFamily: THEME.fonts.body, fontSize: 14,
+          color: "#555577", fontStyle: "italic",
+        }}>
+          No projects. Add one using the panel.
+        </div>
+      );
+    }
+    return (
+      <>
+        <Legend />
+        <ProjectView data={projects[active]} projectKey={active} />
+      </>
+    );
+  };
 
   return (
     <div style={{ backgroundColor: "#0D0D1A", minHeight: "100vh", fontFamily: THEME.fonts.body, display: "flex", flexDirection: "column" }}>
@@ -1793,22 +2088,11 @@ export default function ProjectStructureVisualizer() {
           onProjectsChanged={handleProjectsChanged}
           expanded={panelExpanded}
           onToggle={handlePanelToggle}
+          viewMode={viewMode}
+          onViewModeChange={handleViewModeChange}
         />
         <div style={{ flex: 1, overflow: "auto", padding: THEME.sp.xl }}>
-          {Object.keys(projects).length === 0 || !active ? (
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "center",
-              height: "60%", fontFamily: THEME.fonts.body, fontSize: 14,
-              color: "#555577", fontStyle: "italic",
-            }}>
-              No projects. Add one using the panel.
-            </div>
-          ) : (
-            <>
-              <Legend />
-              <ProjectView data={projects[active]} projectKey={active} />
-            </>
-          )}
+          {contentArea()}
         </div>
       </div>
     </div>
