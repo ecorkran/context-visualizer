@@ -1615,3 +1615,289 @@ class TestWorktreeEndpoint:
             assert "worktree_list" in data["message"]
         finally:
             srv.stop()
+
+
+# ── GET /api/dashboard tests ──────────────────────────────────────────────────
+
+
+def _make_dashboard_mock_client(
+    projects: list[dict] | None = None,
+    fail_tool: str | None = None,
+    fail_project_id: str | None = None,
+) -> "MagicMock":
+    """Build a mock MCP client for dashboard endpoint tests.
+
+    Args:
+        projects: project_list entries [{id, name, projectPath}]
+        fail_tool: tool name that raises for ALL projects
+        fail_project_id: MCP project ID for which all workflow tools raise
+    """
+    from unittest.mock import MagicMock
+    from mcp_client import McpError
+
+    if projects is None:
+        projects = [
+            {"id": "p1", "name": "my-project", "projectPath": "/home/user/my-project"},
+            {"id": "p2", "name": "another-app", "projectPath": "/home/user/another-app"},
+        ]
+
+    def _call_tool(name: str, arguments: dict) -> dict:
+        proj_id = arguments.get("projectId", "")
+
+        if name == "project_list":
+            return {"projects": projects}
+
+        # Simulate a per-project failure
+        if fail_project_id and proj_id == fail_project_id and name in (
+            "workflow_status", "workflow_next", "workflow_check"
+        ):
+            raise McpError(-1, f"Simulated failure for {proj_id}/{name}")
+
+        if fail_tool and name == fail_tool:
+            raise McpError(-1, f"Simulated failure for {name}")
+
+        if name == "workflow_status":
+            return {
+                "phase": "Phase 6: Implementation",
+                "activeSlice": {"name": "test-slice", "index": 140, "status": "in-implementation"},
+            }
+        if name == "workflow_next":
+            return {"recommendation": "Complete task 3 before merging."}
+        if name == "workflow_check":
+            return {"errors": 0, "warnings": 2, "infos": 1, "totalFindings": 3}
+        if name == "project_structure":
+            return {"name": "Test", "description": "Test", "initiatives": {}}
+
+        raise McpError(-32601, f"Unknown tool: {name}")
+
+    mock = MagicMock()
+    mock.connected = True
+    mock.server_info = {"name": "context-forge-mcp", "version": "1.0.0"}
+    mock.call_tool.side_effect = _call_tool
+    return mock
+
+
+class TestDashboardEndpoint:
+    """Tests for GET /api/dashboard."""
+
+    def setup_method(self) -> None:
+        import sys
+        sys.path.insert(0, str(PROJECT_ROOT))
+        import serve
+        self._orig_client = serve._mcp_client
+        self._orig_name_to_id = dict(serve._mcp_name_to_id)
+
+    def teardown_method(self) -> None:
+        import serve
+        serve._mcp_client = self._orig_client
+        serve._mcp_name_to_id = self._orig_name_to_id
+
+    def _srv(self, tmp_dir: Path) -> "ServerFixture":
+        srv = ServerFixture(projects_dir=tmp_dir)
+        srv.start()
+        return srv
+
+    def test_returns_503_when_mcp_not_connected(self, tmp_path: Path) -> None:
+        """MCP disconnected → 503 with 'MCP unavailable' message."""
+        from unittest.mock import MagicMock
+        import serve
+        mock = MagicMock()
+        mock.connected = False
+        serve._mcp_client = mock
+
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/dashboard")
+            data = json.loads(body)
+            assert status == 503
+            assert data["status"] == "error"
+            assert "MCP unavailable" in data["message"]
+        finally:
+            srv.stop()
+
+    def test_returns_503_when_mcp_client_is_none(self, tmp_path: Path) -> None:
+        """No MCP client at all → 503."""
+        import serve
+        serve._mcp_client = None
+
+        (tmp_path / "manifest.json").write_text(json.dumps({"projects": []}))
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/dashboard")
+            data = json.loads(body)
+            assert status == 503
+            assert data["status"] == "error"
+        finally:
+            srv.stop()
+
+    def test_hidden_projects_excluded(self, tmp_path: Path) -> None:
+        """Hidden projects do not appear in the dashboard payload."""
+        import serve
+
+        manifest = {
+            "projects": [
+                {"key": "my-project", "displayName": "My Project"},
+                {"key": "another-app", "displayName": "Another App"},
+            ]
+        }
+        prefs = {"another-app": {"hidden": True}}
+        (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+        (tmp_path / "project-prefs.json").write_text(json.dumps(prefs))
+
+        serve._mcp_client = _make_dashboard_mock_client()
+        # Pre-populate name→ID cache so the endpoint doesn't call project_list
+        serve._mcp_name_to_id = {"my-project": "p1", "another-app": "p2"}
+
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/dashboard")
+            data = json.loads(body)
+            assert status == 200
+            keys = [p["key"] for p in data["projects"]]
+            assert "another-app" not in keys
+            assert "my-project" in keys
+        finally:
+            srv.stop()
+
+    def test_starred_projects_appear_first(self, tmp_path: Path) -> None:
+        """Starred projects are ordered before unstarred in the payload."""
+        import serve
+
+        manifest = {
+            "projects": [
+                {"key": "alpha", "displayName": "Alpha"},
+                {"key": "beta", "displayName": "Beta"},
+                {"key": "gamma", "displayName": "Gamma"},
+            ]
+        }
+        prefs = {"gamma": {"starred": True}}
+        (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+        (tmp_path / "project-prefs.json").write_text(json.dumps(prefs))
+
+        serve._mcp_client = _make_dashboard_mock_client(projects=[
+            {"id": "a", "name": "alpha", "projectPath": "/alpha"},
+            {"id": "b", "name": "beta", "projectPath": "/beta"},
+            {"id": "c", "name": "gamma", "projectPath": "/gamma"},
+        ])
+        serve._mcp_name_to_id = {"alpha": "a", "beta": "b", "gamma": "c"}
+
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/dashboard")
+            data = json.loads(body)
+            assert status == 200
+            keys = [p["key"] for p in data["projects"]]
+            assert keys[0] == "gamma", f"Expected gamma first, got {keys}"
+        finally:
+            srv.stop()
+
+    def test_successful_response_matches_api_shape(self, tmp_path: Path) -> None:
+        """200 response has correct JSON shape with all required fields."""
+        import serve
+
+        manifest = {"projects": [{"key": "my-project", "displayName": "My Project"}]}
+        (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+
+        serve._mcp_client = _make_dashboard_mock_client()
+        serve._mcp_name_to_id = {"my-project": "p1"}
+
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/dashboard")
+            data = json.loads(body)
+            assert status == 200
+            assert data["status"] == "ok"
+            assert len(data["projects"]) == 1
+
+            tile = data["projects"][0]
+            assert tile["key"] == "my-project"
+            assert tile["displayName"] == "My Project"
+            assert "color" in tile
+            assert tile["phase"] == "Phase 6: Implementation"
+            assert tile["activeSlice"]["name"] == "test-slice"
+            assert tile["recommendation"] == "Complete task 3 before merging."
+            assert tile["findings"]["errors"] == 0
+            assert tile["findings"]["warnings"] == 2
+            assert tile["findings"]["infos"] == 1
+            assert tile["findings"]["total"] == 3
+            assert tile["tileState"] == "ok"
+        finally:
+            srv.stop()
+
+    def test_per_project_mcp_failure_sets_tile_error(self, tmp_path: Path) -> None:
+        """A per-project MCP failure sets tileState='error' without aborting the response."""
+        import serve
+
+        manifest = {
+            "projects": [
+                {"key": "good-project", "displayName": "Good Project"},
+                {"key": "bad-project", "displayName": "Bad Project"},
+            ]
+        }
+        (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+
+        serve._mcp_client = _make_dashboard_mock_client(
+            projects=[
+                {"id": "g1", "name": "good-project", "projectPath": "/good"},
+                {"id": "b1", "name": "bad-project", "projectPath": "/bad"},
+            ],
+            fail_project_id="b1",
+        )
+        serve._mcp_name_to_id = {"good-project": "g1", "bad-project": "b1"}
+
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/dashboard")
+            data = json.loads(body)
+            assert status == 200
+            assert len(data["projects"]) == 2
+
+            good = next(p for p in data["projects"] if p["key"] == "good-project")
+            bad = next(p for p in data["projects"] if p["key"] == "bad-project")
+            assert good["tileState"] == "ok"
+            assert bad["tileState"] == "error"
+        finally:
+            srv.stop()
+
+    def test_phase_from_workflow_status_not_project_get(self, tmp_path: Path) -> None:
+        """Phase field comes from workflow_status.phase, not project_get."""
+        import serve
+
+        manifest = {"projects": [{"key": "my-project", "displayName": "My Project"}]}
+        (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+
+        serve._mcp_client = _make_dashboard_mock_client()
+        serve._mcp_name_to_id = {"my-project": "p1"}
+
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/dashboard")
+            data = json.loads(body)
+            assert status == 200
+            # The mock workflow_status returns "Phase 6: Implementation"
+            # If project_get were used, it wouldn't be present in our mock
+            assert data["projects"][0]["phase"] == "Phase 6: Implementation"
+        finally:
+            srv.stop()
+
+    def test_findings_object_has_required_keys(self, tmp_path: Path) -> None:
+        """findings object contains errors, warnings, infos, total keys."""
+        import serve
+
+        manifest = {"projects": [{"key": "my-project", "displayName": "My Project"}]}
+        (tmp_path / "manifest.json").write_text(json.dumps(manifest))
+
+        serve._mcp_client = _make_dashboard_mock_client()
+        serve._mcp_name_to_id = {"my-project": "p1"}
+
+        srv = self._srv(tmp_path)
+        try:
+            status, body = srv.get("/api/dashboard")
+            data = json.loads(body)
+            assert status == 200
+            findings = data["projects"][0]["findings"]
+            for key in ("errors", "warnings", "infos", "total"):
+                assert key in findings, f"Missing key: {key}"
+        finally:
+            srv.stop()
