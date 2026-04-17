@@ -89,6 +89,8 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._handle_future_work()
         elif self.path.startswith("/api/worktrees"):
             self._handle_worktrees()
+        elif self.path == "/api/dashboard":
+            self._handle_dashboard()
         elif self.path == "/api/status":
             self._handle_status()
         elif self.path == "/api/refresh":
@@ -478,6 +480,111 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             "serverInfo": client.server_info if connected else None,
             "futureWorkEnabled": _enable_future_work_collector and connected,
         })
+
+    def _handle_dashboard(self) -> None:
+        """GET /api/dashboard — return per-project status tiles for the portfolio view.
+
+        MCP-only: returns 503 if the MCP client is not connected.
+        Projects are ordered: starred first, then unstarred; hidden projects excluded.
+        Each project receives sequential MCP calls (workflow_status, workflow_next,
+        workflow_check). Per-project failures set tileState="error" without aborting
+        the full response.
+        """
+        client = _mcp_client
+        if client is None or not client.connected:
+            self._json_response(503, {"status": "error", "message": "MCP unavailable"})
+            return
+
+        manifest, err = self._read_manifest()
+        if err:
+            self._json_response(500, {"status": "error", "message": err})
+            return
+
+        prefs = self._read_prefs()
+        raw_projects = manifest.get("projects", [])
+
+        # Assign panel colors by manifest index (matches PANEL_COLORS in the frontend)
+        _panel_colors = ["#5BA4D9", "#5CCFB9", "#D4B45A", "#C9A8E8", "#D48A8A", "#A0C880", "#A0A0D4", "#FFB84D"]
+        annotated = [
+            {
+                "key": p.get("key", ""),
+                "displayName": p.get("displayName") or p.get("key", ""),
+                "color": _panel_colors[i % len(_panel_colors)],
+                "starred": bool(prefs.get(p.get("key", ""), {}).get("starred")),
+                "hidden": bool(prefs.get(p.get("key", ""), {}).get("hidden")),
+            }
+            for i, p in enumerate(raw_projects)
+        ]
+
+        # Starred first, then unstarred; hidden excluded entirely
+        starred = [p for p in annotated if p["starred"]]
+        normal = [p for p in annotated if not p["starred"] and not p["hidden"]]
+        ordered = starred + normal
+
+        # Populate name→ID cache if empty
+        if not _mcp_name_to_id:
+            try:
+                result = client.call_tool("project_list", {})
+                _refresh_name_to_id(result.get("projects", []))
+            except Exception as exc:
+                logger.warning("project_list failed during dashboard name→ID lookup: %s", exc)
+
+        tiles: list[dict] = []
+        for proj in ordered:
+            key = proj["key"]
+            mcp_id = _mcp_name_to_id.get(key)
+
+            tile: dict = {
+                "key": key,
+                "displayName": proj["displayName"],
+                "color": proj["color"],
+                "phase": None,
+                "activeSlice": None,
+                "recommendation": None,
+                "findings": {"errors": 0, "warnings": 0, "infos": 0, "total": 0},
+                "tileState": "ok",
+            }
+
+            if not mcp_id:
+                logger.warning("No MCP ID for project '%s' — setting tileState=error", key)
+                tile["tileState"] = "error"
+                tiles.append(tile)
+                continue
+
+            try:
+                ws = client.call_tool("workflow_status", {"projectId": mcp_id})
+                tile["phase"] = ws.get("phase")
+                tile["activeSlice"] = ws.get("activeSlice")
+            except Exception as exc:
+                logger.warning("workflow_status failed for '%s': %s", key, exc)
+                tile["tileState"] = "error"
+                tiles.append(tile)
+                continue
+
+            try:
+                wn = client.call_tool("workflow_next", {"projectId": mcp_id})
+                tile["recommendation"] = wn.get("recommendation") or None
+            except Exception as exc:
+                logger.warning("workflow_next failed for '%s': %s", key, exc)
+                tile["tileState"] = "error"
+                tiles.append(tile)
+                continue
+
+            try:
+                wc = client.call_tool("workflow_check", {"projectId": mcp_id})
+                tile["findings"] = {
+                    "errors": wc.get("errors", 0),
+                    "warnings": wc.get("warnings", 0),
+                    "infos": wc.get("infos", 0),
+                    "total": wc.get("totalFindings", 0),
+                }
+            except Exception as exc:
+                logger.warning("workflow_check failed for '%s': %s", key, exc)
+                # Non-fatal: keep tileState ok, findings remain zeroed
+
+            tiles.append(tile)
+
+        self._json_response(200, {"status": "ok", "projects": tiles})
 
     def _handle_list_projects(self) -> None:
         """GET /api/projects — return all manifest entries."""
