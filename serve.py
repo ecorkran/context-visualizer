@@ -223,7 +223,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
             self._json_response(200, {"status": "ok", "projects": refreshed})
 
     def _prefs_path(self) -> Path:
-        return Path("projects/project-prefs.json")
+        return Path.home() / ".config" / "context-visualizer" / "project-prefs.json"
 
     def _read_prefs(self) -> dict:
         """Read project prefs (starred/hidden state). Returns {} if missing."""

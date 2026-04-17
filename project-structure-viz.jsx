@@ -1859,10 +1859,7 @@ function ProjectDashboard({ refreshSignal, onActivate, onSwitchToDetail }) {
   const [fetchError, setFetchError] = useState(null); // "mcp-unavailable" | "error"
 
   useEffect(() => {
-    // Inject status CSS tokens on mount
-    import('./theme.js').then(({ injectStatusTokens }) => {
-      injectStatusTokens();
-    }).catch(() => { /* theme tokens unavailable — CSS fallbacks apply */ });
+    window.__theme?.injectStatusTokens?.();
   }, []);
 
   useEffect(() => {

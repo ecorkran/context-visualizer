@@ -18,6 +18,12 @@
 
   <!-- Babel standalone for JSX transform -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Theme tokens — loaded as ESM module, exported to window for Babel-transpiled JSX -->
+  <script type="module">
+    import { injectStatusTokens, STATUS_COLORS, phaseAccentColor } from './theme.js';
+    window.__theme = { injectStatusTokens, STATUS_COLORS, phaseAccentColor };
+  </script>
 </head>
 <body>
   <div id="root"></div>

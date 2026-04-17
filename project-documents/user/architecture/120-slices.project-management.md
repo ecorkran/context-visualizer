@@ -94,6 +94,20 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
    - **Risk:** Low-Medium — fan-out latency across many projects may need batching or parallel MCP calls; theme token extraction touches existing color usage across the viz
    - **Effort:** 3/5
 
+127. [ ] **(127) MCP-native project registry** — Replace `projects/manifest.json` and `parse.py`-based project management with MCP-native project discovery and data retrieval. `GET /api/projects` reads project list from MCP `project_list`; `POST /api/refresh` fetches live structure data from MCP `project_structure` instead of invoking `parse.py`; add/remove endpoints updated or removed as MCP becomes the single source of truth. Static `projects/` JSON files and the manifest are retired. Dependencies: [123]. Risk: Medium. Effort: 3/5.
+   - **Value:** Eliminates a redundant source of truth — the manifest and static JSON files become stale the moment a project is updated outside the visualizer. With MCP as the registry, all project data is always live and consistent with context-forge.
+   - **Success Criteria:**
+     - `GET /api/projects` returns projects sourced from MCP `project_list`, not `manifest.json`
+     - `POST /api/refresh` fetches structure from MCP `project_structure` instead of invoking `parse.py`
+     - `manifest.json`, static `projects/*.json` files, and `parse.py` subprocess calls are fully removed from the server code path
+     - Existing panel UI (project list, add/remove, refresh) continues to work without changes
+     - No regressions in `/api/structures`, `/api/dashboard`, or other endpoints
+     - MCP-disconnected state returns a clear error envelope on all affected endpoints
+   - **Dependencies:** [123]
+   - **Interfaces:** Consumes: MCP `project_list`, `project_structure`. Removes: `manifest.json`, `parse.py` integration
+   - **Risk:** Medium — touches multiple endpoints; local mode fallback effectively deprecated
+   - **Effort:** 3/5
+
 ## Notes
 
 - **No migration slices needed** — Both slices add new capabilities rather than restructuring existing behavior. The tab bar removal in Slice 121 is a direct replacement, not a migration.
