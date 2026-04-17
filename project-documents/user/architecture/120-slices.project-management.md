@@ -3,9 +3,8 @@ docType: slice-plan
 parent: user/architecture/120-arch.project-management.md
 project: context-visualizer
 dateCreated: 20260226
-dateUpdated: 20260226
+dateUpdated: 20260417
 status: active
-dateUpdated: 20260331
 ---
 
 # Slice Plan: Project Management
@@ -74,6 +73,26 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
    - **Effort:** 3/5
 
 125. [x] **(125) Project list organization** — Star/pin projects to the top of the panel list, and hide/archive projects to a dimmed section at the bottom. Starred projects sort above unstarred; hidden projects render at reduced opacity with a restore control. State persisted in `manifest.json` via new `starred` and `hidden` boolean fields, updated through `PATCH /api/projects/{key}` endpoint. Panel list sorts: starred first, then normal, then hidden. Dependencies: [120, 121]. Risk: Low. Effort: 2/5.
+
+126. [x] **(126) Cross-project dashboard view** — New top-level view showing a grid of per-project status tiles. Panel toggle swaps the right-side content between the existing project detail view and the dashboard. Tiles in two columns with consistent height, ordered by starred-first, hidden projects excluded. Each tile surfaces current phase, active slice and status, and a "what's going on" one-liner derived from MCP `workflow_next`. For projects in slice-work phases (4–6), tile accent color reflects `workflow_check` severity (error/warning/info); otherwise a neutral friendly color from the theme palette. Status color tokens (`--status-ok`, `--status-info`, `--status-waiting`, `--status-warning`, `--status-error`) defined once as CSS custom properties — red reserved for true errors, yellow for true warnings, everything else drawn from a seafoam/green/light-purple palette. Backed by a new `GET /api/dashboard` endpoint that fans out `project_get` + `workflow_next` + `workflow_check` MCP calls per project and returns a flat per-project payload (distinct from `/api/structures`, with shared MCP-client + project-ID-cache helpers at the Python layer). Dashboard live-updates when star/hide state changes in the panel. MCP mode only — local-mode fallback out of scope (local mode is deprecated in practice).
+   - **Value:** Gives the user an at-a-glance view across all tracked projects answering "what's going on" without drilling into each one individually. Makes phase/slice drift and consistency issues visible at the portfolio level.
+   - **Success Criteria:**
+     - Panel header exposes a toggle between "project detail" and "dashboard" modes; active mode persisted in `localStorage`
+     - Dashboard renders a 2-column grid of equal-height tiles; grid fills the content area width
+     - Tile ordering: starred projects first (in panel star order), then unstarred; hidden projects omitted entirely
+     - Each tile shows: project name, project color indicator, current phase, active slice name + status (needs-design / needs-tasks / in-implementation / complete), "what's going on" line from `workflow_next.recommendation`
+     - Tiles for projects in phases 4–6 show an accent color derived from `workflow_check` severity: error findings → `--status-error`, warning findings → `--status-warning`, otherwise `--status-ok`
+     - Tiles for projects outside phases 4–6 use a neutral palette color (never red or yellow) regardless of findings
+     - Status color tokens defined in one place (CSS custom properties) and referenced symbolically throughout; no hard-coded hex values scattered across components
+     - `GET /api/dashboard` returns `{ status: "ok", projects: [{ key, displayName, color, phase, activeSlice, recommendation, findings: { errors, warnings, infos } }, ...] }`
+     - `/api/dashboard` reuses existing MCP client and project-ID cache; does not duplicate project enumeration logic
+     - Star/hide changes in the panel cause the dashboard to re-sort/re-filter without a page reload
+     - MCP-disconnected state returns a clear error envelope; dashboard surfaces a single "MCP unavailable" message rather than per-tile errors
+     - No console errors in normal operation; existing project detail view and panel behavior unchanged when dashboard mode is inactive
+   - **Dependencies:** [121, 123] — panel UI (for the toggle host) and MCP client integration (for the workflow_* tool calls)
+   - **Interfaces:** Provides: `GET /api/dashboard`. Consumes: MCP `project_get`, `workflow_next`, `workflow_check`; existing `_mcp_client` and `_mcp_name_to_id` helpers in `serve.py`
+   - **Risk:** Low-Medium — fan-out latency across many projects may need batching or parallel MCP calls; theme token extraction touches existing color usage across the viz
+   - **Effort:** 3/5
 
 ## Notes
 

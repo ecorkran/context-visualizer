@@ -1,5 +1,24 @@
 # DEVLOG — context-visualizer
 
+## 20260417
+
+###### Slice 126: Cross-Project Dashboard View — Implementation Complete (Phase 6)
+
+**Commits:**
+- `b3c1d7f` feat: add GET /api/dashboard endpoint
+- `68fac33` test: add tests for GET /api/dashboard
+- `6e613f5` feat: add ProjectTile, ProjectDashboard, ViewModeToggle components
+
+**Changes:**
+- Added `theme.js` status color token module defining `--status-ok/info/waiting/complete/warning/error` as CSS custom properties; all hex values live in one place
+- Added `GET /api/dashboard` endpoint to `serve.py`: sequential MCP fan-out (`workflow_status`, `workflow_next`, `workflow_check`) per non-hidden project, starred-first ordering, per-project failure isolation (`tileState: "error"`)
+- Added `ViewModeToggle` (DETAIL/DASH buttons), `ProjectDashboard` (2-column grid, fetch + loading/error/empty states), `ProjectTile` (name, color dot, phase, active slice + status chip, recommendation, findings badge) components to `project-structure-viz.jsx`
+- Root component gains `viewMode` state (persisted in `localStorage` under `cv.viewMode`) and `refreshSignal` counter; panel "refresh all" and star/hide changes both increment the signal
+- Tile click activates that project and switches to detail view
+- 8 unit tests for dashboard endpoint, 5 theme.js tests, 9 E2E browser tests (6 MCP-gated); all 138 tests passing, 7 skipped
+
+---
+
 ## 20260331
 
 ###### Slice 125: Project List Organization — Implementation Complete (Phase 6)

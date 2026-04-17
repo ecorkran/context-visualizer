@@ -5,7 +5,7 @@ project: context-visualizer
 archIndex: 120
 component: project-management
 dateCreated: 20260226
-dateUpdated: 20260226
+dateUpdated: 20260417
 status: complete
 relatedSlices: []
 riskLevel: low
@@ -17,7 +17,7 @@ The visualizer currently has no UI for managing which projects are tracked. Proj
 
 This architectural component introduces user-controlled project catalog management: a persistent left panel that serves as both the project selector and the management interface for adding and removing tracked projects. It also replaces the current tab-bar-based project switching, consolidating project navigation into the panel.
 
-**Scope:** Manifest schema extension, server-side catalog management endpoints, and a collapsible left panel UI replacing the tab bar as the project selector. Local project sources only — remote sources (GitHub) are explicitly out of scope.
+**Scope:** Manifest schema extension, server-side catalog management endpoints, a collapsible left panel UI replacing the tab bar as the project selector, and portfolio-level views rendered in the same content area as per-project detail views. Local project sources only — remote sources (GitHub) are explicitly out of scope.
 
 **Motivation:** As the number of tracked projects grows, the current tab-bar pattern doesn't scale — tabs overflow horizontally and there is no way to manage the list from the UI. The CLI-only add workflow creates friction for onboarding new projects. Centralizing project management in a visible, low-footprint panel resolves both problems while also making the manifest's role explicit to the user.
 
@@ -44,6 +44,10 @@ This architectural component introduces user-controlled project catalog manageme
 - **Collapsed by default** — The panel's default state is collapsed (icon strip). Users who want to manage projects expand it explicitly. This respects screen real estate when management actions are not needed.
 
 - **Manifest carries display metadata** — The manifest entry must include a `displayName` field so the panel can render project names without depending on fully-loaded project JSON. This field is written by `parse.py` at parse time and requires no separate management step.
+
+- **Portfolio views share the content area** — Cross-project aggregate views (e.g. a status dashboard) are first-class capabilities within this component, not a separate layout. They render in the same right-side content area as per-project detail views, with the panel remaining the navigation surface. Users switch between detail and portfolio modes from a control in the panel header; active mode is persisted in `localStorage`. Portfolio views are MCP-dependent — they rely on aggregate data the local-parse path does not produce — and gracefully degrade to a single "MCP unavailable" placeholder when the MCP client is disconnected.
+
+- **Status color tokens are centralized** — Tile-style UI surfaces that signal project state (error/warning/ok/info) draw their colors from a single CSS custom property definition (e.g. `src/theme.js` exporting `--status-*` tokens). Components reference the token name, never a hex literal. This keeps the palette editable in one place. Governance is narrow: the token set covers status signaling only, not every visual color in the app. Existing colors (project colors, panel, detail-view palette) are unaffected.
 
 ## Current State
 
@@ -84,6 +88,8 @@ This architectural component introduces user-controlled project catalog manageme
 - **Project Panel UI** — Two-column layout, collapsible panel component (expanded list / collapsed chip strip), project rows with activation and remove controls, add-project path input wired to the API, panel state persistence via `localStorage`, removal of header tab bar. Depends on the API slice.
 
 - **Collectors: Maintenance and Future Work** — Add two synthetic initiatives to the visualizer. A **maintenance collector** groups 9xx maintenance slices into a dedicated initiative. A **future work collector** aggregates future work items across all slice plans (via MCP `workflow_future` tool), displayed as an initiative with items grouped by source slice plan. Both are additive — existing slice plan views remain unchanged. Future work collector is gated by an internal config setting (not exposed in UI). Base color: saturated blue (~#08A8F6).
+
+- **Cross-project dashboard view** — Portfolio-level status grid rendered in the content area, toggled from the panel header. One tile per non-hidden project, starred first. Backed by a new `GET /api/dashboard` endpoint that aggregates MCP `workflow_status`, `workflow_next`, and `workflow_check` per project. Introduces the `src/theme.js` status token module described under Architectural Principles. MCP-only.
 
 ## Related Work
 
