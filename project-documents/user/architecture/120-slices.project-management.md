@@ -94,7 +94,7 @@ None. Initiative 100 (complete) provides all prerequisite infrastructure:
    - **Risk:** Low-Medium — fan-out latency across many projects may need batching or parallel MCP calls; theme token extraction touches existing color usage across the viz
    - **Effort:** 3/5
 
-127. [ ] **(127) MCP-native project registry** — Replace `projects/manifest.json` and `parse.py`-based project management with MCP-native project discovery and data retrieval. `GET /api/projects` reads project list from MCP `project_list`; `POST /api/refresh` fetches live structure data from MCP `project_structure` instead of invoking `parse.py`; add/remove endpoints updated or removed as MCP becomes the single source of truth. Static `projects/` JSON files and the manifest are retired. Dependencies: [123]. Risk: Medium. Effort: 3/5.
+127. [ ] **(127) MCP-Native Project Registry** — Replace `projects/manifest.json` and `parse.py`-based project management with MCP-native project discovery and data retrieval. `GET /api/projects` reads project list from MCP `project_list`; `POST /api/refresh` fetches live structure data from MCP `project_structure` instead of invoking `parse.py`; add/remove endpoints updated or removed as MCP becomes the single source of truth. Static `projects/` JSON files and the manifest are retired. Dependencies: [123]. Risk: Medium. Effort: 3/5.
    - **Value:** Eliminates a redundant source of truth — the manifest and static JSON files become stale the moment a project is updated outside the visualizer. With MCP as the registry, all project data is always live and consistent with context-forge.
    - **Success Criteria:**
      - `GET /api/projects` returns projects sourced from MCP `project_list`, not `manifest.json`
