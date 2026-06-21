@@ -1,5 +1,17 @@
 # DEVLOG — context-visualizer
 
+## 20260621
+
+###### Fix: pin Babel standalone to v7 — frontend boot regression
+
+**Symptom:** Load Error "Cannot use import statement outside a module" at boot, stack pointing at the JSX fetch in `index.html`. No code in this repo had changed.
+
+**Cause:** `index.html` loaded `@babel/standalone` from unpkg with no version pin. unpkg's "latest" pointer advanced to `@babel/standalone@8.0.2`, which flips the default `runtime` of `@babel/preset-react` from `classic` to `automatic`. Automatic runtime emits `import { jsx as _jsx } from "react/jsx-runtime"` at the top of the transformed output, which is a syntax error inside the `new Function(...)` eval used to load the component.
+
+**Fix:** Pin the script tag to `@babel/standalone@7` (resolves to 7.29.7, the final v7 release), and explicitly pass `runtime: 'classic'` to the preset so the intent survives any future major bump.
+
+---
+
 ## 20260417
 
 ###### Slice 126: Cross-Project Dashboard View — Implementation Complete (Phase 6)

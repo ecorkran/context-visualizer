@@ -16,8 +16,11 @@
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 
-  <!-- Babel standalone for JSX transform -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Babel standalone for JSX transform.
+       Pinned to v7: Babel 8 flipped @babel/preset-react's default `runtime` to
+       "automatic", which emits `import { jsx } from "react/jsx-runtime"` in the
+       output — fatal inside our `new Function(...)` eval below. -->
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
 
   <!-- Theme tokens — loaded as ESM module, exported to window for Babel-transpiled JSX -->
   <script type="module">
@@ -167,8 +170,10 @@
         src = src.replace(/export\s+default\s+/, 'window.$COMPONENT = ');
 
         // Transform JSX → JS via Babel
+        // runtime: 'classic' keeps `<div/>` → `React.createElement(...)` so the
+        // transpiler doesn't emit a `react/jsx-runtime` import we can't satisfy.
         const transformed = Babel.transform(src, {
-          presets: ['react'],
+          presets: [['react', { runtime: 'classic' }]],
           filename: 'project-structure-viz.jsx',
         }).code;
 
