@@ -2,6 +2,12 @@
 
 ## 20260621
 
+###### Feat: render plan-only initiatives with synthetic ARCH card
+
+Context-forge MCP `project_structure` (v0.8.4+) now returns plan-only initiatives — named in the initiative plan but with no arch or slices doc on disk — with `planned: true`, a top-level `status`, and a top-level `description`. Previously these were silently dropped; the visualizer's initiative list disagreed with `cf list initiatives`.
+
+`InitiativeCard` now renders a synthetic ARCH `DocBlock` for `planned: true && !arch && description`, mirroring the shape used for real-arch initiatives (same `colorSet`, same `label="ARCH"`, same closed-by-default ⓘ overview toggle). The displayed name is `initiative.name` slugified to kebab-case. Status-dot color falls back from `slicePlan.status` to `initiative.status` so plan-only initiatives reflect their plan-stated status. "Slice planning not yet started" continues to appear below.
+
 ###### Fix: pin Babel standalone to v7 — frontend boot regression
 
 **Symptom:** Load Error "Cannot use import statement outside a module" at boot, stack pointing at the JSX fetch in `index.html`. No code in this repo had changed.

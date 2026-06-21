@@ -412,7 +412,7 @@ const InitiativeCard = ({ band, initiative, futureSlices, accentColor, colorSet 
         <div style={{ display: "flex", alignItems: "center", gap: THEME.sp.sm, minWidth: 60 }}>
           <span style={{
             display: "inline-block", width: 8, height: 8, borderRadius: "50%", flexShrink: 0,
-            backgroundColor: THEME.status[initiative.slicePlan?.status] || THEME.status["not-started"],
+            backgroundColor: THEME.status[initiative.slicePlan?.status ?? initiative.status] || THEME.status["not-started"],
           }} />
           <span style={{
             fontFamily: THEME.fonts.heading, fontSize: 22, color: accentColor || colorSet?.accent || "#FFD700",
@@ -452,6 +452,19 @@ const InitiativeCard = ({ band, initiative, futureSlices, accentColor, colorSet 
 
       {expanded && (
         <div style={{ paddingLeft: THEME.sp.sm, marginTop: THEME.sp.md }}>
+          {initiative.planned && initiative.description && !initiative.arch && (
+            <DocBlock colorSet={THEME.colors.architecture} label="ARCH"
+              name={initiative.name.toLowerCase().replace(/\s+/g, "-")}
+              index={band} status={initiative.status} item={initiative}
+              infoContent={
+                <div style={{
+                  padding: `${THEME.sp.sm}px 0`,
+                  fontFamily: THEME.fonts.body, fontSize: 12,
+                  color: THEME.colors.architecture.text, opacity: 0.9,
+                  lineHeight: "18px",
+                }}>{initiative.description}</div>
+              } />
+          )}
           {initiative.arch && (
             <DocBlock colorSet={THEME.colors.architecture} label="ARCH"
               name={initiative.arch.name} index={initiative.arch.index}
