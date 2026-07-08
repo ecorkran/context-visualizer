@@ -29,6 +29,7 @@ out/*
 # Sensitive / internal-only files
 project-documents/user/slices/120-slice.plugins-1.md
 mcp-config.json
+*-gitleaks-*.json
 
 # Python
 __pycache__/
@@ -51,3 +52,4 @@ playwright-report/
 *.njsproj
 *.sln
 *.sw?
+
