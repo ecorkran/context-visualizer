@@ -27,21 +27,38 @@
 ```
 - NEVER use user-accessible labels as logical structure.  They are fragile.
 
+### Exception Handling
+- Every try/except must either: (a) re-raise after logging at ERROR level with logger.exception, (b) handle a specific exception with a comment explaining why swallowing is correct (e.g., ConnectionClosed: pass for normal teardown), or (c) be a top-level handler at a process boundary. Bare except: and except Exception: pass are bugs by definition.
 
 ## Source Control and Builds
 - Keep commits semantic; build after all changes.
 - Git add and commit from project root at least once per task.
 - Confirm your current working directory before file/shell commands.
 
-# Parsing & Pattern Matching
-
+## Parsing & Pattern Matching
 - Prefer lenient parsing over strict matching. A regex that silently fails on valid input (e.g. requiring exact whitespace counts or line-ending positions) is a bug. Parse the semantic content, not the formatting.
 - When parsing structured text (YAML, key-value pairs, etc.), handle common format variations (compact vs multi-line, varying indent levels, trailing whitespace) rather than requiring one exact layout.
 - When writing a parser, the test fixture must include the actual format that parser will consume in production.  A test that only passes on a format the real data never uses only provides false confidence.
 - If a parser returns empty/default on bad input, add at least one test using real-world input (e.g. the actual file it will parse) to catch silent failures.
   
-## Project Navigation
+## Hallucination traps in prompts
+If an instruction tells a reader to retrieve a value from some source, and
+that source might return empty, do not place a hardcoded example of an
+acceptable value nearby. When the source is empty, a model will reach for
+the nearest plausible token — and the example is it. This is a
+hallucination trap.
 
+### Bad
+
+    Print the filename (from stderr, e.g. `squadron-P4.md`).
+
+### Good
+
+    Print the filename. The CLI emits it on a line prefixed with
+    `Using: ` on stderr. If no such line is present, stop with an error.
+
+
+## Project Navigation
 - Follow `guide.ai-project.process` and its links for workflow.
 - Follow `file-naming-conventions` for all document naming and metadata.
 - Project guides: `project-documents/ai-project-guide/project-guides/`
@@ -53,21 +70,40 @@
 
 - All markdown files must include YAML frontmatter as specified in `file-naming-conventions.md`
 - Use checklist format for all task files.  Each item and subitem should have a `[ ]` "checkbox".
-- After completing a task or subtask, make sure it is checked off in the appropriate file(s).  Use the task-check subagent if available.- Preserve sections titled "## User-Provided Concept" exactly as 
+- After completing a task or subtask, delegate checklist updates to the `task-checker` agent rather than editing task files inline. This keeps the main agent's context focused on implementation. If task-checker is unavailable, check off tasks directly.
+- Preserve sections titled "## User-Provided Concept" exactly as 
   written — never modify or remove.
 - Keep success summaries concise and minimal.
 
 ## Git Rules
 
 ### Branch Naming
-When working on a slice, use a branch named after the slice (without the `.md` extension but with the numeric index prefix).
+A branch corresponds to one unit of work, named by its index family and type:`{index}-{type}.{name}` (the document name without the `.md` extension, with the numeric index prefix). Two types of work get branches:
 
-Before starting implementation work on a slice:
-1. verify you are on main or the expected slice branch
-2. if the expected slice branch does not exist, create it from `main`: `git checkout -b {branch-name}`
-3. If the slice branch already exists, switch to it: `git checkout {branch-name}`
-4. Never start slice work from another slice's branch unless explicitly instructed
-5. If in doubt, STOP and ask the Project Manager
+- **Slice work** (Phase 6 implementation) → `{index}-slice.{name}`, where `{index}` is the slice's index.
+- **Planning work** (Phases 0–5: concept, initiative plan, architecture, slice plan, slice design, task breakdown, and reviews of those artifacts) → `{index}-planning.{name}`, where `{index}` is:
+  - index 000 for project setup (concept / initiative plan), or
+  - the initiative base index for an initiative's architecture, slice plan, slice designs, and task breakdowns.
+
+`planning` is a branch type only — it has no corresponding document type. It names the branch that carries an index family's planning artifacts before implementation begins. Implementation moves to the slice branch; reviews stay with whatever they review (arch/slice/task reviews on the planning branch, code review on the slice branch).
+
+#### Optional branch root prefix
+A project may configure an **optional** root that is prepended to every work branch name. Read it with `cf config get git.branch_root`. This key is optional and defaults to empty:
+
+- If the value is empty (the default), use the branch name exactly as defined above — no prefix.
+- If the value is non-empty (e.g. `myroot`), prefix it with a slash: the branch becomes `{root}/{index}-{type}.{name}` (e.g. `myroot/910-slice.foo`).
+
+The root affects the **git branch name only**. It does not move documents or change where artifacts resolve — the `project-documents/user/...` layout under the branch is unchanged. The configured value is relative and contained (never absolute, never `..`); `cf` rejects invalid values when the key is set.
+
+Before starting work on a slice or planning unit:
+1. determine the branch name per the rules above, then read `cf config get git.branch_root` and, if non-empty, prefix it as `{root}/{branch-name}`
+2. verify you are on main or the expected branch
+3. if the expected branch does not exist, create it from `main`: `git checkout -b {branch-name}`
+4. if the branch already exists, switch to it: `git checkout {branch-name}`
+5. never start work from another unit's branch unless explicitly instructed
+6. if in doubt, STOP and ask the Project Manager
+
+A branch merges to `main` when its unit completes — a planning branch when its planning phase is done, a slice branch when its implementation is done.  Do not hold a branch open across units; a planning branch is not a long-lived home for successive initiatives.  However, do not delete branches unless specifically instructed to do so.
 
 ### Commit Messages
 Use semantic commit prefixes. The goal is a readable `git log --oneline`.
