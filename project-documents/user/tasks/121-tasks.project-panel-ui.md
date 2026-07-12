@@ -7,6 +7,7 @@ dependencies: [120-project-management-api]
 projectState: Slice 120 complete — serve.py has GET/POST/DELETE /api/projects and POST /api/refresh; manifest.json has displayName; 52 tests passing. UI unchanged — still uses header tab bar for project switching.
 dateCreated: 20260228
 dateUpdated: 20260228
+status: not_started
 ---
 
 ## Context Summary

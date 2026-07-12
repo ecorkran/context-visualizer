@@ -7,6 +7,7 @@ projectState: Slice 140 complete. /api/worktrees endpoint live. project-structur
 dateCreated: 20260315
 dateUpdated: 20260315
 status: complete
+docType: tasks
 ---
 
 ## Context Summary

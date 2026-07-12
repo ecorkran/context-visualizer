@@ -7,6 +7,7 @@ project: context-visualizer
 status: draft
 dateCreated: 20260224
 dateUpdated: 20260303
+docType: concept
 ---
 
 ## High-Level Project Concept

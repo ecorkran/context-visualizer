@@ -7,6 +7,7 @@ dependencies: [120-project-management-api, 121-project-panel-ui, 122-local-proje
 projectState: Slices 120-122 complete. serve.py has catalog API endpoints (GET/POST/DELETE /api/projects, POST /api/refresh, GET /api/info, GET /api/discover). ProjectPanel UI with add/remove/refresh controls. 67 tests passing (52 backend + 12 E2E + 3 smoke). Zero runtime dependencies.
 dateCreated: 20260301
 dateUpdated: 20260301
+status: not_started
 ---
 
 ## Context Summary

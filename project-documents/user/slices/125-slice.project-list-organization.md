@@ -18,6 +18,7 @@ interfaces:
   provides:
     - PATCH /api/projects/{key} (new endpoint)
     - manifest.json starred/hidden fields
+slice: project-list-organization
 ---
 
 # Slice Design: Project List Organization

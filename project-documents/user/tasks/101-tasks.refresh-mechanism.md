@@ -7,6 +7,7 @@ projectState: Data Externalization slice complete. Project data loads from exter
 dateCreated: 20260224
 dateUpdated: 20260225
 status: complete
+docType: tasks
 ---
 
 ## Context Summary

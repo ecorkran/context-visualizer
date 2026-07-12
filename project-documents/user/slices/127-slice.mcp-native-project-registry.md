@@ -8,7 +8,7 @@ component: project-management
 title: MCP-Native Project Registry
 dateCreated: 20260417
 dateUpdated: 20260417
-status: design
+status: in_progress
 dependencies: [123]
 riskLevel: medium
 effort: 3

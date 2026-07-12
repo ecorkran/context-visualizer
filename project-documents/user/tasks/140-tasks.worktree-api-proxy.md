@@ -7,6 +7,7 @@ projectState: MCP client infrastructure complete (slice 123). serve.py has estab
 dateCreated: 20260312
 dateUpdated: 20260313
 status: complete
+docType: tasks
 ---
 
 ## Context Summary

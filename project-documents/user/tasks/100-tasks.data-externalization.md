@@ -7,6 +7,7 @@ projectState: Working local visualizer with inline project data in JSX. Parser (
 dateCreated: 20260224
 dateUpdated: 20260225
 status: complete
+docType: tasks
 ---
 
 ## Context Summary

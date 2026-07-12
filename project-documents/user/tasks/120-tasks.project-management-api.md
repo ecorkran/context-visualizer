@@ -7,6 +7,7 @@ dependencies: []
 projectState: Initiative 100 complete (serve.py, manifest.json, parse.py with update_manifest). Bug fixes committed. Slice 120 design approved.
 dateCreated: 20260226
 dateUpdated: 20260226
+status: not_started
 ---
 
 ## Context Summary

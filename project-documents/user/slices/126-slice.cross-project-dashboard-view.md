@@ -22,6 +22,7 @@ interfaces:
     - GET /api/dashboard
     - view-mode toggle in panel header
     - status-color CSS custom property tokens
+slice: cross-project-dashboard-view
 ---
 
 # Slice Design: Cross-Project Dashboard View

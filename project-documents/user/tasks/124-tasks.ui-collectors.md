@@ -7,6 +7,7 @@ projectState: Slice 123 (MCP Client) complete. MCP client operational with selec
 dateCreated: 20260304
 dateUpdated: 20260304
 status: complete
+docType: tasks
 ---
 
 ## Context Summary

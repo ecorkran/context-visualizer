@@ -7,7 +7,7 @@ component: project-management
 dateCreated: 20260226
 dateUpdated: 20260417
 note: Slice 127 supersedes manifest-based principles below; MCP is now the single source of truth for the project catalog.
-status: complete
+status: in-progress
 relatedSlices: []
 riskLevel: low
 ---
