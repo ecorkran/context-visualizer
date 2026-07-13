@@ -17,11 +17,15 @@ Interactive dashboard for [Context Forge](https://github.com/ecorkran/context-fo
 git clone https://github.com/ecorkran/context-visualizer.git
 cd context-visualizer
 
-# Start the server
-python serve.py
+# Start the server (no install required — zero runtime dependencies)
+python3 serve.py
 
 # Open http://localhost:5678
 ```
+
+No virtual environment or `pip install` step is needed — the server has zero runtime dependencies (`uv` is only used for dev tooling like tests). This makes `python3 serve.py` a good default for AI coding agents to launch the dashboard directly, without provisioning a venv first.
+
+Note: on some machines, first startup can take up to ~30s due to a slow reverse-DNS lookup (`socket.getfqdn()`) inside Python's stdlib `HTTPServer`. This is a local networking quirk, not a hang — subsequent requests are fast once it's listening.
 
 ### With MCP (recommended)
 
